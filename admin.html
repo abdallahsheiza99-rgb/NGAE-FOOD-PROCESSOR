@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Boss Admin Panel for sales metrics tracking by Siku, Wiki, and Mwezi.">
+    <title>StellarShop - Boss Sales Control</title>
+    <!-- Google Fonts: Outfit -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Main Style Sheet -->
+    <link rel="stylesheet" href="style.css">
+    <!-- Standalone Admin JavaScript -->
+    <script src="admin.js" defer></script>
+</head>
+<body class="admin-body">
+    <div class="app-background"></div>
+    
+    <div class="admin-container">
+        
+        <!-- Auth Screen (Boss Password Input) -->
+        <section class="auth-card-panel" id="admin-login-card">
+            <div class="auth-header">
+                <i class="fa-solid fa-user-shield auth-icon"></i>
+                <h2>Boss Authentication</h2>
+                <p>Enter the master password to view store analytics</p>
+            </div>
+            
+            <form id="admin-login-form" novalidate>
+                <div class="form-group">
+                    <label for="admin-password">Boss Password</label>
+                    <div class="input-wrapper">
+                        <i class="fa-solid fa-key input-icon"></i>
+                        <input type="password" id="admin-password" placeholder="Password (Hint: andazi)" autocomplete="off" required>
+                    </div>
+                    <span class="error-msg" id="auth-error">Incorrect password. Please try again.</span>
+                </div>
+                
+                <button type="submit" class="btn btn-primary auth-submit-btn">
+                    <i class="fa-solid fa-unlock-keyhole"></i> Log In
+                </button>
+            </form>
+            
+            <div class="auth-footer">
+                <a href="index.html" class="back-link">
+                    <i class="fa-solid fa-arrow-left-long"></i> Back to Shop Catalog
+                </a>
+            </div>
+        </section>
+
+        <!-- Dashboard Control Center (Hidden by Default) -->
+        <section class="panel admin-dashboard-panel" id="admin-dashboard-container" style="display: none;">
+            <header class="admin-dashboard-header">
+                <div class="admin-title-group">
+                    <div class="admin-logo">
+                        <i class="fa-solid fa-chart-line"></i>
+                    </div>
+                    <div>
+                        <h2>Boss Control Center</h2>
+                        <p>Store Revenue, Inventory Sales & Analytics</p>
+                    </div>
+                </div>
+                
+                <a href="index.html" class="btn btn-secondary">
+                    <i class="fa-solid fa-arrow-left-long"></i> Go to Shop Catalog
+                </a>
+            </header>
+
+            <!-- Periods Selector Tab List -->
+            <nav class="tab-headers">
+                <button class="tab-btn active" data-period="today">
+                    <i class="fa-solid fa-calendar-day"></i> Leo (Today)
+                </button>
+                <button class="tab-btn" data-period="week">
+                    <i class="fa-solid fa-calendar-week"></i> Wiki Hii (This Week)
+                </button>
+                <button class="tab-btn" data-period="month">
+                    <i class="fa-solid fa-calendar-days"></i> Mwezi Huu (This Month)
+                </button>
+            </nav>
+
+            <!-- Metrics Card Section -->
+            <div class="admin-stat-summary">
+                <div class="admin-stat-card">
+                    <span class="stat-label">Total Revenue</span>
+                    <span class="stat-value text-green" id="admin-total-revenue">$0.00</span>
+                </div>
+                <div class="admin-stat-card">
+                    <span class="stat-label">Total Items Sold</span>
+                    <span class="stat-value" id="admin-total-items">0</span>
+                </div>
+            </div>
+
+            <!-- Detailed Sales Table -->
+            <div class="sales-details-section">
+                <h3>Items Catalog Distribution</h3>
+                <div class="table-scroll-wrapper">
+                    <table class="admin-sales-table">
+                        <thead>
+                            <tr>
+                                <th>Item Name</th>
+                                <th class="text-right">Qty Sold</th>
+                                <th class="text-right">Total Revenue</th>
+                            </tr>
+                        </thead>
+                        <tbody id="admin-sales-body">
+                            <!-- Populated dynamically -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Footer Admin Commands -->
+            <footer class="admin-actions-bar">
+                <button class="btn btn-danger" id="reset-sales-btn">
+                    <i class="fa-solid fa-power-off"></i> Wipe Sales History
+                </button>
+            </footer>
+        </section>
+
+        <!-- System Copyright Footer -->
+        <footer class="app-footer">
+            <p>&copy; 2026 StellarShop Inc. All Rights Reserved.</p>
+        </footer>
+    </div>
+</body>
+</html>

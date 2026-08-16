@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="A premium shop system dashboard with Boss Admin Sales tracking by Day, Week, and Month.">
+    <title>StellarShop - Inventory & Boss Checkout</title>
+    <!-- Google Fonts: Outfit -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- FontAwesome for Premium Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Main Style Sheet -->
+    <link rel="stylesheet" href="style.css">
+    <!-- App Logic -->
+    <script src="app.js" defer></script>
+</head>
+<body>
+    <div class="app-background"></div>
+    <div class="app-container">
+        <!-- Main Dashboard Header -->
+        <header class="app-header">
+            <div class="brand">
+                <div class="brand-logo">
+                    <i class="fa-solid fa-cart-shopping"></i>
+                </div>
+                <div class="brand-text">
+                    <h1>StellarShop</h1>
+                    <p>Premium Checkout & Sales Control</p>
+                </div>
+            </div>
+            <div class="header-actions">
+                <a href="admin.html" class="btn btn-secondary" id="admin-link">
+                    <i class="fa-solid fa-user-tie"></i> Boss Admin
+                </a>
+                <div class="system-status">
+                    <span class="pulse-dot"></span>
+                    <span>System Ready</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Dashboard Layout -->
+        <main class="dashboard-grid">
+            
+            <!-- Left Panel: Input & Control -->
+            <section class="panel control-panel" aria-labelledby="input-section-title">
+                <div class="panel-header">
+                    <i class="fa-solid fa-pen-to-square"></i>
+                    <h2 id="input-section-title">Commodity Entry</h2>
+                </div>
+
+                <!-- Catalog Count Indicator -->
+                <div class="limit-container">
+                    <div class="limit-labels">
+                        <span>Items in Current Basket</span>
+                        <span id="limit-counter">0 Items</span>
+                    </div>
+                </div>
+
+                <!-- Form Section -->
+                <form id="commodity-form" novalidate>
+                    <div class="form-group">
+                        <label for="commodity-name">Commodity Name</label>
+                        <div class="input-wrapper">
+                            <i class="fa-solid fa-tag input-icon"></i>
+                            <input type="text" id="commodity-name" placeholder="e.g., Organic Bananas, Milk, Bread" autocomplete="off" required>
+                        </div>
+                        <span class="error-msg" id="name-error">Please enter a commodity name.</span>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="commodity-price">Price ($)</label>
+                        <div class="input-wrapper">
+                            <i class="fa-solid fa-dollar-sign input-icon"></i>
+                            <input type="number" id="commodity-price" step="0.01" min="0" placeholder="0.00" autocomplete="off" required>
+                        </div>
+                        <span class="error-msg" id="price-error">Please enter a valid, non-negative price.</span>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary" id="add-btn">
+                        <i class="fa-solid fa-plus"></i> Add to Catalog
+                    </button>
+                </form>
+
+                <div class="action-divider"><span>Quick Tools</span></div>
+
+                <div class="quick-tools-grid">
+                    <button class="btn btn-secondary" id="demo-btn">
+                        <i class="fa-solid fa-wand-magic-sparkles"></i> Load Demo
+                    </button>
+                    <button class="btn btn-danger" id="clear-btn">
+                        <i class="fa-solid fa-trash-can"></i> Clear Basket
+                    </button>
+                </div>
+            </section>
+
+            <!-- Right Panel: Inventory List & Live Analytics -->
+            <section class="panel display-panel" aria-labelledby="inventory-section-title">
+                <div class="panel-header">
+                    <i class="fa-solid fa-list-check"></i>
+                    <h2 id="inventory-section-title">Active Catalog</h2>
+                </div>
+
+                <!-- Empty State -->
+                <div class="empty-state" id="empty-state">
+                    <i class="fa-solid fa-basket-shopping empty-icon"></i>
+                    <h3>Your basket is empty</h3>
+                    <p>Start adding commodities on the left panel or click "Load Demo" to quickly test.</p>
+                </div>
+
+                <!-- Commodities Grid List -->
+                <div class="commodities-list" id="commodities-list" style="display: none;">
+                    <!-- Dynamically populated via JS -->
+                </div>
+
+                <!-- Live Analytics Dashboard -->
+                <div class="analytics-dashboard" id="analytics-dashboard" style="display: none;">
+                    <div class="analytics-card main-stat">
+                        <span class="stat-label">Subtotal</span>
+                        <span class="stat-value" id="stat-subtotal">$0.00</span>
+                    </div>
+                    <div class="analytics-card">
+                        <span class="stat-label">Avg. Price</span>
+                        <span class="stat-value" id="stat-average">$0.00</span>
+                    </div>
+                    <div class="analytics-card">
+                        <span class="stat-label">Highest Price</span>
+                        <span class="stat-value text-green" id="stat-highest">-</span>
+                    </div>
+                    <div class="analytics-card">
+                        <span class="stat-label">Lowest Price</span>
+                        <span class="stat-value text-blue" id="stat-lowest">-</span>
+                    </div>
+                </div>
+
+                <!-- Action Button for Invoice Generation -->
+                <div class="checkout-action" id="checkout-action" style="display: none;">
+                    <button class="btn btn-checkout" id="generate-receipt-btn">
+                        <i class="fa-solid fa-receipt"></i> Checkout & Save
+                    </button>
+                </div>
+            </section>
+        </main>
+
+        <!-- Digital Receipt Overlay/Modal -->
+        <div class="receipt-overlay" id="receipt-overlay" role="dialog" aria-modal="true" aria-labelledby="receipt-title" style="display: none;">
+            <div class="receipt-modal">
+                <button class="receipt-close-btn" id="close-receipt-btn" aria-label="Close receipt">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+                
+                <div class="receipt-paper" id="receipt-paper">
+                    <div class="receipt-header">
+                        <div class="receipt-logo">
+                            <i class="fa-solid fa-cart-shopping"></i>
+                            <span>STELLARSHOP</span>
+                        </div>
+                        <p class="receipt-tagline">Premium Retail Solutions</p>
+                        <div class="receipt-meta">
+                            <div><strong>Receipt #:</strong> <span id="receipt-no">ST-837492</span></div>
+                            <div><strong>Date:</strong> <span id="receipt-date">2026-08-16</span></div>
+                        </div>
+                    </div>
+                    
+                    <div class="receipt-divider"></div>
+                    
+                    <table class="receipt-table">
+                        <thead>
+                            <tr>
+                                <th class="col-num">#</th>
+                                <th class="col-item">Item</th>
+                                <th class="col-price">Price</th>
+                            </tr>
+                        </thead>
+                        <tbody id="receipt-items-body">
+                            <!-- Dynamically populated -->
+                        </tbody>
+                    </table>
+                    
+                    <div class="receipt-divider"></div>
+                    
+                    <div class="receipt-summary">
+                        <div class="receipt-row">
+                            <span>Total Items:</span>
+                            <span id="receipt-total-items">0</span>
+                        </div>
+                        <div class="receipt-row">
+                            <span>Average Price:</span>
+                            <span id="receipt-avg-price">$0.00</span>
+                        </div>
+                        <div class="receipt-row total-row">
+                            <span>Total Amount:</span>
+                            <span id="receipt-grand-total">$0.00</span>
+                        </div>
+                    </div>
+                    
+                    <div class="receipt-footer">
+                        <div class="barcode"></div>
+                        <p>Thank you for shopping with StellarShop!</p>
+                        <p class="receipt-timestamp" id="receipt-timestamp"></p>
+                    </div>
+                </div>
+
+                <div class="receipt-actions">
+                    <button class="btn btn-primary" id="print-receipt-btn">
+                        <i class="fa-solid fa-print"></i> Print Receipt
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- System Footer -->
+        <footer class="app-footer">
+            <p>&copy; 2026 StellarShop Inc. All Rights Reserved. Built with Vanilla CSS & JS.</p>
+        </footer>
+    </div>
+</body>
+</html>

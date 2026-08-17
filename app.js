@@ -15,17 +15,17 @@
 // ==========================================
 
 const INITIAL_STAFF = {
-    'NGAE001': { name: 'MUSSA AMIRI SHEIZA', role: 'operator' },
-    'NGAE002': { name: 'AMANI STAFF', role: 'operator' },
-    'NGAE016': { name: 'ISSAYA KAKOA', role: 'seller', shopId: 'shop_soni' },
-    'NGAE017': { name: 'ZAINABU HINYA (ZAISHA)', role: 'seller', shopId: 'shop_lushoto' },
-    'NGAE018': { name: 'SONI ISLAMIC', role: 'seller', shopId: 'shop_mwalimu' },
-    'NGAE019': { name: 'LWANDAI SECONDARY', role: 'seller', shopId: 'shop_lwandai' },
-    'NGAE020': { name: 'ROSMIN', role: 'seller', shopId: 'shop_rosmin' },
-    'NGAE021': { name: 'MR ACADEMIA', role: 'storekeeper' },
-    'NGAE022': { name: 'STORE ASSIST', role: 'storekeeper' },
-    'NGAE027': { name: 'DULLAH SHEIZA', role: 'manufacturer' },
-    'NGAE028': { name: 'FACTORY WORKER', role: 'manufacturer' },
+    'NGAE001': { name: 'MUSSA AMIRI SHEIZA', role: 'operator', password: 'ngae001_operator' },
+    'NGAE002': { name: 'AMANI STAFF', role: 'operator', password: 'ngae002_operator' },
+    'NGAE016': { name: 'ISSAYA KAKOA', role: 'seller', shopId: 'shop_soni', password: 'ngae016_seller' },
+    'NGAE017': { name: 'ZAINABU HINYA (ZAISHA)', role: 'seller', shopId: 'shop_lushoto', password: 'ngae017_seller' },
+    'NGAE018': { name: 'SONI ISLAMIC', role: 'seller', shopId: 'shop_mwalimu', password: 'ngae018_seller' },
+    'NGAE019': { name: 'LWANDAI SECONDARY', role: 'seller', shopId: 'shop_lwandai', password: 'ngae019_seller' },
+    'NGAE020': { name: 'ROSMIN', role: 'seller', shopId: 'shop_rosmin', password: 'ngae020_seller' },
+    'NGAE021': { name: 'MR ACADEMIA', role: 'storekeeper', password: 'ngae021_storekeeper' },
+    'NGAE022': { name: 'STORE ASSIST', role: 'storekeeper', password: 'ngae022_storekeeper' },
+    'NGAE027': { name: 'DULLAH SHEIZA', role: 'manufacturer', password: 'ngae027_manufacturer' },
+    'NGAE028': { name: 'FACTORY WORKER', role: 'manufacturer', password: 'ngae028_manufacturer' },
 };
 
 const INITIAL_PRODUCTS = [
@@ -119,6 +119,40 @@ const INITIAL_FINANCES = {
 const INITIAL_CUSTOMER_ORDERS = [];
 
 // ==========================================
+// AUTH FUNCTIONS
+// ==========================================
+
+window.appLogin = function(role, staffId, password) {
+    const cleanId = (staffId || '').toUpperCase().trim();
+    const cleanPassword = password || '';
+    const staffRecord = appData.staff[cleanId];
+    
+    if (!staffRecord) {
+        alert("Kosa: ID au Nenosiri si sahihi!");
+        return false;
+    }
+    
+    const expectedPassword = staffRecord.password || cleanId.toLowerCase();
+    
+    if (staffRecord.role !== role || expectedPassword !== cleanPassword) {
+        alert("Kosa: ID au Nenosiri si sahihi!");
+        return false;
+    }
+    
+    localStorage.setItem('ngae_logged_in_role', role);
+    localStorage.setItem('ngae_logged_in_id', cleanId);
+    localStorage.setItem('ngae_logged_in_name', staffRecord.name);
+    
+    // Redirect to correct dashboard
+    if(role === 'storekeeper') {
+        window.location.href = 'store_keeper.html';
+    } else {
+        window.location.href = role + '.html';
+    }
+    return true;
+};
+
+// ==========================================
 // DATA LAYER
 // ==========================================
 
@@ -132,6 +166,17 @@ function loadData() {
             if (!data.staff) {
                 data.staff = JSON.parse(JSON.stringify(INITIAL_STAFF));
                 saveData(data);
+            } else {
+                let updated = false;
+                Object.keys(data.staff).forEach(id => {
+                    if (!data.staff[id].password) {
+                        data.staff[id].password = (INITIAL_STAFF[id] && INITIAL_STAFF[id].password) || id.toLowerCase();
+                        updated = true;
+                    }
+                });
+                if (updated) {
+                    saveData(data);
+                }
             }
             if (!data.cashFlow) {
                 data.cashFlow = { balance: 0, transactions: [] };
@@ -219,35 +264,7 @@ function appAddNotification(title, message) {
 let appData = loadData();
 window.appData = appData;
 
-// ==========================================
-// AUTH FUNCTIONS
-// ==========================================
-
-window.appLogin = function(role, staffId) {
-    const staffRecord = appData.staff[staffId.toUpperCase()];
-    
-    if (!staffRecord) {
-        alert("Namba ya ID haikupatikana. Tafadhali jaribu tena.\n\nMfano wa vitambulisho:\n- Operator: NGAE001\n- Seller: NGAE016\n- Store Keeper: NGAE021\n- Manufacturer: NGAE027");
-        return false;
-    }
-    
-    if (staffRecord.role !== role) {
-        alert(`ID ${staffId} ni ya ${staffRecord.role.toUpperCase()}, si ${role.toUpperCase()}. Tafadhali rudi na uchague jukumu sahihi.`);
-        return false;
-    }
-    
-    localStorage.setItem('ngae_logged_in_role', role);
-    localStorage.setItem('ngae_logged_in_id', staffId.toUpperCase());
-    localStorage.setItem('ngae_logged_in_name', staffRecord.name);
-    
-    // Redirect to correct dashboard
-    if(role === 'storekeeper') {
-        window.location.href = 'store_keeper.html';
-    } else {
-        window.location.href = role + '.html';
-    }
-    return true;
-};
+// AUTH FUNCTIONS (Defined above)
 
 window.appLogout = function() {
     localStorage.removeItem('ngae_logged_in_role');
@@ -260,13 +277,10 @@ window.appProtectRoute = function(requiredRole) {
     const loggedRole = localStorage.getItem('ngae_logged_in_role');
     const loggedId = localStorage.getItem('ngae_logged_in_id');
     
-    if (!loggedRole || !loggedId) {
-        window.location.href = 'login.html?role=' + requiredRole;
-        return false;
-    }
-    
-    if (loggedRole !== requiredRole) {
-        alert("Huna ruhusa ya kuingia ukurasa huu.");
+    if (!loggedRole || !loggedId || !appData.staff[loggedId] || appData.staff[loggedId].role !== requiredRole) {
+        localStorage.removeItem('ngae_logged_in_role');
+        localStorage.removeItem('ngae_logged_in_id');
+        localStorage.removeItem('ngae_logged_in_name');
         window.location.href = 'login.html?role=' + requiredRole;
         return false;
     }
@@ -551,7 +565,7 @@ window.appTrackOrder = function(orderId) {
 // ADMIN FUNCTIONS
 // ==========================================
 
-window.appAddStaff = function(name, role, customId) {
+window.appAddStaff = function(name, role, customId, password) {
     let newId = customId ? customId.toUpperCase().trim() : null;
     if (!newId) {
         let maxNum = 0;
@@ -571,7 +585,7 @@ window.appAddStaff = function(name, role, customId) {
         return false;
     }
 
-    const newStaff = { name, role };
+    const newStaff = { name, role, password: password || newId.toLowerCase() };
     if (role === 'seller') {
         const shopId = 'shop_' + name.toLowerCase().replace(/\s+/g,'_');
         newStaff.shopId = shopId;

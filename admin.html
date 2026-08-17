@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="sw">
 
 <head>
@@ -2271,11 +2271,11 @@ Saini ya Mwajiriwa (${emp.name}): ____________________      Tarehe: ____________
                 });
             }
 
-            printWindow.document.write(\`
+            printWindow.document.write(`
                 <!DOCTYPE html>
                 <html>
                 <head>
-                    <title>Ripoti ya Matumizi - \${titleStr}</title>
+                    <title>Ripoti ya Matumizi - ${titleStr}</title>
                     <style>
                         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
                         body { font-family: 'Inter', sans-serif; padding: 40px; color: #1e293b; background-color: #ffffff; line-height: 1.5; }
@@ -2310,13 +2310,13 @@ Saini ya Mwajiriwa (${emp.name}): ____________________      Tarehe: ____________
                     <div class="header">
                         <h1>NGAE FOOD PROCESSING HUB</h1>
                         <p class="subtitle">RIPOTI YA MATUMIZI YA BIASHARA (EXPENSES REPORT)</p>
-                        <p style="font-weight: bold; margin-top: 6px; color: #dc2626;">\${titleStr}</p>
+                        <p style="font-weight: bold; margin-top: 6px; color: #dc2626;">${titleStr}</p>
                         <p class="date">Imezalishwa mnamo: ${new Date().toLocaleString()}</p>
                     </div>
 
                     <div class="balance-box">
                         <p>Jumla Kuu ya Matumizi (Total Period Expenses)</p>
-                        <h2>Tsh \${total.toLocaleString()}</h2>
+                        <h2>Tsh ${total.toLocaleString()}</h2>
                     </div>
 
                     <table style="width: 100%;">
@@ -2329,7 +2329,7 @@ Saini ya Mwajiriwa (${emp.name}): ____________________      Tarehe: ____________
                             </tr>
                         </thead>
                         <tbody>
-                            \${rowsHtml}
+                            ${rowsHtml}
                         </tbody>
                     </table>
 
@@ -2354,7 +2354,7 @@ Saini ya Mwajiriwa (${emp.name}): ____________________      Tarehe: ____________
                     </div>
                 </body>
                 </html>
-            \`);
+            `);
 
             printWindow.document.close();
         }
@@ -2514,7 +2514,7 @@ Saini ya Mwajiriwa (${emp.name}): ____________________      Tarehe: ____________
                 `;
             }
 
-            printWindow.document.write(\`
+            printWindow.document.write(`
                 <!DOCTYPE html>
                 <html>
                 <head>
@@ -2567,20 +2567,20 @@ Saini ya Mwajiriwa (${emp.name}): ____________________      Tarehe: ____________
                         <p class="date">Imezalishwa mnamo: ${new Date().toLocaleString()}</p>
                     </div>
 
-                    \${healthStatusHtml}
+                    ${healthStatusHtml}
 
                     <div class="summary-grid">
                         <div class="card" style="border-left: 4px solid #10b981;">
                             <p class="label">Mauzo Yote (Total Sales)</p>
-                            <h3 class="text-green">Tsh \${totalSales.toLocaleString()}</h3>
+                            <h3 class="text-green">Tsh ${totalSales.toLocaleString()}</h3>
                         </div>
                         <div class="card" style="border-left: 4px solid #ef4444;">
                             <p class="label">Matumizi Yote (Total Expenses)</p>
-                            <h3 class="text-red">Tsh \${totalExpenses.toLocaleString()}</h3>
+                            <h3 class="text-red">Tsh ${totalExpenses.toLocaleString()}</h3>
                         </div>
-                        <div class="card" style="border-left: 4px solid \${isLoss ? '#ef4444' : '#10b981'};">
+                        <div class="card" style="border-left: 4px solid ${isLoss ? '#ef4444' : '#10b981'};">
                             <p class="label">Faida / Hasara Kuu (Net Margin)</p>
-                            <h3 class="\${isLoss ? 'text-red' : 'text-green'}">Tsh \${netProfit.toLocaleString()}</h3>
+                            <h3 class="${isLoss ? 'text-red' : 'text-green'}">Tsh ${netProfit.toLocaleString()}</h3>
                         </div>
                     </div>
 
@@ -2596,7 +2596,7 @@ Saini ya Mwajiriwa (${emp.name}): ____________________      Tarehe: ____________
                             </tr>
                         </thead>
                         <tbody>
-                            \${shopRowsHtml}
+                            ${shopRowsHtml}
                         </tbody>
                     </table>
 
@@ -2613,7 +2613,7 @@ Saini ya Mwajiriwa (${emp.name}): ____________________      Tarehe: ____________
                             </tr>
                         </thead>
                         <tbody>
-                            \${expenseRowsHtml}
+                            ${expenseRowsHtml}
                         </tbody>
                     </table>
 
@@ -2638,7 +2638,7 @@ Saini ya Mwajiriwa (${emp.name}): ____________________      Tarehe: ____________
                     </div>
                 </body>
                 </html>
-            \`);
+            `);
 
             printWindow.document.close();
         }
@@ -2812,11 +2812,11 @@ Saini ya Mwajiriwa (${emp.name}): ____________________      Tarehe: ____________
                 });
             }
 
-            printWindow.document.write(\`
+            printWindow.document.write(`
                 <!DOCTYPE html>
                 <html>
                 <head>
-                    <title>Ripoti ya Mazungumzo - \${sugg.senderName}</title>
+                    <title>Ripoti ya Mazungumzo - ${sugg.senderName}</title>
                     <style>
                         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
                         body { font-family: 'Inter', sans-serif; padding: 40px; color: #1e293b; background-color: #ffffff; line-height: 1.5; }
@@ -2847,24 +2847,24 @@ Saini ya Mwajiriwa (${emp.name}): ____________________      Tarehe: ____________
                     <div class="header">
                         <h1>NGAE FOOD PROCESSING HUB</h1>
                         <p class="subtitle">RIPOTI YA MAZUNGUMZO YA MFANYAKAZI (STAFF CHATTING HISTORY)</p>
-                        <p class="date">Imezalishwa mnamo: \${new Date().toLocaleString()}</p>
+                        <p class="date">Imezalishwa mnamo: ${new Date().toLocaleString()}</p>
                     </div>
 
                     <div class="meta-info">
-                        <div class="meta-item"><strong>Mfanyakazi:</strong> \${sugg.senderName} (\${sugg.senderId})</div>
-                        <div class="meta-item"><strong>Jukumu (Role):</strong> \${swRole}</div>
-                        <div class="meta-item"><strong>Namba ya Rejea:</strong> \${sugg.id}</div>
-                        <div class="meta-item"><strong>Tarehe ya Kuanza:</strong> \${sugg.date}</div>
+                        <div class="meta-item"><strong>Mfanyakazi:</strong> ${sugg.senderName} (${sugg.senderId})</div>
+                        <div class="meta-item"><strong>Jukumu (Role):</strong> ${swRole}</div>
+                        <div class="meta-item"><strong>Namba ya Rejea:</strong> ${sugg.id}</div>
+                        <div class="meta-item"><strong>Tarehe ya Kuanza:</strong> ${sugg.date}</div>
                     </div>
 
                     <h3 style="font-size: 15px; font-weight: 700; border-bottom: 2px solid #f1f5f9; padding-bottom: 8px; margin-bottom: 20px; color: #ea580c; text-transform: uppercase;">Daftari la Mazungumzo (Conversation Logs)</h3>
 
-                    \${chatHtml}
+                    ${chatHtml}
 
                     <div class="signatures">
                         <div>
                             <div class="signature-line"></div>
-                            <div class="signature-title">Saini ya Mfanyakazi (\${sugg.senderName})</div>
+                            <div class="signature-title">Saini ya Mfanyakazi (${sugg.senderName})</div>
                         </div>
                         <div>
                             <div class="signature-line"></div>
@@ -2882,7 +2882,7 @@ Saini ya Mwajiriwa (${emp.name}): ____________________      Tarehe: ____________
                     </div>
                 </body>
                 </html>
-            \`);
+            `);
 
             printWindow.document.close();
         }

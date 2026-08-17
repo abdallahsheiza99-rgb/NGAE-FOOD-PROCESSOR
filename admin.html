@@ -95,7 +95,7 @@
 <body class="bg-gray-100 text-gray-800 min-h-screen flex flex-col">
 
     <!-- FLAMES BACKGROUND (FOR LOGIN PAGE) -->
-    <div id="flamesBg" class="flames-container">
+    <div id="flamesBg" class="flames-container hidden">
         <!-- Low, wide foundation flames -->
         <div class="flame" style="width: 30vw; height: 30vw; left: -5%; animation-duration: 5s; animation-delay: 0s;">
         </div>
@@ -136,7 +136,7 @@
     <!-- ==========================================
        1. LOGIN CARD (AUTH SCREEN)
        ========================================== -->
-    <div id="adminAuthScreen" class="auth-bg min-h-screen flex items-center justify-center p-4 relative z-10">
+    <div id="adminAuthScreen" class="auth-bg min-h-screen flex items-center justify-center p-4 relative z-10 hidden">
         <div
             class="glass-effect p-8 rounded-3xl w-full max-w-md border-t-8 border-orange-500 transition-all duration-300">
             <div class="text-center mb-6">
@@ -177,7 +177,7 @@
     <!-- ==========================================
        2. MAIN ADMIN DASHBOARD (HIDDEN BY DEFAULT)
        ========================================== -->
-    <div id="adminDashboard" class="hidden min-h-screen flex flex-col md:flex-row relative z-10 flex-1">
+    <div id="adminDashboard" class="min-h-screen flex flex-col md:flex-row relative z-10 flex-1">
 
         <!-- Sidebar Navigation -->
         <aside class="w-full md:w-64 bg-gray-900 text-gray-300 flex flex-col shadow-xl flex-none">
@@ -1325,29 +1325,10 @@
     <script src="app.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            // Check if admin is already authenticated in session
-            const isAdmin = sessionStorage.getItem('ngae_admin_auth');
-            if (isAdmin) {
-                showDashboard();
-            } else {
-                showLoginForm();
-            }
-
-            // Auth form submit
-            document.getElementById('adminLoginForm').addEventListener('submit', (e) => {
-                e.preventDefault();
-                const user = document.getElementById('adminUser').value;
-                const pass = document.getElementById('adminPass').value;
-
-                if (user.toLowerCase() === 'admin' && (pass === 'andazi' || pass === 'admin')) {
-                    sessionStorage.setItem('ngae_admin_auth', 'true');
-                    showDashboard();
-                } else {
-                    const err = document.getElementById('loginError');
-                    err.textContent = "Kosa: Jina au nenosiri si sahihi!";
-                    err.classList.remove('hidden');
-                }
-            });
+            // Free entrance - show dashboard directly without login
+            sessionStorage.setItem('ngae_admin_auth', 'true');
+            showDashboard();
+        });
 
             // Toggle custom role input based on select
             document.getElementById('staffRole').addEventListener('change', function () {
@@ -1691,7 +1672,7 @@ Saini ya Mwajiriwa (${emp.name}): ____________________      Tarehe: ____________
 
         function logoutAdmin() {
             sessionStorage.removeItem('ngae_admin_auth');
-            showLoginForm();
+            window.location.href = 'index.html';
         }
 
         function switchTab(tabId) {

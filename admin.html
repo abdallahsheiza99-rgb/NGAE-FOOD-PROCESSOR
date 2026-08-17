@@ -1339,7 +1339,7 @@
                 const user = document.getElementById('adminUser').value;
                 const pass = document.getElementById('adminPass').value;
 
-                if (user.toLowerCase() === 'admin' && pass === 'admin') {
+                if (user.toLowerCase() === 'admin' && (pass === 'andazi' || pass === 'admin')) {
                     sessionStorage.setItem('ngae_admin_auth', 'true');
                     showDashboard();
                 } else {

@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="sw">
 
 <head>
@@ -2655,14 +2655,14 @@ Saini ya Mwajiriwa (${emp.name}): ____________________      Tarehe: ____________
             listContainer.innerHTML = '';
 
             if (suggs.length === 0) {
-                listContainer.innerHTML = `< div class= "text-center text-gray-400 text-xs py-10" > Hakuna mapendekezo yaliyopokelewa.</div > `;
+                listContainer.innerHTML = `<div class="text-center text-gray-400 text-xs py-10">Hakuna mapendekezo yaliyopokelewa.</div>`;
                 document.getElementById('activeSuggSender').textContent = "Mfanyakazi: (Hakuna Aliyechaguliwa)";
                 document.getElementById('activeSuggMeta').textContent = "Chagua pendekezo kushoto ili kujibu";
                 document.getElementById('adminActiveSuggChat').innerHTML = `
-            < div class= "text-center text-gray-400 text-sm py-16" >
-                        <i class="bi bi-chat-left-dots text-4xl text-gray-300"></i>
-                        <p class="mt-2">Chagua pendekezo la mfanyakazi kwenye orodha kushoto ili kusoma na kujibu ujumbe wao binafsi.</p>
-                    </div >
+                <div class="text-center text-gray-400 text-sm py-16">
+                    <i class="bi bi-chat-left-dots text-4xl text-gray-300"></i>
+                    <p class="mt-2">Chagua pendekezo la mfanyakazi kwenye orodha kushoto ili kusoma na kujibu ujumbe wao binafsi.</p>
+                </div>
                 `;
                 document.getElementById('adminReplySuggestionForm').classList.add('hidden');
                 if (printContainer) printContainer.classList.add('hidden');
@@ -2676,25 +2676,25 @@ Saini ya Mwajiriwa (${emp.name}): ____________________      Tarehe: ____________
                 const activeId = document.getElementById('activeSuggId').value;
                 const isActive = (s.id === activeId);
                 
-                item.className = `p - 3 rounded - xl cursor - pointer transition - colors border mb - 2 ${
-                isActive
-                ? 'bg-orange-50 border-orange-200 text-orange-950 font-bold shadow-sm'
+                item.className = `p-3 rounded-xl cursor-pointer transition-colors border mb-2 ${
+                    isActive
+                    ? 'bg-orange-50 border-orange-200 text-orange-950 font-bold shadow-sm'
                     : 'bg-gray-50 border-gray-100 hover:bg-gray-100 text-gray-700'
-            }`;
+                }`;
                 
                 const roleLabels = { 'operator': 'Usafirishaji', 'seller': 'Muuzaji', 'manufacturer': 'Uzalishaji', 'storekeeper': 'Stoo' };
                 const swRole = roleLabels[s.senderRole] || s.senderRole;
                 
                 const repliesCount = s.replies ? s.replies.length : 0;
-                const badgeHtml = repliesCount > 0 
-                    ? `< span class= "bg-green-100 text-green-700 text-[10px] font-bold px-1.5 py-0.5 rounded-full" > <i class="bi bi-check2-all"></i> Majibu: ${ repliesCount }</span > ` 
-                    : `< span class= "bg-red-100 text-red-700 text-[10px] font-bold px-1.5 py-0.5 rounded-full" > Inasubiri</span > `;
+                const badgeHtml = repliesCount > 0
+                    ? `<span class="bg-green-100 text-green-700 text-[10px] font-bold px-1.5 py-0.5 rounded-full"><i class="bi bi-check2-all"></i> Majibu: ${repliesCount}</span>`
+                    : `<span class="bg-red-100 text-red-700 text-[10px] font-bold px-1.5 py-0.5 rounded-full">Inasubiri</span>`;
 
                 item.innerHTML = `
-            < div class= "flex justify-between items-start mb-1 gap-1" >
-            <span class="font-bold text-xs uppercase block truncate max-w-[120px]">${s.senderName}</span>
-                        ${ badgeHtml }
-                    </div >
+                    <div class="flex justify-between items-start mb-1 gap-1">
+                        <span class="font-bold text-xs uppercase block truncate max-w-[120px]">${s.senderName}</span>
+                        ${badgeHtml}
+                    </div>
                     <div class="flex justify-between items-center text-[10px] text-gray-500 mb-1.5">
                         <span class="font-semibold text-orange-600">${swRole} (${s.senderId})</span>
                         <span>${s.date}</span>
@@ -2732,9 +2732,9 @@ Saini ya Mwajiriwa (${emp.name}): ____________________      Tarehe: ____________
             const staffDiv = document.createElement('div');
             staffDiv.className = "flex flex-col items-start space-y-1";
             staffDiv.innerHTML = `
-            < div class= "bg-blue-600 text-white p-3 rounded-2xl rounded-tl-none max-w-lg text-sm shadow-sm font-semibold" >
-            ${ sugg.message }
-                </div >
+                <div class="bg-blue-600 text-white p-3 rounded-2xl rounded-tl-none max-w-lg text-sm shadow-sm font-semibold">
+                    ${sugg.message}
+                </div>
                 <span class="text-[10px] text-gray-400 font-bold ml-1">${sugg.date} (${sugg.senderName})</span>
             `;
             chatContainer.appendChild(staffDiv);
@@ -2747,18 +2747,18 @@ Saini ya Mwajiriwa (${emp.name}): ____________________      Tarehe: ____________
                     if (isAdmin) {
                         replyDiv.className = "flex flex-col items-end space-y-1 mt-2";
                         replyDiv.innerHTML = `
-                < div class= "bg-gray-200 text-gray-800 p-3 rounded-2xl rounded-tr-none max-w-lg text-sm shadow-sm" >
-                ${ r.message }
-                            </div >
-                <span class="text-[10px] text-gray-500 font-bold mr-1">${r.date} (Wewe - Admin)</span>
+                            <div class="bg-gray-200 text-gray-800 p-3 rounded-2xl rounded-tr-none max-w-lg text-sm shadow-sm">
+                                ${r.message}
+                            </div>
+                            <span class="text-[10px] text-gray-500 font-bold mr-1">${r.date} (Wewe - Admin)</span>
                         `;
                     } else {
                         replyDiv.className = "flex flex-col items-start space-y-1 mt-2";
                         replyDiv.innerHTML = `
-                < div class= "bg-blue-600 text-white p-3 rounded-2xl rounded-tl-none max-w-lg text-sm shadow-sm" >
-                ${ r.message }
-                            </div >
-                <span class="text-[10px] text-gray-400 font-bold ml-1">${r.date} (${sugg.senderName})</span>
+                            <div class="bg-blue-600 text-white p-3 rounded-2xl rounded-tl-none max-w-lg text-sm shadow-sm">
+                                ${r.message}
+                            </div>
+                            <span class="text-[10px] text-gray-400 font-bold ml-1">${r.date} (${sugg.senderName})</span>
                         `;
                     }
                     chatContainer.appendChild(replyDiv);
@@ -2917,20 +2917,20 @@ Saini ya Mwajiriwa (${emp.name}): ____________________      Tarehe: ____________
 
             listContainer.innerHTML = '';
             if (notifs.length === 0) {
-                listContainer.innerHTML = `< div class= "text-center text-gray-400 text-xs py-10" ><i class="bi bi-bell-slash text-2xl"></i><p class="mt-1">Hakuna taarifa yoyote mpya bado.</p></div > `;
+                listContainer.innerHTML = `<div class="text-center text-gray-400 text-xs py-10"><i class="bi bi-bell-slash text-2xl"></i><p class="mt-1">Hakuna taarifa yoyote mpya bado.</p></div>`;
                 return;
             }
 
             [...notifs].reverse().forEach(n => {
                 const item = document.createElement('div');
-                item.className = `p - 3 text - xs border - b border - gray - 50 hover: bg - gray - 50 transition - colors ${!n.read ? 'bg-orange-50/40 font-semibold' : ''} `;
+                item.className = `p-3 text-xs border-b border-gray-50 hover:bg-gray-50 transition-colors ${!n.read ? 'bg-orange-50/40 font-semibold' : ''}`;
                 item.innerHTML = `
-            < div class="flex justify-between items-center mb-1" >
+                    <div class="flex justify-between items-center mb-1">
                         <span class="font-bold text-orange-600">${n.title}</span>
                         <span class="text-[9px] text-gray-400">${n.date}</span>
-                    </div >
-            <p class="text-gray-600 text-[11px] leading-relaxed font-normal">${n.message}</p>
-        `;
+                    </div>
+                    <p class="text-gray-600 text-[11px] leading-relaxed font-normal">${n.message}</p>
+                `;
                 listContainer.appendChild(item);
             });
         }
@@ -3250,21 +3250,21 @@ Saini ya Mwajiriwa (${emp.name}): ____________________      Tarehe: ____________
             shops.forEach(shop => {
                 const isActive = (shop.id === activeShopId);
                 const item = document.createElement('div');
-                item.className = `p - 4 rounded - xl cursor - pointer transition - all border mb - 2 hover: scale - [1.01] ${
-            isActive
-                ? 'bg-orange-50 border-orange-200 text-orange-950 font-bold shadow-sm'
-                : 'bg-gray-50 border-gray-100 hover:bg-gray-100 text-gray-700'
-        } `;
+                item.className = `p-4 rounded-xl cursor-pointer transition-all border mb-2 hover:scale-[1.01] ${
+                    isActive
+                    ? 'bg-orange-50 border-orange-200 text-orange-950 font-bold shadow-sm'
+                    : 'bg-gray-50 border-gray-100 hover:bg-gray-100 text-gray-700'
+                }`;
                 
                 item.innerHTML = `
-            < div class="flex justify-between items-center mb-1" >
+                    <div class="flex justify-between items-center mb-1">
                         <span class="font-bold text-xs uppercase block truncate max-w-[150px]">${shop.location}</span>
                         <i class="bi bi-chevron-right text-[10px] text-gray-400"></i>
-                    </div >
-            <div class="text-[10px] text-gray-500 font-bold uppercase">
-                <i class="bi bi-person mr-1"></i>Muuzaji: ${shop.sellerName}
-            </div>
-        `;
+                    </div>
+                    <div class="text-[10px] text-gray-500 font-bold uppercase">
+                        <i class="bi bi-person mr-1"></i>Muuzaji: ${shop.sellerName}
+                    </div>
+                `;
                 
                 item.onclick = () => {
                     document.getElementById('activePortalShopId').value = shop.id;
@@ -3348,7 +3348,7 @@ Saini ya Mwajiriwa (${emp.name}): ____________________      Tarehe: ____________
                     </div>
                 </div >
                 
-                < !--Daily Expenses Section-- >
+                <!-- Daily Expenses Section -->
             <div class="bg-white rounded-xl border border-gray-200 shadow-sm flex flex-col flex-1 min-h-[220px] overflow-hidden">
                 <div class="p-4 border-b border-gray-100 bg-gray-50 flex justify-between items-center">
                     <h4 class="font-bold text-gray-800 text-xs uppercase flex items-center gap-1.5">

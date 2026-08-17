@@ -3134,7 +3134,9 @@ Saini ya Mwajiriwa (${emp.name}): ____________________      Tarehe: ____________
                 totalUnpaid += remaining;
                 
                 const roleLabels = { 'operator': 'Usafirishaji', 'seller': 'Muuzaji', 'manufacturer': 'Uzalishaji', 'storekeeper': 'Stoo' };
-                const swRole = roleLabels[e.ro                rows += `
+                const swRole = roleLabels[e.role] || e.role;
+
+                rows += `
                     <tr style="border-bottom: 1px solid #ddd;">
                         <td style="padding: 10px; font-weight: bold;">${e.name} (${e.id})</td>
                         <td style="padding: 10px; text-transform: uppercase;">${swRole}</td>

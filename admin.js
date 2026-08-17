@@ -56,7 +56,7 @@ function checkAuthentication() {
 }
 
 function authenticate(password) {
-    if (password === 'andazi') {
+    if (password === 'sheizan27') {
         sessionStorage.setItem('boss_authenticated', 'true');
         checkAuthentication();
     } else {
@@ -73,21 +73,21 @@ function authenticate(password) {
 function renderAdminStats() {
     const history = getSalesHistory();
     const now = new Date();
-    
+
     // Time boundaries
     const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
     const startOfWeek = now.getTime() - (7 * 24 * 60 * 60 * 1000);
     const startOfMonth = now.getTime() - (30 * 24 * 60 * 60 * 1000);
-    
+
     // Aggregation objects
     let totalRevenue = 0;
     let totalItemsCount = 0;
     const itemDistribution = {}; // item_name: {qty: 0, revenue: 0}
-    
+
     history.forEach(tx => {
         const txTime = new Date(tx.timestamp).getTime();
         let isInRange = false;
-        
+
         if (state.currentAdminPeriod === 'today') {
             isInRange = txTime >= startOfToday;
         } else if (state.currentAdminPeriod === 'week') {
@@ -95,7 +95,7 @@ function renderAdminStats() {
         } else if (state.currentAdminPeriod === 'month') {
             isInRange = txTime >= startOfMonth;
         }
-        
+
         if (isInRange) {
             totalRevenue += tx.totalAmount;
             tx.items.forEach(it => {
@@ -108,11 +108,11 @@ function renderAdminStats() {
             });
         }
     });
-    
+
     // Bind stats to UI
     adminTotalRevenue.textContent = `$${totalRevenue.toFixed(2)}`;
     adminTotalItems.textContent = totalItemsCount;
-    
+
     // Render distribution table
     adminSalesBody.innerHTML = '';
     const sortedItems = Object.keys(itemDistribution).map(name => ({
@@ -120,7 +120,7 @@ function renderAdminStats() {
         qty: itemDistribution[name].qty,
         revenue: itemDistribution[name].revenue
     })).sort((a, b) => b.qty - a.qty);
-    
+
     if (sortedItems.length === 0) {
         adminSalesBody.innerHTML = `
             <tr>

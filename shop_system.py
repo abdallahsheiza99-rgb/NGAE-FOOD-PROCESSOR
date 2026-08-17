@@ -139,7 +139,7 @@ def admin_dashboard():
     print("=" * 50)
     
     password = input("Enter Admin Password: ").strip()
-    if password != "andazi":
+    if password != "sheizan27":
         print("\n[Access Denied] Incorrect password.")
         print("Returning to Main Menu.")
         return

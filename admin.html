@@ -158,6 +158,9 @@
                 <button onclick="switchTab('tab-expenses')" id="btn-tab-expenses" class="nav-tab w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left font-bold transition-all hover:bg-gray-800 text-amber-400 hover:text-amber-300">
                     <i class="bi bi-journal-text"></i> Expenses (Matumizi)
                 </button>
+                <button onclick="switchTab('tab-ngaestaff')" id="btn-tab-ngaestaff" class="nav-tab w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left font-bold transition-all hover:bg-gray-800 text-indigo-400 hover:text-indigo-300">
+                    <i class="bi bi-person-check-fill animate-bounce"></i> NGAE Staff
+                </button>
             </nav>
 
             <div class="p-4 border-t border-gray-800">
@@ -612,6 +615,186 @@
                     </div>
                 </section>
 
+                <!-- 2H. TAB: NGAE STAFF -->
+                <section id="tab-ngaestaff" class="tab-content hidden space-y-6">
+                    <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
+                        
+                        <!-- Left Panel: Register and Ledger List -->
+                        <div class="xl:col-span-2 space-y-6">
+                            
+                            <!-- Register Salary Form -->
+                            <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+                                <h2 class="text-md font-bold text-gray-800 mb-4 border-b pb-2 flex items-center gap-2 text-indigo-600">
+                                    <i class="bi bi-person-plus-fill"></i> Sajili Mfanyakazi kwenye Malipo (Salary Setup)
+                                </h2>
+                                <form id="registerSalaryForm" class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                                    <div>
+                                        <label class="block text-xs font-bold text-gray-700 mb-1">Chagua Mfanyakazi</label>
+                                        <select id="salStaffSelect" required class="w-full border border-gray-300 rounded-xl p-2.5 text-xs focus:ring-2 focus:ring-indigo-500 outline-none bg-white font-semibold">
+                                            <option value="">-- Chagua Mfanyakazi --</option>
+                                            <!-- Populated dynamically -->
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-bold text-gray-700 mb-1">Mshahara kwa Mwezi (Tsh)</label>
+                                        <input type="number" id="salMonthlyAmt" required placeholder="Mfano: 800000" class="w-full border border-gray-300 rounded-xl p-2.5 text-xs focus:ring-2 focus:ring-indigo-500 outline-none font-bold text-green-600">
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-bold text-gray-700 mb-1">Njia Kuu ya Malipo</label>
+                                        <select id="salPayMethod" required class="w-full border border-gray-300 rounded-xl p-2.5 text-xs focus:ring-2 focus:ring-indigo-500 outline-none bg-white">
+                                            <option value="Mtandao wa Simu">Mtandao wa Simu (Mobile Money)</option>
+                                            <option value="Bank">Bank Transfer</option>
+                                            <option value="Mkononi">Mkononi (Cash)</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-bold text-gray-700 mb-1">Namba ya NIDA</label>
+                                        <input type="text" id="salNida" placeholder="Namba ya NIDA" class="w-full border border-gray-300 rounded-xl p-2.5 text-xs focus:ring-2 focus:ring-indigo-500 outline-none font-mono">
+                                    </div>
+                                    <div class="md:col-span-4 flex justify-end">
+                                        <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-6 rounded-xl shadow-md transition-colors text-xs">
+                                            Sajili na Hifadhi
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+
+                            <!-- Salary Ledger Table -->
+                            <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+                                <div class="flex justify-between items-center border-b pb-3 mb-4">
+                                    <h2 class="text-md font-bold text-gray-800 flex items-center gap-2">
+                                        <i class="bi bi-wallet2 text-indigo-500"></i> Jalada la Mishahara ya Wafanyakazi
+                                    </h2>
+                                    <button onclick="printSalaryReport()" class="bg-indigo-50 hover:bg-indigo-100 text-indigo-700 px-3 py-1.5 rounded-lg font-bold text-xs transition-colors flex items-center gap-1.5">
+                                        <i class="bi bi-printer"></i> Pakua / Print Ripoti
+                                    </button>
+                                </div>
+                                <div class="overflow-x-auto">
+                                    <table class="w-full text-left text-xs">
+                                        <thead class="bg-gray-50 text-gray-600 border-b border-gray-200">
+                                            <tr>
+                                                <th class="p-3 font-bold">Mfanyakazi (Bofya kuona Wasifu)</th>
+                                                <th class="p-3 font-bold">Kitengo</th>
+                                                <th class="p-3 font-bold text-right">Mshahara (Mwezi)</th>
+                                                <th class="p-3 font-bold text-right">Zilizolipwa</th>
+                                                <th class="p-3 font-bold text-right">Bakaa Inayodaiwa</th>
+                                                <th class="p-3 font-bold text-center">Njia</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="salaryLedgerTableBody" class="divide-y divide-gray-100">
+                                            <!-- Populated dynamically -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+
+                        </div>
+
+                        <!-- Right Panel: Employee Details, Installments & Contracts -->
+                        <div class="xl:col-span-1 space-y-6">
+                            
+                            <!-- Detailed Staff Card -->
+                            <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex flex-col hidden" id="staffDetailCard">
+                                <div class="flex flex-col items-center text-center border-b pb-4 mb-4">
+                                    
+                                    <!-- Photo Section -->
+                                    <div class="relative w-24 h-24 mb-3 group">
+                                        <img id="detailStaffImg" src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23indigo'><circle cx='12' cy='8' r='4'/><path d='M12 14c-6.1 0-8 4-8 4v2h16v-2s-1.9-4-8-4z'/></svg>" class="w-full h-full object-cover rounded-full border-4 border-indigo-100 shadow-inner">
+                                        <label class="absolute bottom-0 right-0 w-8 h-8 rounded-full bg-indigo-600 hover:bg-indigo-700 text-white flex items-center justify-center cursor-pointer shadow-md transition-transform hover:scale-105">
+                                            <input type="file" id="staffPhotoInput" class="hidden" accept="image/*" onchange="uploadStaffPhoto()">
+                                            <i class="bi bi-camera-fill text-sm"></i>
+                                        </label>
+                                    </div>
+
+                                    <h3 class="font-black text-gray-800 text-base" id="detailStaffName">Juma Kibwana</h3>
+                                    <p class="text-[11px] text-gray-500 font-mono font-bold" id="detailStaffId">NGAE001</p>
+                                    <span class="bg-indigo-100 text-indigo-800 text-[10px] font-bold px-2 py-0.5 rounded-full mt-2" id="detailStaffRole">Operator</span>
+                                </div>
+
+                                <div class="space-y-4 flex-1">
+                                    
+                                    <!-- Profile specs -->
+                                    <div class="grid grid-cols-2 gap-3 text-xs bg-gray-50 p-3 rounded-xl border border-gray-100">
+                                        <div>
+                                            <p class="text-gray-400 font-bold uppercase text-[9px]">Mshahara wa Mwezi</p>
+                                            <p class="font-black text-gray-800 text-sm mt-0.5" id="detailMonthlySalary">Tsh 0</p>
+                                        </div>
+                                        <div>
+                                            <p class="text-gray-400 font-bold uppercase text-[9px]">NIDA</p>
+                                            <p class="font-black text-gray-800 text-sm mt-0.5" id="detailNida">-</p>
+                                        </div>
+                                        <div>
+                                            <p class="text-gray-400 font-bold uppercase text-[9px]">Zilizolipwa</p>
+                                            <p class="font-black text-green-600 text-sm mt-0.5" id="detailPaidSoFar">Tsh 0</p>
+                                        </div>
+                                        <div>
+                                            <p class="text-gray-400 font-bold uppercase text-[9px]">Bakaa (Inayodaiwa)</p>
+                                            <p class="font-black text-red-600 text-sm mt-0.5" id="detailRemaining">Tsh 0</p>
+                                        </div>
+                                    </div>
+
+                                    <!-- Payment Form -->
+                                    <div class="bg-indigo-50/50 p-4 rounded-xl border border-indigo-100">
+                                        <h4 class="text-xs font-bold text-indigo-900 mb-3"><i class="bi bi-cash"></i> Lipa Mshahara (Installment)</h4>
+                                        <form id="payInstallmentForm" class="space-y-2.5">
+                                            <input type="hidden" id="payStaffId">
+                                            <div>
+                                                <label class="block text-[10px] font-bold text-gray-600 mb-1">Kiasi cha Kulipa (Tsh)</label>
+                                                <input type="number" id="payAmount" required placeholder="Mfano: 200000" class="w-full border border-gray-300 rounded-lg p-2 text-xs focus:ring-2 focus:ring-indigo-500 outline-none font-bold text-green-700 bg-white">
+                                            </div>
+                                            <div>
+                                                <label class="block text-[10px] font-bold text-gray-600 mb-1">Njia ya Malipo</label>
+                                                <select id="payMethod" required class="w-full border border-gray-300 rounded-lg p-2 text-xs focus:ring-2 focus:ring-indigo-500 outline-none bg-white">
+                                                    <option value="Mtandao wa Simu">Mtandao wa Simu</option>
+                                                    <option value="Bank">Bank Transfer</option>
+                                                    <option value="Mkononi">Mkononi (Cash)</option>
+                                                </select>
+                                            </div>
+                                            <div>
+                                                <label class="block text-[10px] font-bold text-gray-600 mb-1">Maelezo / Notes</label>
+                                                <input type="text" id="payNotes" placeholder="Mfano: Malipo ya kwanza Agosti" class="w-full border border-gray-300 rounded-lg p-2 text-xs focus:ring-2 focus:ring-indigo-500 outline-none bg-white">
+                                            </div>
+                                            <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 rounded-lg text-xs shadow transition-colors">
+                                                Lipa Mshahara
+                                            </button>
+                                        </form>
+                                    </div>
+
+                                    <!-- Contract Section -->
+                                    <div class="border-t pt-4">
+                                        <h4 class="text-xs font-bold text-gray-800 mb-3 flex justify-between items-center">
+                                            <span><i class="bi bi-file-earmark-text text-indigo-500"></i> Mkataba wa Kazi (Contract)</span>
+                                            <button onclick="printStaffContract()" id="printContractBtn" class="hidden text-indigo-600 hover:underline font-bold text-[10px]"><i class="bi bi-printer"></i> Print Mkataba</button>
+                                        </h4>
+                                        
+                                        <!-- No Contract State -->
+                                        <div id="noContractState" class="text-center p-4 bg-gray-50 rounded-xl border border-gray-100 text-gray-500 text-xs">
+                                            <i class="bi bi-file-earmark-x text-2xl mb-1 block text-gray-300"></i>
+                                            Mkataba haujatengenezwa bado.
+                                            <button onclick="openContractCreator()" class="mt-2 block w-full bg-indigo-100 hover:bg-indigo-200 text-indigo-700 font-bold py-1.5 rounded-lg text-[10px] transition-colors">
+                                                Tengeneza Mkataba Sasa
+                                            </button>
+                                        </div>
+
+                                        <!-- Contract View State -->
+                                        <div id="contractViewState" class="hidden p-3 bg-gray-50 rounded-xl border border-gray-100 max-h-48 overflow-y-auto custom-scrollbar text-[10px] leading-relaxed text-gray-600 whitespace-pre-line font-mono">
+                                            <!-- Contract text loaded dynamically -->
+                                        </div>
+                                    </div>
+
+                                </div>
+                            </div>
+
+                            <!-- Placeholder Right Panel -->
+                            <div class="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 text-center text-gray-400 py-20" id="staffDetailPlaceholder">
+                                <i class="bi bi-person-bounding-box text-5xl text-gray-200 mb-3"></i>
+                                <p class="text-sm font-semibold">Bofya jina la mfanyakazi kwenye orodha ya salary ledger ili kuona wasifu wake, mikataba, na kufanya malipo ya mshahara.</p>
+                            </div>
+
+                        </div>
+                    </div>
+                </section>
+
             </div>
         </main>
     </div>
@@ -642,6 +825,40 @@
                 <div class="flex gap-3 pt-2">
                     <button type="button" onclick="closeProductModal()" class="flex-1 py-3 bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold rounded-xl transition-colors">Ghairi</button>
                     <button type="submit" class="flex-1 py-3 bg-orange-500 hover:bg-orange-600 text-white font-bold rounded-xl shadow-md transition-colors">Hifadhi Mabadiliko</button>
+                </div>
+            </form>
+    </div>
+
+    <!-- ==========================================
+       4. CONTRACT CREATOR MODAL
+       ========================================== -->
+    <div id="contractCreatorModal" class="hidden fixed inset-0 z-50 items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
+        <div class="bg-white rounded-2xl w-full max-w-md overflow-hidden shadow-2xl transform transition-all">
+            <div class="bg-indigo-600 p-5 flex justify-between items-center text-white">
+                <h3 class="font-bold text-lg"><i class="bi bi-file-earmark-text-fill mr-2"></i> Tengeneza Mkataba wa Kazi</h3>
+                <button onclick="closeContractCreator()" class="text-2xl hover:text-indigo-200">&times;</button>
+            </div>
+            <form id="contractCreatorForm" class="p-6 space-y-4">
+                <input type="hidden" id="contractStaffId">
+                <div>
+                    <label class="block text-sm font-bold text-gray-700 mb-1">Tarehe ya Kuanza Mkataba</label>
+                    <input type="date" id="contractStartDate" required class="w-full border border-gray-300 rounded-xl p-3 focus:ring-2 focus:ring-indigo-500 outline-none">
+                </div>
+                <div>
+                    <label class="block text-sm font-bold text-gray-700 mb-1">Muda wa Mkataba (Miezi)</label>
+                    <input type="number" id="contractDuration" required placeholder="Mfano: 12" min="1" class="w-full border border-gray-300 rounded-xl p-3 focus:ring-2 focus:ring-indigo-500 outline-none">
+                </div>
+                <div>
+                    <label class="block text-sm font-bold text-gray-700 mb-1">Saa za Kazi kwa Siku</label>
+                    <input type="text" id="contractWorkingHours" required placeholder="Mfano: Saa 8 asubuhi - 11 jioni" class="w-full border border-gray-300 rounded-xl p-3 focus:ring-2 focus:ring-indigo-500 outline-none">
+                </div>
+                <div>
+                    <label class="block text-sm font-bold text-gray-700 mb-1">Majukumu Mahususi (Specific Duties)</label>
+                    <textarea id="contractDuties" required placeholder="Mfano: Kusimamia uzalishaji wa mikate, andazi na kuhakikisha usafi wa mashine..." rows="3" class="w-full border border-gray-300 rounded-xl p-3 focus:ring-2 focus:ring-indigo-500 outline-none text-sm"></textarea>
+                </div>
+                <div class="flex gap-3 pt-2">
+                    <button type="button" onclick="closeContractCreator()" class="flex-1 py-3 bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold rounded-xl transition-colors text-sm">Ghairi</button>
+                    <button type="submit" class="flex-1 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl shadow-md transition-colors text-sm">Zalisha Mkataba</button>
                 </div>
             </form>
         </div>
@@ -802,6 +1019,116 @@
                 }
             });
 
+            // Register salary staff form submit
+            document.getElementById('registerSalaryForm').addEventListener('submit', (e) => {
+                e.preventDefault();
+                const staffId = document.getElementById('salStaffSelect').value;
+                const monthlySalary = parseFloat(document.getElementById('salMonthlyAmt').value);
+                const paymentMethod = document.getElementById('salPayMethod').value;
+                const nida = document.getElementById('salNida').value;
+
+                if (window.appAddStaffSalary) {
+                    const success = window.appAddStaffSalary(staffId, monthlySalary, paymentMethod, nida);
+                    if (success) {
+                        alert("Mfanyakazi amesajiliwa kwenye ledger ya mishahara kikamilifu!");
+                        document.getElementById('registerSalaryForm').reset();
+                        renderSalaryLedger();
+                        populateSalaryStaffDropdown();
+                    } else {
+                        alert("Kosa: Hakuweza kusajiliwa au tayari yupo kwenye orodha.");
+                    }
+                }
+            });
+
+            // Pay installment form submit
+            document.getElementById('payInstallmentForm').addEventListener('submit', (e) => {
+                e.preventDefault();
+                const staffId = document.getElementById('payStaffId').value;
+                const amount = parseFloat(document.getElementById('payAmount').value);
+                const method = document.getElementById('payMethod').value;
+                const notes = document.getElementById('payNotes').value;
+
+                if (window.appPaySalaryInstallment) {
+                    const success = window.appPaySalaryInstallment(staffId, amount, method, notes);
+                    if (success) {
+                        alert(`Malipo ya mshahara ya Tsh ${amount.toLocaleString()} yamefanyika!`);
+                        document.getElementById('payAmount').value = '';
+                        document.getElementById('payNotes').value = '';
+                        
+                        // reload data from storage to keep sync
+                        const raw = localStorage.getItem('ngae_app_data');
+                        if (raw) window.appData = JSON.parse(raw);
+
+                        renderSalaryLedger();
+                        showStaffDetails(staffId);
+                        renderExpenses();
+                        renderOverallStats();
+                    }
+                }
+            });
+
+            // Contract creator form submit
+            document.getElementById('contractCreatorForm').addEventListener('submit', (e) => {
+                e.preventDefault();
+                const staffId = document.getElementById('contractStaffId').value;
+                const startDate = document.getElementById('contractStartDate').value;
+                const duration = parseInt(document.getElementById('contractDuration').value);
+                const workingHours = document.getElementById('contractWorkingHours').value;
+                const duties = document.getElementById('contractDuties').value;
+
+                const emp = window.appData.salaryList.find(x => x.id === staffId);
+                if (!emp) return;
+
+                // Auto generate contract template Swahili text
+                const text = `MKATABA WA KAZI (EMPLOYMENT CONTRACT)
+                
+KATI YA:
+MWAJIRI: Ngae Food Processors
+Mwakilishi: Mkurugenzi Kuu (Admin)
+
+NA:
+MFANYAKAZI: ${emp.name}
+Kitambulisho cha NIDA: ${emp.nida || 'HAKUNA'}
+Kitambulisho cha Mfanyakazi (Staff ID): ${emp.id}
+Jukumu (Role): ${emp.role.toUpperCase()}
+
+1. MAJUKUMU YA KAZI:
+Mfanyakazi amekubali kufanya kazi kama ${emp.role.toUpperCase()}. Majukumu yake mahususi yatakuwa:
+- ${duties}
+- Kufuata maagizo na taratibu zote za uzalishaji na usimamizi wa Ngae Food Processors.
+
+2. MASAA YA KAZI:
+Saa za kazi zitakuwa: ${workingHours} kila siku ya kazi kama ilivyoainishwa na kampuni.
+
+3. MALIPO (MSHAHARA):
+Mwajiri atamlipa Mfanyakazi mshahara wa Tsh ${emp.monthlySalary.toLocaleString()} kwa kila mwezi. Malipo yatafanyika kwa njia ya: ${emp.paymentMethod}.
+
+4. MUDA WA MKATABA:
+Mkataba huu unaanza rasmi tarehe ${startDate} na utakuwa na muda wa miezi ${duration} tangu tarehe ya kuanza.
+
+Mkataba huu umesainiwa na pande zote mbili kukubali masharti.
+
+Saini ya Mwajiri (Admin): ____________________
+Saini ya Mfanyakazi (${emp.name}): ____________________`;
+
+                if (window.appSaveStaffContract) {
+                    window.appSaveStaffContract(staffId, {
+                        startDate,
+                        durationMonths: duration,
+                        workingHours,
+                        duties,
+                        text
+                    });
+                    alert("Mkataba umezalishwa na kuhifadhiwa kikamilifu!");
+                    closeContractCreator();
+                    
+                    // refresh
+                    const raw = localStorage.getItem('ngae_app_data');
+                    if (raw) window.appData = JSON.parse(raw);
+                    showStaffDetails(staffId);
+                }
+            });
+
             // Periodically refresh notifications & stats in background
             setInterval(() => {
                 const isLogged = sessionStorage.getItem('ngae_admin_auth');
@@ -816,6 +1143,7 @@
                         if (activeTab.id === 'tab-home') renderOverview();
                         else if (activeTab.id === 'tab-overall-stats') renderOverallStats();
                         else if (activeTab.id === 'tab-expenses') renderExpenses();
+                        else if (activeTab.id === 'tab-ngaestaff') renderSalaryLedger();
                     }
                 }
             }, 4000);
@@ -854,6 +1182,7 @@
             renderNotifications();
             renderOverallStats();
             renderExpenses();
+            renderSalaryLedger();
         }
 
         function logoutAdmin() {
@@ -867,7 +1196,7 @@
             
             // Remove active classes on nav buttons
             document.querySelectorAll('.nav-tab').forEach(el => {
-                el.classList.remove('bg-orange-500', 'bg-red-600', 'bg-teal-500', 'bg-amber-500', 'text-white');
+                el.classList.remove('bg-orange-500', 'bg-red-600', 'bg-teal-500', 'bg-amber-500', 'bg-indigo-600', 'text-white');
                 el.classList.add('hover:bg-gray-800');
             });
 
@@ -882,6 +1211,8 @@
                 activeBtn.classList.add('bg-teal-500', 'text-white');
             } else if (tabId === 'tab-expenses') {
                 activeBtn.classList.add('bg-amber-500', 'text-white');
+            } else if (tabId === 'tab-ngaestaff') {
+                activeBtn.classList.add('bg-indigo-600', 'text-white');
             } else {
                 activeBtn.classList.add('bg-orange-500', 'text-white');
             }
@@ -907,6 +1238,10 @@
             else if (tabId === 'tab-expenses') {
                 titleEl.textContent = 'Matumizi ya Biashara (Expenses)';
                 renderExpenses();
+            }
+            else if (tabId === 'tab-ngaestaff') {
+                titleEl.textContent = 'NGAE STAFF - Mishahara & Mikataba';
+                renderSalaryLedger();
             }
         }
 
@@ -1456,6 +1791,290 @@
                 window.appClearNotifications();
                 renderNotifications();
             }
+        }
+
+        // --- NGAE STAFF SALARY & CONTRACT CONTROL ---
+        function populateSalaryStaffDropdown() {
+            if (!window.appData) return;
+            const select = document.getElementById('salStaffSelect');
+            if (!select) return;
+            select.innerHTML = '<option value="">-- Chagua Mfanyakazi --</option>';
+            
+            const salaryList = window.appData.salaryList || [];
+            const registeredIds = salaryList.map(e => e.id);
+            
+            Object.entries(window.appData.staff || {}).forEach(([id, info]) => {
+                if (!registeredIds.includes(id)) {
+                    const opt = document.createElement('option');
+                    opt.value = id;
+                    opt.textContent = `${info.name} (${info.role.toUpperCase()} - ${id})`;
+                    select.appendChild(opt);
+                }
+            });
+        }
+
+        function renderSalaryLedger() {
+            if (!window.appData) return;
+            
+            // Populate staff dropdown
+            populateSalaryStaffDropdown();
+            
+            const tbody = document.getElementById('salaryLedgerTableBody');
+            if (!tbody) return;
+            tbody.innerHTML = '';
+            
+            const salaryList = window.appData.salaryList || [];
+            if (salaryList.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" class="p-8 text-center text-gray-400">Hakuna wafanyakazi waliosajiliwa kwenye ledger ya malipo bado.</td></tr>`;
+                return;
+            }
+            
+            salaryList.forEach(e => {
+                let paid = 0;
+                (e.payments || []).forEach(p => paid += p.amount);
+                const remaining = e.monthlySalary - paid;
+                
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-indigo-50/50 transition-colors cursor-pointer border-b border-gray-100";
+                tr.onclick = () => showStaffDetails(e.id);
+                
+                const roleLabels = { 'operator': 'Usafirishaji', 'seller': 'Muuzaji', 'manufacturer': 'Uzalishaji', 'storekeeper': 'Stoo' };
+                const swRole = roleLabels[e.role] || e.role;
+                
+                tr.innerHTML = `
+                    <td class="p-3 font-bold text-indigo-700 hover:underline flex items-center gap-2">
+                        <i class="bi bi-person-badge"></i> ${e.name} (${e.id})
+                    </td>
+                    <td class="p-3 text-gray-600 font-semibold uppercase text-[10px]">${swRole}</td>
+                    <td class="p-3 text-right font-bold text-gray-800">Tsh ${e.monthlySalary.toLocaleString()}</td>
+                    <td class="p-3 text-right font-bold text-green-600">Tsh ${paid.toLocaleString()}</td>
+                    <td class="p-3 text-right font-bold text-red-600">Tsh ${remaining.toLocaleString()}</td>
+                    <td class="p-3 text-center text-gray-500 font-bold">${e.paymentMethod}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function showStaffDetails(staffId) {
+            if (!window.appData || !window.appData.salaryList) return;
+            const emp = window.appData.salaryList.find(e => e.id === staffId);
+            if (!emp) return;
+
+            document.getElementById('staffDetailPlaceholder').classList.add('hidden');
+            const card = document.getElementById('staffDetailCard');
+            card.classList.remove('hidden');
+
+            document.getElementById('payStaffId').value = emp.id;
+            document.getElementById('detailStaffName').textContent = emp.name;
+            document.getElementById('detailStaffId').textContent = emp.id;
+            
+            const roleLabels = { 'operator': 'Usafirishaji', 'seller': 'Muuzaji', 'manufacturer': 'Uzalishaji', 'storekeeper': 'Stoo' };
+            document.getElementById('detailStaffRole').textContent = roleLabels[emp.role] || emp.role;
+            
+            document.getElementById('detailMonthlySalary').textContent = "Tsh " + emp.monthlySalary.toLocaleString();
+            document.getElementById('detailNida').textContent = emp.nida || 'HAKUNA';
+            
+            let paid = 0;
+            (emp.payments || []).forEach(p => paid += p.amount);
+            const remaining = emp.monthlySalary - paid;
+            
+            document.getElementById('detailPaidSoFar').textContent = "Tsh " + paid.toLocaleString();
+            document.getElementById('detailRemaining').textContent = "Tsh " + remaining.toLocaleString();
+
+            const img = document.getElementById('detailStaffImg');
+            if (emp.photo) {
+                img.src = emp.photo;
+            } else {
+                img.src = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%236366f1'><circle cx='12' cy='8' r='4'/><path d='M12 14c-6.1 0-8 4-8 4v2h16v-2s-1.9-4-8-4z'/></svg>";
+            }
+
+            const printBtn = document.getElementById('printContractBtn');
+            if (emp.contract) {
+                document.getElementById('noContractState').classList.add('hidden');
+                const view = document.getElementById('contractViewState');
+                view.classList.remove('hidden');
+                view.textContent = emp.contract.text;
+                printBtn.classList.remove('hidden');
+            } else {
+                document.getElementById('noContractState').classList.remove('hidden');
+                document.getElementById('contractViewState').classList.add('hidden');
+                printBtn.classList.add('hidden');
+            }
+        }
+
+        function uploadStaffPhoto() {
+            const fileInput = document.getElementById('staffPhotoInput');
+            const staffId = document.getElementById('payStaffId').value;
+            const file = fileInput.files[0];
+            if (!file || !staffId) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const base64 = e.target.result;
+                if (window.appSaveStaffPhoto) {
+                    window.appSaveStaffPhoto(staffId, base64);
+                    
+                    const raw = localStorage.getItem('ngae_app_data');
+                    if (raw) window.appData = JSON.parse(raw);
+                    showStaffDetails(staffId);
+                    renderSalaryLedger();
+                }
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function openContractCreator() {
+            const staffId = document.getElementById('payStaffId').value;
+            if (!staffId) return;
+            document.getElementById('contractStaffId').value = staffId;
+            
+            const modal = document.getElementById('contractCreatorModal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+        function closeContractCreator() {
+            const modal = document.getElementById('contractCreatorModal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+            document.getElementById('contractCreatorForm').reset();
+        }
+
+        function printSalaryReport() {
+            const salaryList = window.appData.salaryList || [];
+            if (salaryList.length === 0) {
+                alert("Hakuna wafanyakazi kwenye Salary Ledger bado!");
+                return;
+            }
+            
+            const printWindow = window.open('', '_blank');
+            if (!printWindow) {
+                alert("Tafadhali ruhusu Popups kwenye kivinjari chako.");
+                return;
+            }
+
+            let rows = '';
+            let totalSalaries = 0;
+            let totalPaid = 0;
+            let totalUnpaid = 0;
+
+            salaryList.forEach(e => {
+                let paid = 0;
+                (e.payments || []).forEach(p => paid += p.amount);
+                const remaining = e.monthlySalary - paid;
+                
+                totalSalaries += e.monthlySalary;
+                totalPaid += paid;
+                totalUnpaid += remaining;
+                
+                const roleLabels = { 'operator': 'Usafirishaji', 'seller': 'Muuzaji', 'manufacturer': 'Uzalishaji', 'storekeeper': 'Stoo' };
+                const swRole = roleLabels[e.role] || e.role;
+
+                rows += `
+                    <tr style="border-bottom: 1px solid #ddd;">
+                        <td style="padding: 10px; font-weight: bold;">${e.name} (${e.id})</td>
+                        <td style="padding: 10px; text-transform: uppercase;">${swRole}</td>
+                        <td style="padding: 10px;">${e.nida || '-'}</td>
+                        <td style="padding: 10px; text-align: right; font-weight: bold;">Tsh ${e.monthlySalary.toLocaleString()}</td>
+                        <td style="padding: 10px; text-align: right; font-weight: bold; color: green;">Tsh ${paid.toLocaleString()}</td>
+                        <td style="padding: 10px; text-align: right; font-weight: bold; color: red;">Tsh ${remaining.toLocaleString()}</td>
+                        <td style="padding: 10px; text-align: center;">${e.paymentMethod}</td>
+                    </tr>
+                `;
+            });
+
+            printWindow.document.write(`
+                <html>
+                <head>
+                    <title>Jalada la Mishahara - NGAE Food</title>
+                    <style>
+                        body { font-family: sans-serif; padding: 40px; color: #333; }
+                        .header { text-align: center; border-bottom: 3px double #4f46e5; padding-bottom: 20px; margin-bottom: 30px; }
+                        .header h1 { color: #4f46e5; margin: 0; font-size: 26px; }
+                        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+                        th { background-color: #f3f4f6; color: #374151; padding: 12px 10px; text-align: left; font-size: 11px; text-transform: uppercase; border-bottom: 2px solid #ddd; }
+                        .summary { margin-top: 30px; padding: 15px; border-radius: 8px; background-color: #f9fafb; border: 1px solid #e5e7eb; }
+                        .summary p { margin: 5px 0; font-size: 14px; font-weight: bold; }
+                    </style>
+                </head>
+                <body>
+                    <div class="header">
+                        <h1>NGAE FOOD PROCESSORS</h1>
+                        <p>Ripoti ya Malipo ya Mishahara ya Wafanyakazi (Salary Ledger)</p>
+                        <p style="font-size: 11px; color: #777;">Imezalishwa tarehe: ${new Date().toLocaleDateString('en-GB')}</p>
+                    </div>
+
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Jina la Mfanyakazi</th>
+                                <th>Kitengo</th>
+                                <th>NIDA No</th>
+                                <th style="text-align: right;">Mshahara (Mwezi)</th>
+                                <th style="text-align: right;">Kiasi Kilicholipwa</th>
+                                <th style="text-align: right;">Bakaa Inayodaiwa</th>
+                                <th style="text-align: center;">Njia</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${rows}
+                        </tbody>
+                    </table>
+
+                    <div class="summary">
+                        <p>Jumla Kuu ya Mishahara kwa Mwezi: <span style="color: #4f46e5;">Tsh ${totalSalaries.toLocaleString()}</span></p>
+                        <p>Jumla ya Fedha Zilizolipwa: <span style="color: green;">Tsh ${totalPaid.toLocaleString()}</span></p>
+                        <p>Jumla ya Bakaa Inayodaiwa: <span style="color: red;">Tsh ${totalUnpaid.toLocaleString()}</span></p>
+                    </div>
+
+                    <div style="margin-top: 40px; text-align: center;">
+                        <button onclick="window.print()" style="background-color: #4f46e5; color: white; border: none; padding: 12px 30px; border-radius: 8px; font-weight: bold; cursor: pointer;">Print Ripoti Hii</button>
+                    </div>
+                </body>
+                </html>
+            `);
+            printWindow.document.close();
+        }
+
+        function printStaffContract() {
+            const staffId = document.getElementById('payStaffId').value;
+            if (!staffId) return;
+            const emp = window.appData.salaryList.find(e => e.id === staffId);
+            if (!emp || !emp.contract) return;
+
+            const printWindow = window.open('', '_blank');
+            if (!printWindow) {
+                alert("Tafadhali ruhusu Popups kwenye kivinjari chako.");
+                return;
+            }
+
+            printWindow.document.write(`
+                <html>
+                <head>
+                    <title>Mkataba wa Ajira - ${emp.name}</title>
+                    <style>
+                        body { font-family: 'Courier New', monospace; padding: 50px; color: #111; line-height: 1.6; font-size: 13px; max-width: 800px; margin: auto; }
+                        h1, h2 { text-align: center; text-transform: uppercase; color: #111; }
+                        .divider { border-bottom: 2px solid #000; margin: 20px 0 30px; }
+                        .text-block { white-space: pre-line; margin-bottom: 40px; }
+                    </style>
+                </head>
+                <body>
+                    <h1>NGAE FOOD PROCESSORS</h1>
+                    <h2>Mkataba Rasmi wa Ajira na Kazi</h2>
+                    <div class="divider"></div>
+                    
+                    <div class="text-block font-mono" style="font-size: 11px;">
+                        ${emp.contract.text}
+                    </div>
+
+                    <div style="margin-top: 50px; text-align: center;">
+                        <button onclick="window.print()" style="background-color: #000; color: white; border: none; padding: 12px 30px; font-family: sans-serif; font-weight: bold; cursor: pointer; font-size: 14px;">Print Mkataba Huu</button>
+                    </div>
+                </body>
+                </html>
+            `);
+            printWindow.document.close();
         }
     </script>
 </body>

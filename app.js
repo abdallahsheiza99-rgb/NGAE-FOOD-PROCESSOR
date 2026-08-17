@@ -153,6 +153,10 @@ function loadData() {
                 data.adminExpenses = [];
                 saveData(data);
             }
+            if (!data.salaryList) {
+                data.salaryList = [];
+                saveData(data);
+            }
             return data;
         } catch(e) {
             console.error("Failed to parse app data, re-seeding...", e);
@@ -178,7 +182,8 @@ function seedData() {
         suggestions: [],
         notifications: [],
         manufacturerMaterials: {},
-        adminExpenses: []
+        adminExpenses: [],
+        salaryList: []
     };
     saveData(data);
     return data;
@@ -847,6 +852,21 @@ window.appGetExpensesList = function() {
             type: 'Admin'
         });
     });
+
+    // Salary payments from NGAE Staff Salary List
+    const salaryList = appData.salaryList || [];
+    salaryList.forEach(emp => {
+        const payments = emp.payments || [];
+        payments.forEach(p => {
+            list.push({
+                date: p.date,
+                dateRaw: p.dateRaw || new Date().toISOString(),
+                description: `Mshahara: ${emp.name} (${p.notes || 'Malipo ya sehemu'})`,
+                amount: p.amount,
+                type: 'Mshahara'
+            });
+        });
+    });
     
     // Sort by latest
     return list.sort((a,b) => new Date(b.dateRaw) - new Date(a.dateRaw));
@@ -897,6 +917,90 @@ window.appGetManufacturerMaterials = function(manufacturerId) {
         }
     });
     return list;
+};
+
+// ==========================================
+// NGAE STAFF SALARY & CONTRACT MANAGEMENT
+// ==========================================
+
+window.appAddStaffSalary = function(staffId, monthlySalary, paymentMethod, nida) {
+    if (!appData.salaryList) {
+        appData.salaryList = [];
+    }
+    
+    const sRecord = appData.staff[staffId];
+    if (!sRecord) return false;
+
+    const exists = appData.salaryList.some(e => e.id === staffId);
+    if (exists) return false;
+
+    appData.salaryList.push({
+        id: staffId,
+        name: sRecord.name,
+        role: sRecord.role,
+        monthlySalary: parseFloat(monthlySalary),
+        paymentMethod: paymentMethod, // 'mobile', 'bank', 'cash'
+        nida: nida || '',
+        photo: '', // base64 photo
+        contract: null,
+        payments: []
+    });
+
+    saveData(appData);
+    window.appData = appData;
+    
+    // Add notification
+    appAddNotification('Mshahara Umesajiliwa', `Mshahara wa ${sRecord.name} (Tsh ${parseFloat(monthlySalary).toLocaleString()}/mwezi) umesajiliwa kwenye Ledger.`);
+
+    return true;
+};
+
+window.appPaySalaryInstallment = function(staffId, amount, method, notes) {
+    if (!appData.salaryList) return false;
+    const emp = appData.salaryList.find(e => e.id === staffId);
+    if (!emp) return false;
+
+    const now = new Date();
+    const dateStr = now.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+    
+    if (!emp.payments) emp.payments = [];
+    emp.payments.push({
+        date: dateStr,
+        dateRaw: now.toISOString(),
+        amount: parseFloat(amount),
+        method: method, // 'Mtandao wa Simu', 'Bank', 'Mkononi'
+        notes: notes || 'Malipo ya mshahara'
+    });
+
+    saveData(appData);
+    window.appData = appData;
+
+    // Add notification
+    appAddNotification('Mshahara Umelipwa', `Malipo ya sehemu ya Tsh ${parseFloat(amount).toLocaleString()} kwa ${emp.name} yamefanyika kupitia ${method}.`);
+
+    return true;
+};
+
+window.appSaveStaffContract = function(staffId, contractObj) {
+    if (!appData.salaryList) return false;
+    const emp = appData.salaryList.find(e => e.id === staffId);
+    if (!emp) return false;
+
+    emp.contract = contractObj;
+    saveData(appData);
+    window.appData = appData;
+    return true;
+};
+
+window.appSaveStaffPhoto = function(staffId, photoBase64) {
+    if (!appData.salaryList) return false;
+    const emp = appData.salaryList.find(e => e.id === staffId);
+    if (!emp) return false;
+
+    emp.photo = photoBase64;
+    saveData(appData);
+    window.appData = appData;
+    return true;
 };
 
 // ==========================================

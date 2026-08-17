@@ -444,12 +444,6 @@
                                         placeholder="Mh. NGAE100 (Wacha wazi ili auto-generate)"
                                         class="w-full border border-gray-300 rounded-xl p-3 focus:ring-2 focus:ring-orange-500 outline-none uppercase">
                                 </div>
-                                <div>
-                                    <label class="block text-sm font-bold text-gray-700 mb-1">Nenosiri (Password)</label>
-                                    <input type="password" id="staffPassword" required
-                                        placeholder="Weka nenosiri la mfanyakazi..."
-                                        class="w-full border border-gray-300 rounded-xl p-3 focus:ring-2 focus:ring-orange-500 outline-none">
-                                </div>
                                 <button type="submit"
                                     class="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold py-3 rounded-xl shadow-md transition-transform hover:-translate-y-0.5">
                                     Tengeneza Akaunti
@@ -469,7 +463,6 @@
                                             <th class="p-3 font-bold">Majina Kamili</th>
                                             <th class="p-3 font-bold">Staff ID</th>
                                             <th class="p-3 font-bold">Jukumu (Role)</th>
-                                            <th class="p-3 font-bold">Nenosiri (Password)</th>
                                             <th class="p-3 font-bold text-center">Kitendo</th>
                                         </tr>
                                     </thead>
@@ -1346,7 +1339,7 @@
                 const user = document.getElementById('adminUser').value;
                 const pass = document.getElementById('adminPass').value;
 
-                if (user.toLowerCase().trim() === 'ngae food' && pass === 'mamdae') {
+                if (user.toLowerCase() === 'admin' && pass === 'admin') {
                     sessionStorage.setItem('ngae_admin_auth', 'true');
                     showDashboard();
                 } else {
@@ -1376,7 +1369,6 @@
                 const name = document.getElementById('staffName').value;
                 const roleSelect = document.getElementById('staffRole').value;
                 const customId = document.getElementById('staffCustomId').value;
-                const password = document.getElementById('staffPassword').value;
 
                 let role = roleSelect;
                 if (roleSelect === 'other') {
@@ -1384,7 +1376,7 @@
                 }
 
                 if (window.appAddStaff) {
-                    const newId = window.appAddStaff(name, role, customId, password);
+                    const newId = window.appAddStaff(name, role, customId);
                     if (newId) {
                         alert(`Akaunti mpya imetengenezwa!\nMajina: ${name}\nStaff ID: ${newId}\nJukumu: ${role}`);
                         document.getElementById('addStaffForm').reset();
@@ -1865,12 +1857,10 @@ Saini ya Mwajiriwa (${emp.name}): ____________________      Tarehe: ____________
                     roleBadge = `<span class="bg-gray-100 text-gray-800 text-xs font-bold px-2.5 py-1 rounded uppercase">${info.role}</span>`;
                 }
 
-                const displayPass = info.password || id.toLowerCase();
                 tr.innerHTML = `
                     <td class="p-3 font-bold text-gray-800">${info.name}</td>
                     <td class="p-3 font-mono text-gray-600 font-bold">${id}</td>
                     <td class="p-3">${roleBadge}</td>
-                    <td class="p-3 font-mono text-xs text-gray-500">${displayPass}</td>
                     <td class="p-3 text-center">
                         <button onclick="deleteStaffMember('${id}')" class="text-red-600 hover:text-red-800 font-bold text-sm bg-red-50 hover:bg-red-100 px-3 py-1.5 rounded-lg transition-colors">
                             <i class="bi bi-trash"></i> Futa
@@ -2476,23 +2466,23 @@ Saini ya Mwajiriwa (${emp.name}): ____________________      Tarehe: ____________
             let shopRowsHtml = '';
             reportSales.forEach(s => {
                 shopRowsHtml += `
-                    <tr style="border-bottom: 1px solid #e2e8f0;">
+            < tr style = "border-bottom: 1px solid #e2e8f0;" >
                         <td style="padding: 12px; font-weight: bold; color: #1e293b;">${s.location}</td>
                         <td style="padding: 12px; color: #64748b;">${s.sellerName} (ID: ${s.sellerId})</td>
                         <td style="padding: 12px; text-align: right; font-weight: bold; color: #10b981;">Tsh ${s.totalSales.toLocaleString()}</td>
-                    </tr>
+                    </tr >
                 `;
             });
 
             // Expenses table rows HTML
             let expenseRowsHtml = '';
             if (reportExpenses.length === 0) {
-                expenseRowsHtml = `<tr><td colspan="4" style="padding: 20px; text-align: center; color: #94a3b8;">Hakuna matumizi katika kipindi hiki.</td></tr>`;
+                expenseRowsHtml = `< tr > <td colspan="4" style="padding: 20px; text-align: center; color: #94a3b8;">Hakuna matumizi katika kipindi hiki.</td></tr > `;
             } else {
                 reportExpenses.forEach(e => {
                     let sourceColor = e.type === 'Stoo' ? '#3b82f6' : (e.type === 'Mshahara' ? '#6366f1' : '#f59e0b');
                     expenseRowsHtml += `
-                        <tr style="border-bottom: 1px solid #e2e8f0;">
+            < tr style = "border-bottom: 1px solid #e2e8f0;" >
                             <td style="padding: 10px; font-size: 12px; color: #64748b;">${e.date}</td>
                             <td style="padding: 10px; font-weight: 600; color: #1e293b;">${e.description}</td>
                             <td style="padding: 10px; text-align: center;">
@@ -2501,8 +2491,8 @@ Saini ya Mwajiriwa (${emp.name}): ____________________      Tarehe: ____________
                                 </span>
                             </td>
                             <td style="padding: 10px; text-align: right; font-weight: bold; color: #ef4444;">Tsh ${e.amount.toLocaleString()}</td>
-                        </tr>
-                    `;
+                        </tr >
+                `;
                 });
             }
 
@@ -2510,17 +2500,17 @@ Saini ya Mwajiriwa (${emp.name}): ____________________      Tarehe: ____________
             let healthStatusHtml = '';
             if (isLoss) {
                 healthStatusHtml = `
-                    <div style="background-color: #fef2f2; border: 1px solid #fecaca; color: #991b1b; padding: 20px; border-radius: 12px; margin-bottom: 30px; text-align: center;">
+                < div style = "background-color: #fef2f2; border: 1px solid #fecaca; color: #991b1b; padding: 20px; border-radius: 12px; margin-bottom: 30px; text-align: center;" >
                         <h3 style="margin: 0 0 5px; font-size: 18px; font-weight: bold;">TATHMINI: BIASHARA INAPOTEZA FEDHA (NET LOSS)</h3>
                         <p style="margin: 0; font-size: 14px;">Gharama za uendeshaji (Matumizi) zinazidi mapato ya mauzo katika kipindi hiki. Hatua za kupunguza gharama au kuongeza uzalishaji na mauzo zinahitajika haraka.</p>
-                    </div>
+                    </div >
                 `;
             } else {
                 healthStatusHtml = `
-                    <div style="background-color: #f0fdf4; border: 1px solid #bbf7d0; color: #166534; padding: 20px; border-radius: 12px; margin-bottom: 30px; text-align: center;">
+                < div style = "background-color: #f0fdf4; border: 1px solid #bbf7d0; color: #166534; padding: 20px; border-radius: 12px; margin-bottom: 30px; text-align: center;" >
                         <h3 style="margin: 0 0 5px; font-size: 18px; font-weight: bold;">TATHMINI: BIASHARA INAINGIZA FAIDA (NET PROFIT)</h3>
                         <p style="margin: 0; font-size: 14px;">Usimamizi wa kifedha uko vizuri. Mauzo yanazidi gharama zote za matumizi katika kipindi hiki. Endelea kudumisha hali hii.</p>
-                    </div>
+                    </div >
                 `;
             }
 
@@ -2665,14 +2655,14 @@ Saini ya Mwajiriwa (${emp.name}): ____________________      Tarehe: ____________
             listContainer.innerHTML = '';
 
             if (suggs.length === 0) {
-                listContainer.innerHTML = `<div class="text-center text-gray-400 text-xs py-10">Hakuna mapendekezo yaliyopokelewa.</div>`;
+                listContainer.innerHTML = `< div class= "text-center text-gray-400 text-xs py-10" > Hakuna mapendekezo yaliyopokelewa.</div > `;
                 document.getElementById('activeSuggSender').textContent = "Mfanyakazi: (Hakuna Aliyechaguliwa)";
                 document.getElementById('activeSuggMeta').textContent = "Chagua pendekezo kushoto ili kujibu";
                 document.getElementById('adminActiveSuggChat').innerHTML = `
-                    <div class="text-center text-gray-400 text-sm py-16">
+            < div class= "text-center text-gray-400 text-sm py-16" >
                         <i class="bi bi-chat-left-dots text-4xl text-gray-300"></i>
                         <p class="mt-2">Chagua pendekezo la mfanyakazi kwenye orodha kushoto ili kusoma na kujibu ujumbe wao binafsi.</p>
-                    </div>
+                    </div >
                 `;
                 document.getElementById('adminReplySuggestionForm').classList.add('hidden');
                 if (printContainer) printContainer.classList.add('hidden');
@@ -2686,25 +2676,25 @@ Saini ya Mwajiriwa (${emp.name}): ____________________      Tarehe: ____________
                 const activeId = document.getElementById('activeSuggId').value;
                 const isActive = (s.id === activeId);
                 
-                item.className = `p-3 rounded-xl cursor-pointer transition-colors border mb-2 ${
-                    isActive 
-                    ? 'bg-orange-50 border-orange-200 text-orange-950 font-bold shadow-sm' 
+                item.className = `p - 3 rounded - xl cursor - pointer transition - colors border mb - 2 ${
+                isActive
+                ? 'bg-orange-50 border-orange-200 text-orange-950 font-bold shadow-sm'
                     : 'bg-gray-50 border-gray-100 hover:bg-gray-100 text-gray-700'
-                }`;
+            }`;
                 
                 const roleLabels = { 'operator': 'Usafirishaji', 'seller': 'Muuzaji', 'manufacturer': 'Uzalishaji', 'storekeeper': 'Stoo' };
                 const swRole = roleLabels[s.senderRole] || s.senderRole;
                 
                 const repliesCount = s.replies ? s.replies.length : 0;
                 const badgeHtml = repliesCount > 0 
-                    ? `<span class="bg-green-100 text-green-700 text-[10px] font-bold px-1.5 py-0.5 rounded-full"><i class="bi bi-check2-all"></i> Majibu: ${repliesCount}</span>` 
-                    : `<span class="bg-red-100 text-red-700 text-[10px] font-bold px-1.5 py-0.5 rounded-full">Inasubiri</span>`;
+                    ? `< span class= "bg-green-100 text-green-700 text-[10px] font-bold px-1.5 py-0.5 rounded-full" > <i class="bi bi-check2-all"></i> Majibu: ${ repliesCount }</span > ` 
+                    : `< span class= "bg-red-100 text-red-700 text-[10px] font-bold px-1.5 py-0.5 rounded-full" > Inasubiri</span > `;
 
                 item.innerHTML = `
-                    <div class="flex justify-between items-start mb-1 gap-1">
-                        <span class="font-bold text-xs uppercase block truncate max-w-[120px]">${s.senderName}</span>
-                        ${badgeHtml}
-                    </div>
+            < div class= "flex justify-between items-start mb-1 gap-1" >
+            <span class="font-bold text-xs uppercase block truncate max-w-[120px]">${s.senderName}</span>
+                        ${ badgeHtml }
+                    </div >
                     <div class="flex justify-between items-center text-[10px] text-gray-500 mb-1.5">
                         <span class="font-semibold text-orange-600">${swRole} (${s.senderId})</span>
                         <span>${s.date}</span>
@@ -2733,8 +2723,8 @@ Saini ya Mwajiriwa (${emp.name}): ____________________      Tarehe: ____________
             const roleLabels = { 'operator': 'Usafirishaji', 'seller': 'Muuzaji', 'manufacturer': 'Uzalishaji', 'storekeeper': 'Stoo' };
             const swRole = roleLabels[sugg.senderRole] || sugg.senderRole;
 
-            document.getElementById('activeSuggSender').textContent = `${sugg.senderName} (${sugg.senderId})`;
-            document.getElementById('activeSuggMeta').textContent = `Kitengo: ${swRole} | Iliwasilishwa: ${sugg.date}`;
+            document.getElementById('activeSuggSender').textContent = `${ sugg.senderName }(${ sugg.senderId })`;
+            document.getElementById('activeSuggMeta').textContent = `Kitengo: ${ swRole } | Iliwasilishwa: ${ sugg.date }`;
 
             const chatContainer = document.getElementById('adminActiveSuggChat');
             chatContainer.innerHTML = '';
@@ -2742,9 +2732,9 @@ Saini ya Mwajiriwa (${emp.name}): ____________________      Tarehe: ____________
             const staffDiv = document.createElement('div');
             staffDiv.className = "flex flex-col items-start space-y-1";
             staffDiv.innerHTML = `
-                <div class="bg-blue-600 text-white p-3 rounded-2xl rounded-tl-none max-w-lg text-sm shadow-sm font-semibold">
-                    ${sugg.message}
-                </div>
+            < div class= "bg-blue-600 text-white p-3 rounded-2xl rounded-tl-none max-w-lg text-sm shadow-sm font-semibold" >
+            ${ sugg.message }
+                </div >
                 <span class="text-[10px] text-gray-400 font-bold ml-1">${sugg.date} (${sugg.senderName})</span>
             `;
             chatContainer.appendChild(staffDiv);
@@ -2757,18 +2747,18 @@ Saini ya Mwajiriwa (${emp.name}): ____________________      Tarehe: ____________
                     if (isAdmin) {
                         replyDiv.className = "flex flex-col items-end space-y-1 mt-2";
                         replyDiv.innerHTML = `
-                            <div class="bg-gray-200 text-gray-800 p-3 rounded-2xl rounded-tr-none max-w-lg text-sm shadow-sm">
-                                ${r.message}
-                            </div>
-                            <span class="text-[10px] text-gray-500 font-bold mr-1">${r.date} (Wewe - Admin)</span>
+                < div class= "bg-gray-200 text-gray-800 p-3 rounded-2xl rounded-tr-none max-w-lg text-sm shadow-sm" >
+                ${ r.message }
+                            </div >
+                <span class="text-[10px] text-gray-500 font-bold mr-1">${r.date} (Wewe - Admin)</span>
                         `;
                     } else {
                         replyDiv.className = "flex flex-col items-start space-y-1 mt-2";
                         replyDiv.innerHTML = `
-                            <div class="bg-blue-600 text-white p-3 rounded-2xl rounded-tl-none max-w-lg text-sm shadow-sm">
-                                ${r.message}
-                            </div>
-                            <span class="text-[10px] text-gray-400 font-bold ml-1">${r.date} (${sugg.senderName})</span>
+                < div class= "bg-blue-600 text-white p-3 rounded-2xl rounded-tl-none max-w-lg text-sm shadow-sm" >
+                ${ r.message }
+                            </div >
+                <span class="text-[10px] text-gray-400 font-bold ml-1">${r.date} (${sugg.senderName})</span>
                         `;
                     }
                     chatContainer.appendChild(replyDiv);
@@ -2799,11 +2789,11 @@ Saini ya Mwajiriwa (${emp.name}): ____________________      Tarehe: ____________
 
             // Build conversation HTML
             let chatHtml = `
-                <div style="border: 1px solid #dbeafe; border-radius: 12px; background-color: #eff6ff; padding: 15px; margin-bottom: 20px;">
+                < div style = "border: 1px solid #dbeafe; border-radius: 12px; background-color: #eff6ff; padding: 15px; margin-bottom: 20px;" >
                     <strong style="color: #2563eb; font-size: 14px;">[Ujumbe wa Kwanza] ${sugg.senderName} (${swRole}) - ${sugg.date}</strong>
                     <p style="margin: 8px 0 0; font-size: 13px; font-weight: 600; color: #1e293b; white-space: pre-line;">${sugg.message}</p>
-                </div>
-            `;
+                </div >
+                `;
 
             if (sugg.replies && sugg.replies.length > 0) {
                 sugg.replies.forEach(r => {
@@ -2814,11 +2804,11 @@ Saini ya Mwajiriwa (${emp.name}): ____________________      Tarehe: ____________
                     const borderHex = isAdmin ? '#cbd5e1' : '#dbeafe';
                     
                     chatHtml += `
-                        <div style="border: 1px solid ${borderHex}; border-radius: 12px; background-color: ${bgHex}; padding: 15px; margin-bottom: 20px;">
+                < div style = "border: 1px solid ${borderHex}; border-radius: 12px; background-color: ${bgHex}; padding: 15px; margin-bottom: 20px;" >
                             <strong style="color: ${colorHex}; font-size: 14px;">[Mchango] ${contributorName} - ${r.date}</strong>
                             <p style="margin: 8px 0 0; font-size: 13px; color: #1e293b; white-space: pre-line;">${r.message}</p>
-                        </div>
-                    `;
+                        </div >
+                `;
                 });
             }
 
@@ -2927,20 +2917,20 @@ Saini ya Mwajiriwa (${emp.name}): ____________________      Tarehe: ____________
 
             listContainer.innerHTML = '';
             if (notifs.length === 0) {
-                listContainer.innerHTML = `<div class="text-center text-gray-400 text-xs py-10"><i class="bi bi-bell-slash text-2xl"></i><p class="mt-1">Hakuna taarifa yoyote mpya bado.</p></div>`;
+                listContainer.innerHTML = `< div class= "text-center text-gray-400 text-xs py-10" ><i class="bi bi-bell-slash text-2xl"></i><p class="mt-1">Hakuna taarifa yoyote mpya bado.</p></div > `;
                 return;
             }
 
             [...notifs].reverse().forEach(n => {
                 const item = document.createElement('div');
-                item.className = `p-3 text-xs border-b border-gray-50 hover:bg-gray-50 transition-colors ${!n.read ? 'bg-orange-50/40 font-semibold' : ''}`;
+                item.className = `p - 3 text - xs border - b border - gray - 50 hover: bg - gray - 50 transition - colors ${!n.read ? 'bg-orange-50/40 font-semibold' : ''} `;
                 item.innerHTML = `
-                    <div class="flex justify-between items-center mb-1">
+            < div class="flex justify-between items-center mb-1" >
                         <span class="font-bold text-orange-600">${n.title}</span>
                         <span class="text-[9px] text-gray-400">${n.date}</span>
-                    </div>
-                    <p class="text-gray-600 text-[11px] leading-relaxed font-normal">${n.message}</p>
-                `;
+                    </div >
+            <p class="text-gray-600 text-[11px] leading-relaxed font-normal">${n.message}</p>
+        `;
                 listContainer.appendChild(item);
             });
         }
@@ -2973,7 +2963,7 @@ Saini ya Mwajiriwa (${emp.name}): ____________________      Tarehe: ____________
                 if (!registeredIds.includes(id)) {
                     const opt = document.createElement('option');
                     opt.value = id;
-                    opt.textContent = `${info.name} (${info.role.toUpperCase()} - ${id})`;
+                    opt.textContent = `${ info.name } (${ info.role.toUpperCase() } - ${ id })`;
                     select.appendChild(opt);
                 }
             });
@@ -2991,7 +2981,7 @@ Saini ya Mwajiriwa (${emp.name}): ____________________      Tarehe: ____________
             
             const salaryList = window.appData.salaryList || [];
             if (salaryList.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="6" class="p-8 text-center text-gray-400">Hakuna wafanyakazi waliosajiliwa kwenye ledger ya malipo bado.</td></tr>`;
+                tbody.innerHTML = `< tr > <td colspan="6" class="p-8 text-center text-gray-400">Hakuna wafanyakazi waliosajiliwa kwenye ledger ya malipo bado.</td></tr > `;
                 return;
             }
             
@@ -3008,15 +2998,15 @@ Saini ya Mwajiriwa (${emp.name}): ____________________      Tarehe: ____________
                 const swRole = roleLabels[e.role] || e.role;
                 
                 tr.innerHTML = `
-                    <td class="p-3 font-bold text-indigo-700 hover:underline flex items-center gap-2">
-                        <i class="bi bi-person-badge"></i> ${e.name} (${e.id})
-                    </td>
+            < td class="p-3 font-bold text-indigo-700 hover:underline flex items-center gap-2" >
+                <i class="bi bi-person-badge"></i> ${ e.name } (${ e.id })
+                    </td >
                     <td class="p-3 text-gray-600 font-semibold uppercase text-[10px]">${swRole}</td>
                     <td class="p-3 text-right font-bold text-gray-800">Tsh ${e.monthlySalary.toLocaleString()}</td>
                     <td class="p-3 text-right font-bold text-green-600">Tsh ${paid.toLocaleString()}</td>
                     <td class="p-3 text-right font-bold text-red-600">Tsh ${remaining.toLocaleString()}</td>
                     <td class="p-3 text-center text-gray-500 font-bold">${e.paymentMethod}</td>
-                `;
+        `;
                 tbody.appendChild(tr);
             });
         }
@@ -3137,7 +3127,7 @@ Saini ya Mwajiriwa (${emp.name}): ____________________      Tarehe: ____________
                 const swRole = roleLabels[e.role] || e.role;
 
                 rows += `
-                    <tr style="border-bottom: 1px solid #ddd;">
+            < tr style = "border-bottom: 1px solid #ddd;" >
                         <td style="padding: 10px; font-weight: bold;">${e.name} (${e.id})</td>
                         <td style="padding: 10px; text-transform: uppercase;">${swRole}</td>
                         <td style="padding: 10px;">${e.nida || '-'}</td>
@@ -3145,12 +3135,12 @@ Saini ya Mwajiriwa (${emp.name}): ____________________      Tarehe: ____________
                         <td style="padding: 10px; text-align: right; font-weight: bold; color: green;">Tsh ${paid.toLocaleString()}</td>
                         <td style="padding: 10px; text-align: right; font-weight: bold; color: red;">Tsh ${remaining.toLocaleString()}</td>
                         <td style="padding: 10px; text-align: center;">${e.paymentMethod}</td>
-                    </tr>
-                `;
+                    </tr >
+            `;
             });
 
             printWindow.document.write(`
-                <html>
+            < html >
                 <head>
                     <title>Jalada la Mishahara - NGAE Food</title>
                     <style>
@@ -3197,7 +3187,7 @@ Saini ya Mwajiriwa (${emp.name}): ____________________      Tarehe: ____________
                         <button onclick="window.print()" style="background-color: #4f46e5; color: white; border: none; padding: 12px 30px; border-radius: 8px; font-weight: bold; cursor: pointer;">Print Ripoti Hii</button>
                     </div>
                 </body>
-                </html>
+                </html >
             `);
             printWindow.document.close();
         }
@@ -3215,7 +3205,7 @@ Saini ya Mwajiriwa (${emp.name}): ____________________      Tarehe: ____________
             }
 
             printWindow.document.write(`
-                <html>
+            < html >
                 <head>
                     <title>Mkataba wa Ajira - ${emp.name}</title>
                     <style>
@@ -3238,7 +3228,7 @@ Saini ya Mwajiriwa (${emp.name}): ____________________      Tarehe: ____________
                         <button onclick="window.print()" style="background-color: #000; color: white; border: none; padding: 12px 30px; font-family: sans-serif; font-weight: bold; cursor: pointer; font-size: 14px;">Print Mkataba Huu</button>
                     </div>
                 </body>
-                </html>
+                </html >
             `);
             printWindow.document.close();
         }
@@ -3253,28 +3243,28 @@ Saini ya Mwajiriwa (${emp.name}): ____________________      Tarehe: ____________
             const shops = window.appData.shops || [];
             
             if (shops.length === 0) {
-                listContainer.innerHTML = `<div class="text-center text-gray-400 text-xs py-10">Hakuna maduka yaliyosajiliwa.</div>`;
+                listContainer.innerHTML = `< div class="text-center text-gray-400 text-xs py-10" > Hakuna maduka yaliyosajiliwa.</div > `;
                 return;
             }
             
             shops.forEach(shop => {
                 const isActive = (shop.id === activeShopId);
                 const item = document.createElement('div');
-                item.className = `p-4 rounded-xl cursor-pointer transition-all border mb-2 hover:scale-[1.01] ${
-                    isActive 
-                    ? 'bg-orange-50 border-orange-200 text-orange-950 font-bold shadow-sm' 
-                    : 'bg-gray-50 border-gray-100 hover:bg-gray-100 text-gray-700'
-                }`;
+                item.className = `p - 4 rounded - xl cursor - pointer transition - all border mb - 2 hover: scale - [1.01] ${
+            isActive
+                ? 'bg-orange-50 border-orange-200 text-orange-950 font-bold shadow-sm'
+                : 'bg-gray-50 border-gray-100 hover:bg-gray-100 text-gray-700'
+        } `;
                 
                 item.innerHTML = `
-                    <div class="flex justify-between items-center mb-1">
+            < div class="flex justify-between items-center mb-1" >
                         <span class="font-bold text-xs uppercase block truncate max-w-[150px]">${shop.location}</span>
                         <i class="bi bi-chevron-right text-[10px] text-gray-400"></i>
-                    </div>
-                    <div class="text-[10px] text-gray-500 font-bold uppercase">
-                        <i class="bi bi-person mr-1"></i>Muuzaji: ${shop.sellerName}
-                    </div>
-                `;
+                    </div >
+            <div class="text-[10px] text-gray-500 font-bold uppercase">
+                <i class="bi bi-person mr-1"></i>Muuzaji: ${shop.sellerName}
+            </div>
+        `;
                 
                 item.onclick = () => {
                     document.getElementById('activePortalShopId').value = shop.id;
@@ -3322,28 +3312,28 @@ Saini ya Mwajiriwa (${emp.name}): ____________________      Tarehe: ____________
             let expensesRowsHtml = '';
             if (expensesList.length === 0) {
                 expensesRowsHtml = `
-                    <tr>
-                        <td colspan="3" class="p-6 text-center text-gray-400 text-xs font-semibold">
-                            <i class="bi bi-info-circle text-lg mb-1 block text-gray-300"></i>
-                            Hakuna matumizi ya kila siku yaliyorekodiwa na muuzaji.
-                        </td>
-                    </tr>
-                `;
+            < tr >
+            <td colspan="3" class="p-6 text-center text-gray-400 text-xs font-semibold">
+                <i class="bi bi-info-circle text-lg mb-1 block text-gray-300"></i>
+                Hakuna matumizi ya kila siku yaliyorekodiwa na muuzaji.
+            </td>
+                    </tr >
+            `;
             } else {
                 expensesList.forEach(e => {
                     expensesRowsHtml += `
-                        <tr class="hover:bg-gray-50 border-b border-gray-100 transition-colors">
+            < tr class="hover:bg-gray-50 border-b border-gray-100 transition-colors" >
                             <td class="p-3 text-xs text-gray-500 font-bold">${e.date}</td>
                             <td class="p-3 text-sm text-gray-700 font-semibold">${e.description}</td>
                             <td class="p-3 text-right text-sm font-bold text-red-600">Tsh ${e.amount.toLocaleString()}</td>
-                        </tr>
-                    `;
+                        </tr >
+            `;
                 });
             }
             
             detailsContainer.innerHTML = `
-                <!-- Financial Cards Grid -->
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 flex-none">
+            <!-- Financial Cards Grid -->
+            < div class="grid grid-cols-1 md:grid-cols-3 gap-4 flex-none" >
                     <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm hover:scale-105 transition-transform duration-300">
                         <p class="text-gray-400 font-bold uppercase text-[9px] tracking-wider">Thamani ya Mizigo Yote</p>
                         <h4 class="font-black text-gray-800 text-lg mt-0.5">Tsh ${totalCargoValue.toLocaleString()}</h4>
@@ -3356,31 +3346,31 @@ Saini ya Mwajiriwa (${emp.name}): ____________________      Tarehe: ____________
                         <p class="text-gray-400 font-bold uppercase text-[9px] tracking-wider">Baki Anayodaiwa</p>
                         <h4 class="font-black text-red-600 text-lg mt-0.5">Tsh ${remainingDebt.toLocaleString()}</h4>
                     </div>
-                </div>
+                </div >
                 
-                <!-- Daily Expenses Section -->
-                <div class="bg-white rounded-xl border border-gray-200 shadow-sm flex flex-col flex-1 min-h-[220px] overflow-hidden">
-                    <div class="p-4 border-b border-gray-100 bg-gray-50 flex justify-between items-center">
-                        <h4 class="font-bold text-gray-800 text-xs uppercase flex items-center gap-1.5">
-                            <i class="bi bi-journal-text text-red-500 animate-pulse"></i> Matumizi ya Kila Siku ya Muuzaji (Daily Expenses)
-                        </h4>
-                        <span class="bg-red-50 text-red-700 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase">Kutoka Seller App</span>
-                    </div>
-                    <div class="flex-1 overflow-y-auto custom-scrollbar">
-                        <table class="w-full text-left border-collapse">
-                            <thead class="bg-gray-50/80 sticky top-0 border-b border-gray-100 shadow-sm z-10">
-                                <tr class="text-[10px] text-gray-500 font-bold uppercase">
-                                    <th class="p-3">Tarehe & Muda</th>
-                                    <th class="p-3">Maelezo ya Matumizi</th>
-                                    <th class="p-3 text-right">Kiasi (Tsh)</th>
-                                </tr>
-                            </thead>
-                            <tbody class="divide-y divide-gray-50">
-                                ${expensesRowsHtml}
-                            </tbody>
-                        </table>
-                    </div>
+                < !--Daily Expenses Section-- >
+            <div class="bg-white rounded-xl border border-gray-200 shadow-sm flex flex-col flex-1 min-h-[220px] overflow-hidden">
+                <div class="p-4 border-b border-gray-100 bg-gray-50 flex justify-between items-center">
+                    <h4 class="font-bold text-gray-800 text-xs uppercase flex items-center gap-1.5">
+                        <i class="bi bi-journal-text text-red-500 animate-pulse"></i> Matumizi ya Kila Siku ya Muuzaji (Daily Expenses)
+                    </h4>
+                    <span class="bg-red-50 text-red-700 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase">Kutoka Seller App</span>
                 </div>
+                <div class="flex-1 overflow-y-auto custom-scrollbar">
+                    <table class="w-full text-left border-collapse">
+                        <thead class="bg-gray-50/80 sticky top-0 border-b border-gray-100 shadow-sm z-10">
+                            <tr class="text-[10px] text-gray-500 font-bold uppercase">
+                                <th class="p-3">Tarehe & Muda</th>
+                                <th class="p-3">Maelezo ya Matumizi</th>
+                                <th class="p-3 text-right">Kiasi (Tsh)</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-50">
+                            ${expensesRowsHtml}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
             `;
         }
     </script>

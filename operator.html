@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="sw">
+<head>
+    <meta charset="UTF-8">
+    <title>Operator Dashboard - NGAE Food</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+</head>
+<body class="bg-gray-50 text-gray-800 p-4 md:p-8">
+    <div class="max-w-7xl mx-auto">
+        <div class="flex flex-col md:flex-row justify-between items-center bg-white p-6 rounded-xl shadow-sm mb-6 border-l-4 border-orange-500">
+            <div>
+                <h1 class="text-2xl font-bold text-gray-800">Karibu, <span id="staffNameDisplay">MUSSA AMIRI SHEIZA</span></h1>
+                <p class="text-sm text-gray-500">Kitambulisho (ID): <span class="font-bold" id="staffIdDisplay">NGAE001</span> | Kitengo: <span class="text-orange-600 font-bold">Usafirishaji</span></p>
+            </div>
+            <div class="flex items-center gap-2 mt-4 md:mt-0">
+                <button onclick="toggleSuggestionsModal()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-semibold transition-colors flex items-center gap-1.5"><i class="bi bi-chat-left-text"></i> Mapendekezo Yangu</button>
+                <button onclick="window.appLogout()" class="bg-red-500 text-white px-4 py-2 rounded-lg font-semibold hover:bg-red-600 transition-colors">Ondoka</button>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <!-- Form ya kutuma Mzigo -->
+            <div class="lg:col-span-1 bg-white p-6 rounded-xl shadow-sm border border-gray-100 h-fit">
+                <h2 class="text-xl font-bold mb-4 text-gray-800 border-b pb-2"><i class="bi bi-truck text-orange-500"></i> Tuma Bidhaa Dukani</h2>
+                
+                <div id="dispatchMessage" class="hidden mb-4 p-3 rounded-lg font-bold"></div>
+                
+                <form id="dispatchForm">
+                    <div class="mb-4">
+                        <label class="block text-sm font-bold text-gray-700">Chagua Bidhaa (Iliyopo Stoo)</label>
+                        <select id="product_id" required class="w-full mt-1 border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-orange-500 outline-none">
+                            <option value="">-- Chagua Bidhaa --</option>
+                            <!-- Options will be populated by JS -->
+                        </select>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="block text-sm font-bold text-gray-700">Duka Linalopokea Mzigo</label>
+                        <select id="shop_id" required class="w-full mt-1 border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-orange-500 outline-none">
+                            <option value="">-- Chagua Duka --</option>
+                            <!-- Options will be populated by JS -->
+                        </select>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4 mb-6">
+                        <div>
+                            <label class="block text-sm font-bold text-gray-700">Kipimo</label>
+                            <select id="unit_type" required class="w-full mt-1 border border-gray-300 rounded-lg p-2.5 uppercase focus:ring-2 focus:ring-orange-500 outline-none">
+                                <option value="pcs">Pcs</option>
+                                <option value="bundle">Bundle</option>
+                                <option value="box">Box</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-bold text-gray-700">Idadi Kutuma</label>
+                            <input type="number" id="quantity" required min="1" class="w-full mt-1 border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-orange-500 outline-none">
+                        </div>
+                    </div>
+
+                    <button type="submit" class="w-full bg-orange-600 hover:bg-orange-700 text-white font-bold py-3 rounded-lg shadow-md transition-colors">
+                        Thibitisha Kutuma Mzigo
+                    </button>
+                </form>
+            </div>
+
+            <!-- Historia ya Mizigo -->
+            <div class="lg:col-span-2 bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+                <div class="flex justify-between items-center mb-4 border-b pb-2">
+                    <h2 class="text-xl font-bold text-gray-800"><i class="bi bi-clock-history text-blue-500"></i> Historia ya Mizigo Uliyotuma</h2>
+                    <span id="dispatchCountDisplay" class="bg-orange-100 text-orange-800 text-xs font-bold px-3 py-1 rounded-full">Zimetumwa: 0</span>
+                </div>
+                
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-sm">
+                        <thead class="bg-gray-50 text-gray-600 border-b border-gray-200">
+                            <tr>
+                                <th class="p-3 font-semibold">Tarehe & Muda</th>
+                                <th class="p-3 font-semibold">Aina ya Bidhaa</th>
+                                <th class="p-3 font-semibold">Duka Lililopokea</th>
+                                <th class="p-3 font-semibold text-center">Idadi Iliyotumwa</th>
+                            </tr>
+                        </thead>
+                        <tbody id="dispatchHistoryBody" class="divide-y divide-gray-100">
+                            <!-- Rows will be populated by JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Protect route
+            if(window.appProtectRoute) {
+                window.appProtectRoute('operator');
+            }
+
+            // Populate Dropdowns
+            if(window.appData) {
+                const productSelect = document.getElementById('product_id');
+                window.appData.products.forEach(p => {
+                    const opt = document.createElement('option');
+                    opt.value = p.id;
+                    opt.textContent = `${p.name} (Zilizopo: ${p.stock})`;
+                    productSelect.appendChild(opt);
+                });
+
+                const shopSelect = document.getElementById('shop_id');
+                window.appData.shops.forEach(s => {
+                    const opt = document.createElement('option');
+                    opt.value = s.id;
+                    opt.textContent = `${s.location} (Muuzaji: ${s.sellerName})`;
+                    shopSelect.appendChild(opt);
+                });
+                
+                renderHistory();
+            }
+
+            // Handle Dispatch
+            document.getElementById('dispatchForm').addEventListener('submit', (e) => {
+                e.preventDefault();
+                const productId = document.getElementById('product_id').value;
+                const shopId = document.getElementById('shop_id').value;
+                const qty = parseInt(document.getElementById('quantity').value);
+                const unit = document.getElementById('unit_type').value;
+
+                if(window.appDispatchProduct) {
+                    const success = window.appDispatchProduct(productId, shopId, qty, unit);
+                    const msgDiv = document.getElementById('dispatchMessage');
+                    msgDiv.classList.remove('hidden');
+                    
+                    if(success) {
+                        msgDiv.className = "mb-4 p-3 rounded-lg font-bold bg-green-100 text-green-700";
+                        msgDiv.textContent = "Mzigo umetumwa kikamilifu!";
+                        document.getElementById('dispatchForm').reset();
+                        
+                        // Update stock text in dropdown
+                        const productSelect = document.getElementById('product_id');
+                        productSelect.innerHTML = '<option value="">-- Chagua Bidhaa --</option>';
+                        window.appData.products.forEach(p => {
+                            const opt = document.createElement('option');
+                            opt.value = p.id;
+                            opt.textContent = `${p.name} (Zilizopo: ${p.stock})`;
+                            productSelect.appendChild(opt);
+                        });
+                        
+                        renderHistory();
+                    } else {
+                        msgDiv.className = "mb-4 p-3 rounded-lg font-bold bg-red-100 text-red-700";
+                        msgDiv.textContent = "Kiasi cha bidhaa ulichochagua ni kikubwa kuliko kilichopo stoo.";
+                    }
+                    
+                    setTimeout(() => msgDiv.classList.add('hidden'), 5000);
+            });
+
+            // Suggestions form submit
+            document.getElementById('suggestionSubmitForm').addEventListener('submit', (e) => {
+                e.preventDefault();
+                const msg = document.getElementById('suggestionMessage').value;
+                if (window.appSubmitSuggestion) {
+                    window.appSubmitSuggestion(msg);
+                    document.getElementById('suggestionMessage').value = '';
+                    renderSuggestionsModal();
+                }
+            });
+        });
+
+        function renderHistory() {
+            if(!window.appData) return;
+            const tbody = document.getElementById('dispatchHistoryBody');
+            tbody.innerHTML = '';
+            
+            const history = window.appData.dispatchHistory || [];
+            document.getElementById('dispatchCountDisplay').textContent = `Zimetumwa: ${history.length}`;
+            
+            // Show latest first
+            [...history].reverse().forEach(h => {
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-orange-50 transition-colors";
+                
+                tr.innerHTML = `
+                    <td class="p-3 text-gray-600">
+                        <span class="font-bold text-gray-800 block">${h.date}</span>
+                    </td>
+                    <td class="p-3 font-bold text-orange-600">${h.productName}</td>
+                    <td class="p-3">
+                        <span class="text-gray-800 font-bold block">${h.shopLocation}</span>
+                    </td>
+                    <td class="p-3 text-center">
+                        <span class="bg-green-100 text-green-800 font-bold px-3 py-1 rounded-full">
+                            ${h.quantity} <span class="uppercase text-xs">${h.unit}</span>
+                        </span>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        // --- SUGGESTIONS CHAT SYSTEM ---
+        function toggleSuggestionsModal() {
+            const modal = document.getElementById('suggestionsModal');
+            if (modal.classList.contains('hidden')) {
+                modal.classList.remove('hidden');
+                modal.classList.add('flex');
+                renderSuggestionsModal();
+            } else {
+                modal.classList.add('hidden');
+                modal.classList.remove('flex');
+            }
+        }
+
+        function renderSuggestionsModal() {
+            if (!window.appData || !window.appGetStaffSuggestions) return;
+            const suggs = window.appGetStaffSuggestions();
+            const chatList = document.getElementById('suggestionsChatList');
+            chatList.innerHTML = '';
+
+            if (suggs.length === 0) {
+                chatList.innerHTML = `<div class="text-center text-gray-400 text-sm py-8"><i class="bi bi-chat-quote text-3xl text-gray-300"></i><p class="mt-2">Huna mapendekezo yoyote bado. Tuma pendekezo lako la kwanza hapa chini!</p></div>`;
+                return;
+            }
+
+            suggs.forEach(s => {
+                const staffDiv = document.createElement('div');
+                staffDiv.className = "flex flex-col items-end space-y-1 mt-2";
+                staffDiv.innerHTML = `
+                    <div class="bg-blue-600 text-white p-3 rounded-2xl rounded-tr-none max-w-md text-sm shadow-sm">
+                        ${s.message}
+                    </div>
+                    <span class="text-[10px] text-gray-400 font-bold mr-1">${s.date} (Wewe)</span>
+                `;
+                chatList.appendChild(staffDiv);
+
+                if (s.replies && s.replies.length > 0) {
+                    s.replies.forEach(r => {
+                        const adminDiv = document.createElement('div');
+                        adminDiv.className = "flex flex-col items-start space-y-1 mt-2";
+                        adminDiv.innerHTML = `
+                            <div class="bg-gray-200 text-gray-800 p-3 rounded-2xl rounded-tl-none max-w-md text-sm shadow-sm">
+                                ${r.message}
+                            </div>
+                            <span class="text-[10px] text-gray-500 font-bold ml-1">${r.date} (Mkurugenzi)</span>
+                        `;
+                        chatList.appendChild(adminDiv);
+                    });
+                }
+            });
+
+            chatList.scrollTop = chatList.scrollHeight;
+        }
+    </script>
+
+    <!-- Modal ya Mapendekezo Yangu -->
+    <div id="suggestionsModal" class="hidden fixed inset-0 z-50 items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
+        <div class="bg-white rounded-2xl w-full max-w-2xl overflow-hidden shadow-2xl transform transition-all flex flex-col h-[500px]">
+            <div class="bg-blue-600 p-4 flex justify-between items-center text-white flex-none">
+                <h3 class="font-bold"><i class="bi bi-chat-left-text-fill mr-2"></i> Mapendekezo Yangu kwa Admin</h3>
+                <button onclick="toggleSuggestionsModal()" class="text-2xl hover:text-blue-200">&times;</button>
+            </div>
+            
+            <div class="flex-1 p-5 overflow-y-auto custom-scrollbar space-y-4 bg-gray-50 flex flex-col min-h-0">
+                <div class="flex-1 overflow-y-auto space-y-3 custom-scrollbar pr-1" id="suggestionsChatList">
+                    <!-- Loaded dynamically from JS -->
+                </div>
+                
+                <form id="suggestionSubmitForm" class="flex-none border-t pt-3 flex gap-2 items-end">
+                    <div class="flex-1">
+                        <label class="block text-[11px] font-bold text-gray-500 uppercase mb-1">Andika Pendekezo au Ujumbe</label>
+                        <textarea id="suggestionMessage" required placeholder="Andika maoni yako hapa..." rows="2" class="w-full border border-gray-300 rounded-xl p-2.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none"></textarea>
+                    </div>
+                    <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-bold px-5 py-3 rounded-xl shadow-md transition-colors h-fit flex items-center gap-1">
+                        <i class="bi bi-send-fill"></i> Tuma
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

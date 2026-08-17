@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="sw">
+<head>
+    <meta charset="UTF-8">
+    <title>Store Dashboard - Malighafi (Raw Materials)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <style> .modal-active { display: flex !important; } </style>
+</head>
+<body class="bg-gray-50 text-gray-800 p-4 md:p-8">
+
+    <div class="max-w-7xl mx-auto">
+        
+        <!-- Header Section -->
+        <div class="flex flex-col md:flex-row justify-between items-center bg-white p-6 rounded-xl shadow-sm mb-6 border-l-4 border-blue-600">
+            <div>
+                <h1 class="text-2xl font-bold text-gray-800">Karibu, <span id="staffNameDisplay">MR ACADEMIA</span></h1>
+                <p class="text-sm text-gray-500">Kitengo: <span class="font-bold text-blue-600">Stoo ya Malighafi (Raw Materials)</span></p>
+            </div>
+            <div class="flex flex-wrap gap-3 mt-4 md:mt-0 justify-center">
+                <button onclick="toggleModal('dispatchMaterialModal')" class="bg-orange-500 hover:bg-orange-600 text-white px-3 py-2 rounded-lg font-bold shadow-sm transition-colors flex items-center text-sm">
+                    <i class="bi bi-box-arrow-up mr-2 text-lg"></i> Toa Malighafi
+                </button>
+                <button onclick="toggleModal('addMaterialModal')" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded-lg font-bold shadow-sm transition-colors flex items-center text-sm">
+                    <i class="bi bi-cart-plus-fill mr-2 text-lg"></i> Pokea Malighafi
+                </button>
+                <button onclick="toggleSuggestionsModal()" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded-lg font-bold shadow-sm transition-colors flex items-center text-sm">
+                    <i class="bi bi-chat-left-text mr-2 text-lg"></i> Mapendekezo
+                </button>
+                <button onclick="window.appLogout()" class="bg-red-50 text-red-600 border border-red-200 px-3 py-2 rounded-lg font-semibold hover:bg-red-100 transition-colors flex items-center text-sm">
+                    <i class="bi bi-box-arrow-right mr-2"></i> Ondoka
+                </button>
+            </div>
+        </div>
+
+        <!-- Action Message -->
+        <div id="actionMessage" class="hidden mb-4 p-3 rounded-lg font-bold"></div>
+
+        <!-- Financial Summary Cards -->
+        <h2 class="text-lg font-bold text-gray-700 mb-3"><i class="bi bi-wallet2 text-blue-500 mr-2"></i>Matumizi ya Kununua Malighafi (Tsh)</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+            <div class="bg-white p-5 rounded-xl shadow-sm border-b-4 border-blue-400">
+                <p class="text-sm text-gray-500 font-bold uppercase mb-1">Leo</p>
+                <h3 class="text-2xl font-black text-gray-800" id="spendToday">0.00</h3>
+            </div>
+            <div class="bg-white p-5 rounded-xl shadow-sm border-b-4 border-green-400">
+                <p class="text-sm text-gray-500 font-bold uppercase mb-1">Wiki Hii</p>
+                <h3 class="text-2xl font-black text-gray-800" id="spendWeek">0.00</h3>
+            </div>
+            <div class="bg-white p-5 rounded-xl shadow-sm border-b-4 border-yellow-400">
+                <p class="text-sm text-gray-500 font-bold uppercase mb-1">Mwezi Huu</p>
+                <h3 class="text-2xl font-black text-gray-800" id="spendMonth">0.00</h3>
+            </div>
+            <div class="bg-white p-5 rounded-xl shadow-sm border-b-4 border-purple-400">
+                <p class="text-sm text-gray-500 font-bold uppercase mb-1">Mwaka Huu (2026)</p>
+                <h3 class="text-2xl font-black text-gray-800" id="spendYear">0.00</h3>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            
+            <!-- 1. Stock Zilizopo (Current Stock) -->
+            <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+                <div class="flex justify-between items-center mb-4 border-b pb-2">
+                    <h2 class="text-xl font-bold text-gray-800"><i class="bi bi-boxes text-blue-500 mr-2"></i> Malighafi Zilizopo Stoo</h2>
+                    <span id="materialCountBadge" class="bg-blue-100 text-blue-800 text-xs font-bold px-3 py-1 rounded-full">0 Aina</span>
+                </div>
+                
+                <div class="overflow-y-auto max-h-[450px]">
+                    <table class="w-full text-left text-sm relative">
+                        <thead class="bg-gray-50 text-gray-700 sticky top-0 z-10 shadow-sm border-b border-gray-200">
+                            <tr>
+                                <th class="p-3 font-bold">Jina la Malighafi</th>
+                                <th class="p-3 font-bold text-center">Ujazo</th>
+                                <th class="p-3 font-bold text-right">Iliyosalia (Stock)</th>
+                            </tr>
+                        </thead>
+                        <tbody id="stockTableBody" class="divide-y divide-gray-100">
+                            <!-- Populated by JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- 2. History ya Mapokezi -->
+            <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+                <h2 class="text-xl font-bold text-gray-800 mb-4 border-b pb-2"><i class="bi bi-cart-check text-green-500 mr-2"></i> Historia ya Mapokezi Stoo</h2>
+                <div class="overflow-y-auto max-h-[450px]">
+                    <table class="w-full text-left text-sm relative">
+                        <thead class="bg-gray-50 text-gray-700 sticky top-0 z-10 shadow-sm border-b border-gray-200">
+                            <tr>
+                                <th class="p-3 font-bold">Tarehe & Muda</th>
+                                <th class="p-3 font-bold">Malighafi</th>
+                                <th class="p-3 font-bold text-right">Kiasi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="receiptHistoryBody" class="divide-y divide-gray-100">
+                            <!-- Populated by JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 1: KUREKODI MAPOKEZI YA MALIGHAFI (IN) -->
+    <div id="addMaterialModal" class="hidden fixed inset-0 bg-gray-900 bg-opacity-60 justify-center items-center z-50 p-4 backdrop-blur-sm">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden transform transition-all">
+            <div class="bg-blue-600 p-5 flex justify-between items-center">
+                <h3 class="text-xl font-bold text-white"><i class="bi bi-cart-plus mr-2"></i> Rekodi Mapokezi</h3>
+                <button onclick="toggleModal('addMaterialModal')" class="text-white hover:text-red-300 text-2xl font-bold focus:outline-none">&times;</button>
+            </div>
+            
+            <form id="addMaterialForm" class="p-6">
+                <div class="mb-5">
+                    <label class="block text-sm font-bold text-gray-700 mb-2">Jina la Malighafi</label>
+                    <select id="materialSelect" required class="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none bg-gray-50 uppercase text-sm font-semibold">
+                        <option value="">-- Chagua Malighafi --</option>
+                        <option value="Ngano">Ngano (Unga)</option>
+                        <option value="Sukari">Sukari</option>
+                        <option value="Mafuta ya Kupikia">Mafuta ya Kupikia</option>
+                        <option value="Chumvi">Chumvi</option>
+                        <option value="Hamira">Hamira</option>
+                        <option value="Umeme">Umeme</option>
+                        <option value="other" class="text-blue-600 font-bold">+ Nyingine (Andika Mwenyewe)</option>
+                    </select>
+                </div>
+
+                <div id="customMaterialDiv" class="mb-5 hidden bg-blue-50 p-3 rounded-lg border border-blue-100">
+                    <label class="block text-sm font-bold text-blue-800 mb-2">Andika Jina la Malighafi Mpya</label>
+                    <input type="text" id="materialCustom" placeholder="Mfano: Rangi ya Chakula" class="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-blue-500 outline-none uppercase text-sm font-semibold">
+                </div>
+
+                <div class="grid grid-cols-3 gap-3 mb-5">
+                    <label class="cursor-pointer">
+                        <input type="radio" name="unit_type_in" value="Kilo" class="peer hidden" required>
+                        <div class="text-center p-3 border-2 border-gray-200 rounded-lg peer-checked:border-blue-500 peer-checked:bg-blue-50 peer-checked:text-blue-700 font-bold transition-all hover:bg-gray-50 text-sm">
+                            <i class="bi bi-box mr-1"></i> Kilo (Kg)
+                        </div>
+                    </label>
+                    <label class="cursor-pointer">
+                        <input type="radio" name="unit_type_in" value="Lita" class="peer hidden">
+                        <div class="text-center p-3 border-2 border-gray-200 rounded-lg peer-checked:border-blue-500 peer-checked:bg-blue-50 peer-checked:text-blue-700 font-bold transition-all hover:bg-gray-50 text-sm">
+                            <i class="bi bi-droplet mr-1"></i> Lita (L)
+                        </div>
+                    </label>
+                    <label class="cursor-pointer">
+                        <input type="radio" name="unit_type_in" value="Pcs" class="peer hidden">
+                        <div class="text-center p-3 border-2 border-gray-200 rounded-lg peer-checked:border-blue-500 peer-checked:bg-blue-50 peer-checked:text-blue-700 font-bold transition-all hover:bg-gray-50 text-sm">
+                            <i class="bi bi-123 mr-1"></i> Pcs
+                        </div>
+                    </label>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4 mb-5">
+                    <div>
+                        <label class="block text-sm font-bold text-gray-700 mb-2">Kiasi Ulichopokea</label>
+                        <input type="number" step="0.01" id="calcQty" required min="0.1" placeholder="0.00" oninput="calculateTotal()" class="w-full border border-gray-300 rounded-lg p-3 font-bold text-gray-800 focus:ring-2 focus:ring-blue-500 outline-none bg-gray-50">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-bold text-gray-700 mb-2">Bei ya Kununulia (Tsh)</label>
+                        <input type="number" step="0.01" id="calcPrice" required min="1" placeholder="Tsh 0.00" oninput="calculateTotal()" class="w-full border border-gray-300 rounded-lg p-3 font-bold text-gray-800 focus:ring-2 focus:ring-blue-500 outline-none bg-gray-50">
+                    </div>
+                </div>
+
+                <div class="bg-gray-800 text-white p-4 rounded-lg flex justify-between items-center mb-6 shadow-inner">
+                    <span class="font-semibold text-gray-300">Jumla ya Fedha (Total):</span>
+                    <span class="text-xl font-bold text-green-400">Tsh <span id="displayTotal">0.00</span></span>
+                </div>
+                
+                <div class="flex justify-end gap-3 pt-4 border-t">
+                    <button type="button" onclick="toggleModal('addMaterialModal')" class="px-6 py-2.5 text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg font-semibold transition-colors">Ghairi</button>
+                    <button type="submit" class="px-6 py-2.5 text-white bg-blue-600 hover:bg-blue-700 rounded-lg font-bold shadow-lg transition-colors flex items-center">
+                        <i class="bi bi-save mr-2"></i> Hifadhi Stoo
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL 2: KUTOA MALIGHAFI KIWANDANI (OUT / DISPATCH) -->
+    <div id="dispatchMaterialModal" class="hidden fixed inset-0 bg-gray-900 bg-opacity-60 justify-center items-center z-50 p-4 backdrop-blur-sm">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden transform transition-all">
+            <div class="bg-orange-500 p-5 flex justify-between items-center">
+                <h3 class="text-xl font-bold text-white"><i class="bi bi-box-arrow-up mr-2"></i> Toa Malighafi (Kiwandani)</h3>
+                <button onclick="toggleModal('dispatchMaterialModal')" class="text-white hover:text-red-200 text-2xl font-bold focus:outline-none">&times;</button>
+            </div>
+            
+            <form id="dispatchMaterialForm" class="p-6">
+                <div class="mb-5">
+                    <label class="block text-sm font-bold text-gray-700 mb-2">Chagua Malighafi Iliyopo Stoo</label>
+                    <select id="dispatchSelect" required class="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-orange-500 outline-none bg-gray-50 uppercase text-sm font-semibold">
+                        <option value="">-- Chagua Malighafi --</option>
+                        <!-- Populated from JS -->
+                    </select>
+                    <p class="text-sm text-gray-500 mt-2 font-medium">Iliyopo Stoo: <span id="availableStockDisplay" class="font-bold text-orange-600">0.00</span></p>
+                </div>
+
+                <div class="mb-6">
+                    <label class="block text-sm font-bold text-gray-700 mb-2">Kiasi cha Kutoa <span id="dispatchUnitLbl" class="text-orange-600"></span></label>
+                    <input type="number" step="0.01" id="dispatchQty" required min="0.1" placeholder="0.00" class="w-full border border-gray-300 rounded-lg p-3 font-bold text-gray-800 focus:ring-2 focus:ring-orange-500 outline-none bg-white">
+                </div>
+
+                <div class="flex justify-end gap-3 pt-4 border-t">
+                    <button type="button" onclick="toggleModal('dispatchMaterialModal')" class="px-6 py-2.5 text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg font-semibold transition-colors">Ghairi</button>
+                    <button type="submit" class="px-6 py-2.5 text-white bg-orange-500 hover:bg-orange-600 rounded-lg font-bold shadow-lg transition-colors flex items-center">
+                        <i class="bi bi-send-check mr-2"></i> Toa Mzigo
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+    <script>
+        function toggleModal(modalID) {
+            const modal = document.getElementById(modalID);
+            modal.classList.toggle('hidden');
+            modal.classList.toggle('modal-active');
+        }
+
+        function calculateTotal() {
+            const qty = parseFloat(document.getElementById('calcQty').value) || 0;
+            const price = parseFloat(document.getElementById('calcPrice').value) || 0;
+            document.getElementById('displayTotal').innerText = (qty * price).toLocaleString('en-US', {minimumFractionDigits: 2});
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            if(window.appProtectRoute) window.appProtectRoute('storekeeper');
+            
+            const staffId = localStorage.getItem('ngae_logged_in_id') || 'NGAE021';
+            document.getElementById('staffNameDisplay').textContent = "STORE KEEPER (" + staffId + ")";
+            
+            document.getElementById('materialSelect').addEventListener('change', function() {
+                const customDiv = document.getElementById('customMaterialDiv');
+                if(this.value === 'other') {
+                    customDiv.classList.remove('hidden');
+                    document.getElementById('materialCustom').required = true;
+                } else {
+                    customDiv.classList.add('hidden');
+                    document.getElementById('materialCustom').required = false;
+                }
+            });
+
+            document.getElementById('dispatchSelect').addEventListener('change', function() {
+                if(!window.appData) return;
+                const mat = window.appData.rawMaterials.find(m => m.id === this.value);
+                if(mat) {
+                    document.getElementById('availableStockDisplay').textContent = `${mat.stock.toFixed(2)} ${mat.unit}`;
+                    document.getElementById('dispatchUnitLbl').textContent = `(${mat.unit})`;
+                    document.getElementById('dispatchQty').max = mat.stock;
+                } else {
+                    document.getElementById('availableStockDisplay').textContent = '0.00';
+                    document.getElementById('dispatchUnitLbl').textContent = '';
+                }
+            });
+
+            // Populate dispatch select from app data
+            if(window.appData) {
+                const sel = document.getElementById('dispatchSelect');
+                window.appData.rawMaterials.forEach(mat => {
+                    const opt = document.createElement('option');
+                    opt.value = mat.id;
+                    opt.textContent = `${mat.name} (${mat.stock.toFixed(2)} ${mat.unit})`;
+                    sel.appendChild(opt);
+                });
+            }
+
+            document.getElementById('addMaterialForm').addEventListener('submit', (e) => {
+                e.preventDefault();
+                let matName = document.getElementById('materialSelect').value;
+                if(matName === 'other') matName = document.getElementById('materialCustom').value.toUpperCase();
+                const unitType = document.querySelector('input[name="unit_type_in"]:checked')?.value;
+                const qty = parseFloat(document.getElementById('calcQty').value);
+                const price = parseFloat(document.getElementById('calcPrice').value);
+
+                if(!unitType) { alert("Tafadhali chagua aina ya ujazo (Kilo/Lita/Pcs)."); return; }
+
+                if(window.appReceiveMaterial) {
+                    window.appReceiveMaterial(matName, unitType, qty, price);
+                    toggleModal('addMaterialModal');
+                    showMessage(`Malighafi ${matName} (${qty} ${unitType}) imerekodiwa kikamilifu!`, 'green');
+                    renderStorekeeperDashboard();
+                    document.getElementById('addMaterialForm').reset();
+                }
+            });
+
+            document.getElementById('dispatchMaterialForm').addEventListener('submit', (e) => {
+                e.preventDefault();
+                const matId = document.getElementById('dispatchSelect').value;
+                const qty = parseFloat(document.getElementById('dispatchQty').value);
+
+                if(window.appDispatchMaterial) {
+                    const success = window.appDispatchMaterial(matId, qty);
+                    toggleModal('dispatchMaterialModal');
+                    if(success) {
+                        showMessage(`Malighafi imetolewa kiwandani kikamilifu!`, 'orange');
+                    } else {
+                        showMessage('Kiasi kilichoombwa ni kikubwa kuliko kilichopo stoo.', 'red');
+                    }
+                    renderStorekeeperDashboard();
+                    document.getElementById('dispatchMaterialForm').reset();
+                }
+            });
+
+            renderStorekeeperDashboard();
+
+            // Suggestions form submit
+            document.getElementById('suggestionSubmitForm').addEventListener('submit', (e) => {
+                e.preventDefault();
+                const msg = document.getElementById('suggestionMessage').value;
+                if (window.appSubmitSuggestion) {
+                    window.appSubmitSuggestion(msg);
+                    document.getElementById('suggestionMessage').value = '';
+                    renderSuggestionsModal();
+                }
+            });
+        });
+
+        function showMessage(text, color) {
+            const div = document.getElementById('actionMessage');
+            div.className = `mb-4 p-3 rounded-lg font-bold bg-${color}-100 text-${color}-700 block`;
+            div.textContent = text;
+            setTimeout(() => div.classList.add('hidden'), 6000);
+        }
+
+        function renderStorekeeperDashboard() {
+            if(!window.appData) return;
+
+            // Update stock table
+            const tbody = document.getElementById('stockTableBody');
+            tbody.innerHTML = '';
+            const mats = window.appData.rawMaterials || [];
+
+            document.getElementById('materialCountBadge').textContent = `${mats.length} Aina`;
+
+            mats.forEach(mat => {
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-blue-50 transition-colors";
+                const colorClass = mat.stock < 50 ? "text-red-600" : "text-green-600";
+                tr.innerHTML = `
+                    <td class="p-3 font-bold text-gray-800 uppercase">${mat.name}</td>
+                    <td class="p-3 text-center">
+                        <span class="text-xs bg-gray-200 text-gray-700 px-2 py-1 rounded-md font-semibold">${mat.unit}</span>
+                    </td>
+                    <td class="p-3 text-right">
+                        <span class="${colorClass} font-bold text-lg">${mat.stock.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+            // Update history table
+            const histBody = document.getElementById('receiptHistoryBody');
+            histBody.innerHTML = '';
+            const receipts = window.appData.rawMaterialsHistory || [];
+            [...receipts].reverse().forEach(r => {
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-green-50 transition-colors";
+                tr.innerHTML = `
+                    <td class="p-3 text-gray-500 text-xs">
+                        <span class="font-bold text-gray-700">${r.date}</span>
+                    </td>
+                    <td class="p-3">
+                        <span class="font-bold text-gray-800 uppercase">${r.materialName}</span><br>
+                        <span class="text-xs text-gray-500">Tsh ${(r.qty * r.pricePerUnit).toLocaleString()}</span>
+                    </td>
+                    <td class="p-3 text-right">
+                        <span class="bg-green-100 text-green-700 font-bold px-2 py-1 rounded shadow-sm">
+                            +${r.qty.toFixed(2)} <small>${r.unit}</small>
+                        </span>
+                    </td>
+                `;
+                histBody.appendChild(tr);
+            });
+
+            // Update spending stats
+            const today = new Date().toLocaleDateString('en-GB');
+            let spendToday = 0, spendMonth = 0, spendYear = 0;
+            const now = new Date();
+            
+            receipts.forEach(r => {
+                const rDate = new Date(r.dateRaw || r.date);
+                const totalSpend = r.qty * r.pricePerUnit;
+                spendYear += totalSpend;
+                if(rDate.getMonth() === now.getMonth() && rDate.getFullYear() === now.getFullYear()) {
+                    spendMonth += totalSpend;
+                }
+            });
+
+            document.getElementById('spendToday').textContent = `Tsh ${spendToday.toLocaleString()}`;
+            document.getElementById('spendWeek').textContent = `Tsh ${(spendMonth * 0.25).toFixed(0).toLocaleString()}`;
+            document.getElementById('spendMonth').textContent = `Tsh ${spendMonth.toLocaleString()}`;
+            document.getElementById('spendYear').textContent = `Tsh ${spendYear.toLocaleString()}`;
+        }
+
+        // --- SUGGESTIONS CHAT SYSTEM ---
+        function toggleSuggestionsModal() {
+            const modal = document.getElementById('suggestionsModal');
+            if (modal.classList.contains('hidden')) {
+                modal.classList.remove('hidden');
+                modal.classList.add('flex');
+                renderSuggestionsModal();
+            } else {
+                modal.classList.add('hidden');
+                modal.classList.remove('flex');
+            }
+        }
+
+        function renderSuggestionsModal() {
+            if (!window.appData || !window.appGetStaffSuggestions) return;
+            const suggs = window.appGetStaffSuggestions();
+            const chatList = document.getElementById('suggestionsChatList');
+            chatList.innerHTML = '';
+
+            if (suggs.length === 0) {
+                chatList.innerHTML = `<div class="text-center text-gray-400 text-sm py-8"><i class="bi bi-chat-quote text-3xl text-gray-300"></i><p class="mt-2">Huna mapendekezo yoyote bado. Tuma pendekezo lako la kwanza hapa chini!</p></div>`;
+                return;
+            }
+
+            suggs.forEach(s => {
+                const staffDiv = document.createElement('div');
+                staffDiv.className = "flex flex-col items-end space-y-1 mt-2";
+                staffDiv.innerHTML = `
+                    <div class="bg-blue-600 text-white p-3 rounded-2xl rounded-tr-none max-w-md text-sm shadow-sm">
+                        ${s.message}
+                    </div>
+                    <span class="text-[10px] text-gray-400 font-bold mr-1">${s.date} (Wewe)</span>
+                `;
+                chatList.appendChild(staffDiv);
+
+                if (s.replies && s.replies.length > 0) {
+                    s.replies.forEach(r => {
+                        const adminDiv = document.createElement('div');
+                        adminDiv.className = "flex flex-col items-start space-y-1 mt-2";
+                        adminDiv.innerHTML = `
+                            <div class="bg-gray-200 text-gray-800 p-3 rounded-2xl rounded-tl-none max-w-md text-sm shadow-sm">
+                                ${r.message}
+                            </div>
+                            <span class="text-[10px] text-gray-500 font-bold ml-1">${r.date} (Mkurugenzi)</span>
+                        `;
+                        chatList.appendChild(adminDiv);
+                    });
+                }
+            });
+
+            chatList.scrollTop = chatList.scrollHeight;
+        }
+    </script>
+
+    <!-- Modal ya Mapendekezo Yangu -->
+    <div id="suggestionsModal" class="hidden fixed inset-0 z-50 items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
+        <div class="bg-white rounded-2xl w-full max-w-2xl overflow-hidden shadow-2xl transform transition-all flex flex-col h-[500px]">
+            <div class="bg-blue-600 p-4 flex justify-between items-center text-white flex-none">
+                <h3 class="font-bold"><i class="bi bi-chat-left-text-fill mr-2"></i> Mapendekezo Yangu kwa Admin</h3>
+                <button onclick="toggleSuggestionsModal()" class="text-2xl hover:text-blue-200">&times;</button>
+            </div>
+            
+            <div class="flex-1 p-5 overflow-y-auto custom-scrollbar space-y-4 bg-gray-50 flex flex-col min-h-0">
+                <div class="flex-1 overflow-y-auto space-y-3 custom-scrollbar pr-1" id="suggestionsChatList">
+                    <!-- Loaded dynamically from JS -->
+                </div>
+                
+                <form id="suggestionSubmitForm" class="flex-none border-t pt-3 flex gap-2 items-end">
+                    <div class="flex-1">
+                        <label class="block text-[11px] font-bold text-gray-500 uppercase mb-1">Andika Pendekezo au Ujumbe</label>
+                        <textarea id="suggestionMessage" required placeholder="Andika maoni yako hapa..." rows="2" class="w-full border border-gray-300 rounded-xl p-2.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none"></textarea>
+                    </div>
+                    <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-bold px-5 py-3 rounded-xl shadow-md transition-colors h-fit flex items-center gap-1">
+                        <i class="bi bi-send-fill"></i> Tuma
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

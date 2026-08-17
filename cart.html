@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="sw">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weka Order & Fuatilia - NGAE Food</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style> body { font-family: 'Poppins', sans-serif; } </style>
+</head>
+<body class="bg-[#fff5f0] text-gray-800 min-h-screen flex flex-col items-center justify-center p-4">
+
+    <!-- UJUMBE WA KUFANIKIWA KUWEKA ORDER -->
+    <div id="successMessage" class="hidden mb-4 p-4 text-green-700 bg-green-100 rounded-lg"></div>
+    <div id="errorMessage" class="hidden mb-4 p-4 text-red-700 bg-red-100 rounded-lg"></div>
+
+    <div id="welcomeSection" class="max-w-2xl w-full text-center bg-white p-8 md:p-12 rounded-3xl shadow-lg border border-orange-100 transition-all duration-500">
+        <div class="w-20 h-20 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-6">
+            <i class="bi bi-basket-fill text-4xl text-orange-600"></i>
+        </div>
+        <h1 class="text-3xl md:text-4xl font-bold text-gray-800 mb-4">Karibu NGAE Food Processing</h1>
+        <p class="text-gray-600 text-lg mb-8 leading-relaxed">
+            Tunajivunia kukuletea bidhaa bora, salama na zenye viwango vya hali ya juu moja kwa moja kutoka kiwandani kwetu. 
+            Sasa unaweza kuagiza bidhaa nyingi kwa wakati mmoja kwa urahisi zaidi.
+        </p>
+        
+        <!-- Vitufe Viliwili (Weka Order & Fuatilia) -->
+        <div class="flex flex-col sm:flex-row justify-center gap-4">
+            <button onclick="showOrderForm()" class="bg-gradient-to-r from-orange-600 to-red-600 text-white font-bold text-lg py-4 px-8 rounded-full shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all">
+                <i class="bi bi-cart-plus mr-2"></i> Anza Kuweka Order
+            </button>
+            <button onclick="document.getElementById('trackingModal').classList.remove('hidden')" class="bg-white border-2 border-orange-600 text-orange-600 font-bold text-lg py-4 px-8 rounded-full shadow-lg hover:bg-orange-50 hover:-translate-y-1 transition-all">
+                <i class="bi bi-search mr-2"></i> Fuatilia Order Yako
+            </button>
+        </div>
+        
+        <div class="mt-6 text-center">
+            <a href="index.html" class="text-sm text-gray-500 hover:text-gray-800 font-medium">&larr; Rudi Mwanzo</a>
+        </div>
+    </div>
+
+    <!-- MODAL YA KUFATILIA ORDER -->
+    <div id="trackingModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
+        <div class="bg-white rounded-2xl w-full max-w-md overflow-hidden shadow-2xl transform transition-all">
+            <div class="bg-gray-800 p-5 flex justify-between items-center text-white">
+                <h3 class="font-bold text-lg"><i class="bi bi-search mr-2"></i> Fuatilia Mzigo Wako</h3>
+                <button onclick="document.getElementById('trackingModal').classList.add('hidden')" class="text-2xl hover:text-red-400">&times;</button>
+            </div>
+            <form id="trackForm" class="p-6">
+                <label class="block text-sm font-bold text-gray-700 mb-2">Ingiza Namba ya Order (Order ID)</label>
+                <input type="text" id="track_id" placeholder="Mfano: ORD-A1B2C3" required class="w-full border border-gray-300 rounded-xl p-3 focus:ring-2 focus:ring-orange-500 outline-none uppercase font-mono tracking-widest text-center text-lg mb-4">
+                <button type="submit" class="w-full bg-orange-600 hover:bg-orange-700 text-white font-bold py-3 rounded-xl shadow-md transition-colors">
+                    Tafuta Order
+                </button>
+            </form>
+            
+            <div id="trackResult" class="p-6 border-t border-gray-200 hidden bg-gray-50"></div>
+        </div>
+    </div>
+
+    <!-- Form ya Kuweka Order -->
+    <div id="orderFormSection" class="hidden max-w-4xl w-full bg-white rounded-3xl shadow-xl border border-orange-100 overflow-hidden transition-all duration-500 opacity-0 transform translate-y-10 mt-6">
+        <div class="bg-gradient-to-r from-orange-600 to-red-600 p-6 md:p-8 text-white text-center">
+            <h2 class="text-2xl md:text-3xl font-bold"><i class="bi bi-bag-check-fill mr-2"></i> Fomu ya Maombi ya Bidhaa</h2>
+            <p class="text-white/80 mt-2">Tafadhali jaza taarifa zako kwa usahihi ili kurahisisha usafirishaji.</p>
+        </div>
+        
+        <form id="orderForm" class="p-6 md:p-8">
+            <h3 class="text-lg font-bold text-gray-700 border-b pb-2 mb-4">1. Taarifa za Mteja & Mahali</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+                <div>
+                    <label class="block text-sm font-bold text-gray-700 mb-1">Majina Kamili</label>
+                    <input type="text" id="customer_name" required class="w-full border border-gray-300 rounded-xl p-3 focus:ring-2 focus:ring-orange-500 outline-none">
+                </div>
+                <div>
+                    <label class="block text-sm font-bold text-gray-700 mb-1">Namba ya Simu</label>
+                    <input type="text" id="phone" required class="w-full border border-gray-300 rounded-xl p-3 focus:ring-2 focus:ring-orange-500 outline-none">
+                </div>
+                <div>
+                    <label class="block text-sm font-bold text-gray-700 mb-1">Mkoa</label>
+                    <input type="text" id="region" required class="w-full border border-gray-300 rounded-xl p-3 focus:ring-2 focus:ring-orange-500 outline-none">
+                </div>
+                <div>
+                    <label class="block text-sm font-bold text-gray-700 mb-1">Wilaya</label>
+                    <input type="text" id="district" required class="w-full border border-gray-300 rounded-xl p-3 focus:ring-2 focus:ring-orange-500 outline-none">
+                </div>
+                <div>
+                    <label class="block text-sm font-bold text-gray-700 mb-1">Kata</label>
+                    <input type="text" id="ward" required class="w-full border border-gray-300 rounded-xl p-3 focus:ring-2 focus:ring-orange-500 outline-none">
+                </div>
+                <div>
+                    <label class="block text-sm font-bold text-gray-700 mb-1">Mtaa / Kijiji</label>
+                    <input type="text" id="street" required class="w-full border border-gray-300 rounded-xl p-3 focus:ring-2 focus:ring-orange-500 outline-none">
+                </div>
+            </div>
+
+            <div class="flex justify-between items-center border-b pb-2 mb-4">
+                <h3 class="text-lg font-bold text-gray-700">2. Chagua Bidhaa Zako</h3>
+                <button type="button" onclick="addCartItem()" class="text-sm font-bold text-orange-600 bg-orange-100 hover:bg-orange-200 px-4 py-2 rounded-lg transition-colors">
+                    <i class="bi bi-plus-circle"></i> Ongeza Bidhaa Nyingine
+                </button>
+            </div>
+
+            <div id="cartItemsContainer" class="space-y-4 mb-6">
+                <!-- Items will be injected here via JS -->
+            </div>
+
+            <div class="mt-6 flex flex-col md:flex-row justify-between items-center bg-gray-800 text-white p-6 rounded-xl shadow-lg mb-8">
+                <div class="text-gray-300 text-sm font-semibold mb-2 md:mb-0 uppercase tracking-widest">
+                    Jumla Kuu ya Kulipa
+                </div>
+                <div class="text-right">
+                    <p class="text-4xl font-black text-green-400" id="grandTotalDisplay">Tsh 0</p>
+                </div>
+            </div>
+
+            <div class="flex gap-4">
+                <button type="button" onclick="cancelOrder()" class="w-1/3 bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold text-xl py-4 rounded-xl shadow-lg transition-transform transform hover:-translate-y-1">
+                    Ghairi
+                </button>
+                <button type="submit" class="w-2/3 bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 text-white font-bold text-xl py-4 rounded-xl shadow-lg transition-transform transform hover:-translate-y-1 flex items-center justify-center">
+                    <i class="bi bi-send-check-fill mr-2"></i> Tuma Order
+                </button>
+            </div>
+        </form>
+    </div>
+    
+    <!-- HTML Template kwa ajili ya kufanya Clone -->
+    <template id="cartItemTemplate">
+        <div class="cart-item bg-orange-50 p-4 md:p-6 rounded-2xl border border-orange-100 relative mt-4">
+            <button type="button" onclick="removeCartItem(this)" class="remove-btn absolute top-4 right-4 text-red-500 hover:text-red-700 bg-white rounded-full p-2 shadow-sm transition-colors hidden">
+                <i class="bi bi-trash-fill"></i>
+            </button>
+            <div class="grid grid-cols-1 md:grid-cols-12 gap-4 pt-6 md:pt-0 pr-0 md:pr-12">
+                <div class="md:col-span-8">
+                    <label class="block text-sm font-bold text-gray-700 mb-1">Bidhaa Unayohitaji</label>
+                    <select class="product-select w-full border border-gray-300 rounded-xl p-3 focus:ring-2 focus:ring-orange-500 outline-none bg-white" onchange="calculateGrandTotal()" required>
+                        <option value="" data-price="0">-- Chagua Bidhaa --</option>
+                        <!-- Options will be populated from JS -->
+                    </select>
+                </div>
+                <div class="md:col-span-4">
+                    <label class="block text-sm font-bold text-gray-700 mb-1">Idadi</label>
+                    <input type="number" class="quantity-input w-full border border-gray-300 rounded-xl p-3 focus:ring-2 focus:ring-orange-500 outline-none bg-white" value="1" min="1" oninput="calculateGrandTotal()" required>
+                </div>
+            </div>
+            <div class="mt-3 text-right">
+                <span class="text-sm font-bold text-gray-500">Jumla Ndogo:</span> 
+                <span class="item-total text-lg font-black text-gray-800 ml-2">Tsh 0</span>
+            </div>
+        </div>
+    </template>
+
+    <script src="app.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Populate initial cart item
+            addCartItem();
+
+            document.getElementById('trackForm').addEventListener('submit', (e) => {
+                e.preventDefault();
+                const trackId = document.getElementById('track_id').value.toUpperCase();
+                if(window.appTrackOrder) {
+                    const result = window.appTrackOrder(trackId);
+                    const resDiv = document.getElementById('trackResult');
+                    resDiv.classList.remove('hidden');
+                    if(result) {
+                        resDiv.innerHTML = `
+                            <div class="text-green-700 font-bold mb-2">Order Imepatikana!</div>
+                            <div><strong>Jina:</strong> ${result.customer_name}</div>
+                            <div><strong>Tarehe:</strong> ${result.date}</div>
+                            <div><strong>Jumla:</strong> Tsh ${result.total.toLocaleString()}</div>
+                            <div class="mt-2"><span class="bg-blue-100 text-blue-800 px-2 py-1 rounded text-sm font-bold">Status: Pending</span></div>
+                        `;
+                    } else {
+                        resDiv.innerHTML = `<div class="text-red-600 font-bold">Order yenye ID ${trackId} haijapatikana.</div>`;
+                    }
+                }
+            });
+
+            document.getElementById('orderForm').addEventListener('submit', (e) => {
+                e.preventDefault();
+                
+                const customer_name = document.getElementById('customer_name').value;
+                const phone = document.getElementById('phone').value;
+                const region = document.getElementById('region').value;
+                const district = document.getElementById('district').value;
+                const ward = document.getElementById('ward').value;
+                const street = document.getElementById('street').value;
+
+                const items = [];
+                let total = 0;
+                document.querySelectorAll('.cart-item').forEach(itemEl => {
+                    const select = itemEl.querySelector('.product-select');
+                    const qty = parseInt(itemEl.querySelector('.quantity-input').value);
+                    if(select.value && qty > 0) {
+                        const price = parseFloat(select.options[select.selectedIndex].getAttribute('data-price'));
+                        items.push({
+                            product: select.options[select.selectedIndex].text.split(' (')[0],
+                            quantity: qty,
+                            price: price
+                        });
+                        total += price * qty;
+                    }
+                });
+
+                if(items.length === 0) {
+                    alert("Tafadhali chagua angalau bidhaa moja.");
+                    return;
+                }
+
+                if(window.appPlaceOrder) {
+                    const orderId = window.appPlaceOrder({
+                        customer_name, phone, region, district, ward, street, items, total
+                    });
+                    
+                    document.getElementById('successMessage').textContent = `Order yako imetumwa kikamilifu! Order ID yako ni: ${orderId}. Tafadhali ihifadhi kwa ajili ya kufuatilia.`;
+                    document.getElementById('successMessage').classList.remove('hidden');
+                    
+                    // Reset form and return to welcome section
+                    cancelOrder();
+                    window.scrollTo(0,0);
+                }
+            });
+        });
+
+        function showOrderForm() {
+            document.getElementById('welcomeSection').style.display = 'none';
+            document.getElementById('successMessage').classList.add('hidden');
+            const form = document.getElementById('orderFormSection');
+            form.classList.remove('hidden');
+            setTimeout(() => {
+                form.classList.remove('opacity-0', 'translate-y-10');
+            }, 50);
+        }
+
+        function cancelOrder() {
+            document.getElementById('orderForm').reset();
+            document.getElementById('cartItemsContainer').innerHTML = '';
+            addCartItem();
+            calculateGrandTotal();
+            
+            document.getElementById('orderFormSection').classList.add('hidden', 'opacity-0', 'translate-y-10');
+            document.getElementById('welcomeSection').style.display = 'block';
+        }
+
+        function calculateGrandTotal() {
+            let grandTotal = 0;
+            const items = document.querySelectorAll('.cart-item');
+            
+            items.forEach(item => {
+                const select = item.querySelector('.product-select');
+                const qtyInput = item.querySelector('.quantity-input');
+                const itemTotalDisplay = item.querySelector('.item-total');
+                
+                const selectedOption = select.options[select.selectedIndex];
+                const price = parseFloat(selectedOption?.getAttribute('data-price')) || 0;
+                const qty = parseInt(qtyInput.value) || 0;
+                
+                const itemTotal = price * qty;
+                grandTotal += itemTotal;
+                
+                itemTotalDisplay.textContent = "Tsh " + itemTotal.toLocaleString();
+            });
+
+            document.getElementById('grandTotalDisplay').textContent = "Tsh " + grandTotal.toLocaleString();
+        }
+
+        function addCartItem() {
+            const container = document.getElementById('cartItemsContainer');
+            const template = document.getElementById('cartItemTemplate');
+            const clone = template.content.cloneNode(true);
+            
+            // Populate select options from window.appProducts if available
+            const select = clone.querySelector('.product-select');
+            
+            // Default products just in case app.js hasn't loaded yet
+            const defaultProducts = [
+                { id: "17", name: "ANDAZI", price: 1000 },
+                { id: "33", name: "CAKE KUBWA", price: 7000 },
+                { id: "16", name: "ROUND", price: 800 },
+                { id: "19", name: "CAKE VPND", price: 1000 }
+            ];
+            
+            const products = (window.appData && window.appData.products) ? window.appData.products : defaultProducts;
+            
+            products.forEach(p => {
+                const opt = document.createElement('option');
+                opt.value = p.id || p.name;
+                opt.setAttribute('data-price', p.price);
+                opt.textContent = `${p.name} (Tsh ${p.price.toLocaleString()} / pcs)`;
+                select.appendChild(opt);
+            });
+
+            container.appendChild(clone);
+            updateRemoveButtons();
+            calculateGrandTotal();
+        }
+
+        function removeCartItem(button) {
+            const item = button.closest('.cart-item');
+            item.remove();
+            updateRemoveButtons();
+            calculateGrandTotal();
+        }
+
+        function updateRemoveButtons() {
+            const items = document.querySelectorAll('.cart-item');
+            const firstButton = items[0].querySelector('.remove-btn');
+            
+            if (items.length === 1) {
+                firstButton.classList.add('hidden');
+            } else {
+                items.forEach(item => {
+                    item.querySelector('.remove-btn').classList.remove('hidden');
+                });
+            }
+        }
+    </script>
+</body>
+</html>

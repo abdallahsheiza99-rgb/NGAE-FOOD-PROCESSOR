@@ -1,220 +1,262 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="sw">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="A premium shop system dashboard with Boss Admin Sales tracking by Day, Week, and Month.">
-    <title>StellarShop - Inventory & Boss Checkout</title>
-    <!-- Google Fonts: Outfit -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    <!-- FontAwesome for Premium Icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Main Style Sheet -->
-    <link rel="stylesheet" href="style.css">
-    <!-- App Logic -->
-    <script src="app.js" defer></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NGAE FOOD PROCESSORS HUB | Mikate & Maandazi</title>
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+
 </head>
+
 <body>
-    <div class="app-background"></div>
-    <div class="app-container">
-        <!-- Main Dashboard Header -->
-        <header class="app-header">
-            <div class="brand">
-                <div class="brand-logo">
-                    <i class="fa-solid fa-cart-shopping"></i>
-                </div>
-                <div class="brand-text">
-                    <h1>StellarShop</h1>
-                    <p>Premium Checkout & Sales Control</p>
-                </div>
-            </div>
-            <div class="header-actions">
-                <a href="admin.html" class="btn btn-secondary" id="admin-link">
-                    <i class="fa-solid fa-user-tie"></i> Boss Admin
-                </a>
-                <div class="system-status">
-                    <span class="pulse-dot"></span>
-                    <span>System Ready</span>
-                </div>
-            </div>
-        </header>
 
-        <!-- Main Dashboard Layout -->
-        <main class="dashboard-grid">
-            
-            <!-- Left Panel: Input & Control -->
-            <section class="panel control-panel" aria-labelledby="input-section-title">
-                <div class="panel-header">
-                    <i class="fa-solid fa-pen-to-square"></i>
-                    <h2 id="input-section-title">Commodity Entry</h2>
-                </div>
+<header>
+<div class="container header-container">
+ <div class="logo">
+  <i class="fas fa-bread-slice"></i>
+  <h2>NGAE FOOD</h2>
+ </div>
+ 
+ <div class="nav-actions">
+   <nav>
+    <ul id="nav-menu">
+     <li><a href="#home">Mwanzo</a></li>
+     <li><a href="#products">Bidhaa</a></li>
+     <li><a href="#about">Kuhusu Sisi</a></li>
+     <li><a href="#contact">Mawasiliano</a></li>
+     
+     <li class="desktop-only">
+         <a href="cart.html" class="cart-icon">
+             <i class="fas fa-shopping-cart"></i>
+             <span class="cart-badge" id="cartBadgeCount">0</span>
+         </a>
+     </li>
 
-                <!-- Catalog Count Indicator -->
-                <div class="limit-container">
-                    <div class="limit-labels">
-                        <span>Items in Current Basket</span>
-                        <span id="limit-counter">0 Items</span>
-                    </div>
-                </div>
+     <li><a href="#" class="login-btn" onclick="openLogin()">Ingia (Login)</a></li>
+    </ul>
+   </nav>
+   <div class="mobile-menu" id="mobile-menu"><i class="fas fa-bars"></i></div>
+ </div>
+</div>
+</header>
 
-                <!-- Form Section -->
-                <form id="commodity-form" novalidate>
-                    <div class="form-group">
-                        <label for="commodity-name">Commodity Name</label>
-                        <div class="input-wrapper">
-                            <i class="fa-solid fa-tag input-icon"></i>
-                            <input type="text" id="commodity-name" placeholder="e.g., Organic Bananas, Milk, Bread" autocomplete="off" required>
-                        </div>
-                        <span class="error-msg" id="name-error">Please enter a commodity name.</span>
-                    </div>
+<section class="hero-slider" id="home">
+ <div class="slide active"><div class="bg" style="background-image:url('https://images.unsplash.com/photo-1509440159596-0249088772ff?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80')"></div></div>
+ <div class="slide"><div class="bg" style="background-image:url('https://images.unsplash.com/photo-1550617931-e17a7b70dce2?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80')"></div></div>
+ <div class="slide"><div class="bg" style="background-image:url('https://images.unsplash.com/photo-1578985545062-69928b1d9587?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80')"></div></div>
+ <div class="hero-content">
+  <h2>NGAE FOOD PROCESSORS HUB</h2>
+  <p>Wazalishaji Bora wa Mikate, Maandazi na Bidhaa Zote za Bakery</p>
+  <a href="#products" class="btn">Tazama Bidhaa Zetu</a>
+ </div>
+</section>
 
-                    <div class="form-group">
-                        <label for="commodity-price">Price ($)</label>
-                        <div class="input-wrapper">
-                            <i class="fa-solid fa-dollar-sign input-icon"></i>
-                            <input type="number" id="commodity-price" step="0.01" min="0" placeholder="0.00" autocomplete="off" required>
-                        </div>
-                        <span class="error-msg" id="price-error">Please enter a valid, non-negative price.</span>
-                    </div>
+<section class="products" id="products">
+<div class="container">
+<div class="section-title"><h2>Bidhaa Zetu</h2></div>
+<div class="products-grid">
 
-                    <button type="submit" class="btn btn-primary" id="add-btn">
-                        <i class="fa-solid fa-plus"></i> Add to Catalog
-                    </button>
-                </form>
+<div class="product-card">
+ <div class="product-img" style="background-image:url('https://images.unsplash.com/photo-1598373182133-52452f7691ef?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80')"></div>
+ <div class="product-content">
+  <h3>Mikate Safi</h3>
+  <p>Mikate ya kiwango cha juu, iliyookwa kwa ustadi na inapatikana kwa bei ya jumla na rejareja.</p>
+  <a href="cart.html" class="order-btn"><i class="fas fa-cart-plus"></i> Weka Oda</a>
+ </div>
+</div>
 
-                <div class="action-divider"><span>Quick Tools</span></div>
+<div class="product-card">
+ <div class="product-img" style="background-image:url('https://images.unsplash.com/photo-1623341214825-9f4f963727da?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80')"></div>
+ <div class="product-content">
+  <h3>Maandazi Bomba</h3>
+  <p>Maandazi laini, matamu na yenye viwango kwa ajili ya kifungua kinywa na sherehe mbalimbali.</p>
+  <a href="cart.html" class="order-btn"><i class="fas fa-cart-plus"></i> Weka Oda</a>
+ </div>
+</div>
 
-                <div class="quick-tools-grid">
-                    <button class="btn btn-secondary" id="demo-btn">
-                        <i class="fa-solid fa-wand-magic-sparkles"></i> Load Demo
-                    </button>
-                    <button class="btn btn-danger" id="clear-btn">
-                        <i class="fa-solid fa-trash-can"></i> Clear Basket
-                    </button>
-                </div>
-            </section>
+<div class="product-card">
+ <div class="product-img" style="background-image:url('https://images.unsplash.com/photo-1578985545062-69928b1d9587?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80')"></div>
+ <div class="product-content">
+  <h3>Keki & Bites</h3>
+  <p>Keki za harusi, sherehe, na bites za aina zote zinazotengenezwa kwa viungo asilia.</p>
+  <a href="cart.html" class="order-btn"><i class="fas fa-cart-plus"></i> Weka Oda</a>
+ </div>
+</div>
 
-            <!-- Right Panel: Inventory List & Live Analytics -->
-            <section class="panel display-panel" aria-labelledby="inventory-section-title">
-                <div class="panel-header">
-                    <i class="fa-solid fa-list-check"></i>
-                    <h2 id="inventory-section-title">Active Catalog</h2>
-                </div>
+</div>
+</div>
+</section>
 
-                <!-- Empty State -->
-                <div class="empty-state" id="empty-state">
-                    <i class="fa-solid fa-basket-shopping empty-icon"></i>
-                    <h3>Your basket is empty</h3>
-                    <p>Start adding commodities on the left panel or click "Load Demo" to quickly test.</p>
-                </div>
+<section class="about" id="about">
+<div class="container">
+<div class="section-title"><h2>Kuhusu NGAE FOOD</h2></div>
+<div class="about-grid">
+ <div class="about-box">
+  <i class="fas fa-industry"></i>
+  <h3>Kiwanda Chetu</h3>
+  <p>Ngae Food Processors Hub ni kiwanda cha kisasa kinachojishughulisha na uzalishaji na usambazaji wa bidhaa za fukwe (bakery) katika ubora wa kimataifa.</p>
+ </div>
+ <div class="about-box">
+  <i class="fas fa-store"></i>
+  <h3>Matawi Yetu</h3>
+  <p>Tunawafikia wateja wetu kwa urahisi kupitia maduka yetu yaliyopo <strong>Mombo, Soni, na Lushoto</strong>, kuhakikisha unapata bidhaa zikiwa za moto.</p>
+ </div>
+</div>
+</div>
+</section>
 
-                <!-- Commodities Grid List -->
-                <div class="commodities-list" id="commodities-list" style="display: none;">
-                    <!-- Dynamically populated via JS -->
-                </div>
+<section class="testimonials" id="testimonials">
+<div class="container">
+<div class="section-title"><h2>Wateja Wanasemaje</h2></div>
+<div class="testimonial-carousel">
+ <div class="testimonial active">
+  <img src="https://images.unsplash.com/photo-1528892952291-009c663ce843?ixlib=rb-4.0.3&auto=format&fit=crop&w=150&q=80" alt="Mteja">
+  <p>"Mikate ya NGAE ni mitamu sana na inakaa muda mrefu bila kuharibika. Huduma zao madukani ni nzuri sana."</p>
+  <h4>Juma - Lushoto</h4>
+ </div>
+ <div class="testimonial">
+  <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&auto=format&fit=crop&w=150&q=80" alt="Mteja">
+  <p>"Maandazi yao ni laini! Nimekuwa mteja wao wa kudumu kwenye tawi lao la Mombo."</p>
+  <h4>Amina - Mombo</h4>
+ </div>
+ <div class="testimonial">
+  <img src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?ixlib=rb-4.0.3&auto=format&fit=crop&w=150&q=80" alt="Mteja">
+  <p>"Keki niliyofanyiwa kwa ajili ya harusi yangu ilikuwa ya kipekee. Asanteni NGAE."</p>
+  <h4>Baraka - Soni</h4>
+ </div>
+</div>
+</div>
+</section>
 
-                <!-- Live Analytics Dashboard -->
-                <div class="analytics-dashboard" id="analytics-dashboard" style="display: none;">
-                    <div class="analytics-card main-stat">
-                        <span class="stat-label">Subtotal</span>
-                        <span class="stat-value" id="stat-subtotal">$0.00</span>
-                    </div>
-                    <div class="analytics-card">
-                        <span class="stat-label">Avg. Price</span>
-                        <span class="stat-value" id="stat-average">$0.00</span>
-                    </div>
-                    <div class="analytics-card">
-                        <span class="stat-label">Highest Price</span>
-                        <span class="stat-value text-green" id="stat-highest">-</span>
-                    </div>
-                    <div class="analytics-card">
-                        <span class="stat-label">Lowest Price</span>
-                        <span class="stat-value text-blue" id="stat-lowest">-</span>
-                    </div>
-                </div>
+<section id="contact">
+<div class="container">
+<div class="section-title"><h2>Mawasiliano & Matawi</h2></div>
 
-                <!-- Action Button for Invoice Generation -->
-                <div class="checkout-action" id="checkout-action" style="display: none;">
-                    <button class="btn btn-checkout" id="generate-receipt-btn">
-                        <i class="fa-solid fa-receipt"></i> Checkout & Save
-                    </button>
-                </div>
-            </section>
-        </main>
+<div class="contact-grid">
+<div class="contact-box">
+ <h3>Wasiliana Nasi</h3><br>
+ <p><i class="fas fa-map-marker-alt"></i> Makao Makuu: Tanga, Tanzania</p>
+ <p><i class="fas fa-store"></i> Matawi: MOMBO, SONI, LUSHOTO</p>
+ <p><i class="fas fa-phone"></i> +255 776 637 247</p>
+ <p><i class="fas fa-envelope"></i> info@ngaefood.co.tz</p>
+ <div class="social-icons">
+  <a href="#"><i class="fab fa-facebook"></i></a>
+  <a href="#"><i class="fab fa-instagram"></i></a>
+  <a href="https://wa.me/255776637247?text=Habari%20NGAE%20Food,%20nahitaji%20kufanya%20order" target="_blank"><i class="fab fa-whatsapp"></i></a>
+ </div>
+</div>
 
-        <!-- Digital Receipt Overlay/Modal -->
-        <div class="receipt-overlay" id="receipt-overlay" role="dialog" aria-modal="true" aria-labelledby="receipt-title" style="display: none;">
-            <div class="receipt-modal">
-                <button class="receipt-close-btn" id="close-receipt-btn" aria-label="Close receipt">
-                    <i class="fa-solid fa-xmark"></i>
-                </button>
-                
-                <div class="receipt-paper" id="receipt-paper">
-                    <div class="receipt-header">
-                        <div class="receipt-logo">
-                            <i class="fa-solid fa-cart-shopping"></i>
-                            <span>STELLARSHOP</span>
-                        </div>
-                        <p class="receipt-tagline">Premium Retail Solutions</p>
-                        <div class="receipt-meta">
-                            <div><strong>Receipt #:</strong> <span id="receipt-no">ST-837492</span></div>
-                            <div><strong>Date:</strong> <span id="receipt-date">2026-08-16</span></div>
-                        </div>
-                    </div>
-                    
-                    <div class="receipt-divider"></div>
-                    
-                    <table class="receipt-table">
-                        <thead>
-                            <tr>
-                                <th class="col-num">#</th>
-                                <th class="col-item">Item</th>
-                                <th class="col-price">Price</th>
-                            </tr>
-                        </thead>
-                        <tbody id="receipt-items-body">
-                            <!-- Dynamically populated -->
-                        </tbody>
-                    </table>
-                    
-                    <div class="receipt-divider"></div>
-                    
-                    <div class="receipt-summary">
-                        <div class="receipt-row">
-                            <span>Total Items:</span>
-                            <span id="receipt-total-items">0</span>
-                        </div>
-                        <div class="receipt-row">
-                            <span>Average Price:</span>
-                            <span id="receipt-avg-price">$0.00</span>
-                        </div>
-                        <div class="receipt-row total-row">
-                            <span>Total Amount:</span>
-                            <span id="receipt-grand-total">$0.00</span>
-                        </div>
-                    </div>
-                    
-                    <div class="receipt-footer">
-                        <div class="barcode"></div>
-                        <p>Thank you for shopping with StellarShop!</p>
-                        <p class="receipt-timestamp" id="receipt-timestamp"></p>
-                    </div>
-                </div>
+<div class="contact-box">
+ <iframe src="https://maps.google.com/maps?q=Lushoto%20Tanzania&t=&z=10&ie=UTF8&iwloc=&output=embed"
+ style="width:100%;height:220px;border:0; border-radius: 10px;"></iframe>
+</div>
+</div>
 
-                <div class="receipt-actions">
-                    <button class="btn btn-primary" id="print-receipt-btn">
-                        <i class="fa-solid fa-print"></i> Print Receipt
-                    </button>
-                </div>
-            </div>
-        </div>
+</div>
+</section>
 
-        <!-- System Footer -->
-        <footer class="app-footer">
-            <p>&copy; 2026 StellarShop Inc. All Rights Reserved. Built with Vanilla CSS & JS.</p>
-        </footer>
+<footer>
+  <p>© 2026 NGAE FOOD PROCESSORS HUB | Haki Zote Zimehifadhiwa</p>
+</footer>
+
+<a href="https://wa.me/255776637247?text=Habari%20NGAE%20Food,%20nahitaji%20msaada%20kuhusu%20huduma%20zenu" target="_blank" class="float-btn">
+    <i class="fab fa-whatsapp"></i>
+</a>
+
+<!-- LOGIN MODAL ILIYOBORESHWA -->
+<div class="modal-overlay" id="loginModal">
+  <div class="modal-content">
+    <span class="close-modal" onclick="closeLogin()">×</span>
+    
+    <div style="text-align: center;">
+        <h2 style="font-weight: 700; color: #e65100;">NGAE FOOD PROCESSING</h2>
+        <p class="sub-title" style="color: #6b7280;">Mfumo wa Wafanyakazi</p>
+        <h3 style="font-weight: 600; color: #374151;">Chagua eneo lako (Login):</h3>
     </div>
+
+    <div class="role-grid">
+            <a href="login.html?role=operator" class="role-card role-orange">
+                <div class="icon-circle">
+                    <i class="fas fa-truck-loading"></i>
+                </div>
+                <h4>Operator</h4>
+                <p>Kutuma mzigo</p>
+            </a>
+
+            <a href="login.html?role=seller" class="role-card role-blue">
+                <div class="icon-circle">
+                    <i class="fas fa-cash-register"></i>
+                </div>
+                <h4>Seller</h4>
+                <p>Kufanya mauzo</p>
+            </a>
+
+            <a href="login.html?role=storekeeper" class="role-card role-green">
+                <div class="icon-circle">
+                    <i class="fas fa-boxes"></i>
+                </div>
+                <h4>Store Keeper</h4>
+                <p>Kusimamia stoo</p>
+            </a>
+
+            <a href="login.html?role=manufacturer" class="role-card role-purple">
+                <div class="icon-circle">
+                    <i class="fas fa-industry"></i>
+                </div>
+                <h4>Manufacturer</h4>
+                <p>Uzalishaji</p>
+            </a>
+        </div>
+        <div class="mt-5 text-center border-t border-gray-100 pt-3">
+            <a href="admin.html" class="inline-flex items-center text-sm font-semibold text-orange-600 hover:text-orange-700">
+                <i class="fas fa-user-shield mr-2"></i> Ingia kama Admin
+            </a>
+        </div>
+  </div>
+</div>
+
+<script src="app.js"></script>
+<script>
+// Mobile menu toggle
+const mobileMenu = document.getElementById('mobile-menu');
+const navMenu = document.getElementById('nav-menu');
+mobileMenu.onclick = () => navMenu.classList.toggle('active');
+
+// Hero Slider
+let slides = document.querySelectorAll('.slide'), s=0;
+setInterval(() => {
+  slides[s].classList.remove('active');
+  s = (s+1) % slides.length;
+  slides[s].classList.add('active');
+}, 5000);
+
+// Testimonial Slider
+let testimonials = document.querySelectorAll('.testimonial'), i=0;
+setInterval(() => {
+  testimonials[i].classList.remove('active');
+  i = (i+1) % testimonials.length;
+  testimonials[i].classList.add('active');
+}, 6000);
+
+// Login Modal Functions
+function openLogin() { 
+  document.getElementById('loginModal').style.display = 'flex'; 
+}
+
+function closeLogin() { 
+  document.getElementById('loginModal').style.display = 'none'; 
+}
+
+window.onclick = function(event) {
+  let modal = document.getElementById('loginModal');
+  if (event.target == modal) {
+    modal.style.display = "none";
+  }
+}
+</script>
+
 </body>
 </html>

@@ -1,130 +1,1164 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="sw">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Boss Admin Panel for sales metrics tracking by Siku, Wiki, and Mwezi.">
-    <title>StellarShop - Boss Sales Control</title>
-    <!-- Google Fonts: Outfit -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    <!-- FontAwesome for Icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Main Style Sheet -->
-    <link rel="stylesheet" href="style.css">
-    <!-- Standalone Admin JavaScript -->
-    <script src="admin.js" defer></script>
-</head>
-<body class="admin-body">
-    <div class="app-background"></div>
+    <title>NGAE Food Processing - Admin Control</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
     
-    <div class="admin-container">
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+        }
+
+        .auth-bg {
+            background: linear-gradient(135deg, #2d1004 0%, #120401 100%);
+        }
+
+        .glass-effect {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        }
+
+        /* --- RESPONSIVE FLAMES BACKGROUND --- */
+        .flames-container {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            pointer-events: none;
+            z-index: 0;
+            display: flex;
+            align-items: flex-end;
+        }
+
+        .flame {
+            position: absolute;
+            bottom: -5vw;
+            background: radial-gradient(circle, rgba(251, 191, 36, 0.8) 0%, rgba(234, 88, 12, 0.6) 40%, rgba(153, 27, 27, 0.2) 80%, transparent 100%);
+            border-radius: 50% 50% 20% 20%;
+            filter: blur(2vw);
+            animation: riseAndFlare infinite ease-in;
+            mix-blend-mode: screen;
+        }
+
+        @keyframes riseAndFlare {
+            0% { transform: scale(1) translateY(0); opacity: 0.6; }
+            50% { transform: scale(1.2) translateY(-15vh); opacity: 0.9; }
+            100% { transform: scale(0.8) translateY(-35vh); opacity: 0; }
+        }
         
-        <!-- Auth Screen (Boss Password Input) -->
-        <section class="auth-card-panel" id="admin-login-card">
-            <div class="auth-header">
-                <i class="fa-solid fa-user-shield auth-icon"></i>
-                <h2>Boss Authentication</h2>
-                <p>Enter the master password to view store analytics</p>
-            </div>
-            
-            <form id="admin-login-form" novalidate>
-                <div class="form-group">
-                    <label for="admin-password">Boss Password</label>
-                    <div class="input-wrapper">
-                        <i class="fa-solid fa-key input-icon"></i>
-                        <input type="password" id="admin-password" placeholder="Password (Hint: andazi)" autocomplete="off" required>
-                    </div>
-                    <span class="error-msg" id="auth-error">Incorrect password. Please try again.</span>
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: #f3f4f6; border-radius: 10px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 10px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #9ca3af; }
+    </style>
+</head>
+<body class="bg-gray-100 text-gray-800 min-h-screen flex flex-col">
+
+    <!-- FLAMES BACKGROUND (FOR LOGIN PAGE) -->
+    <div id="flamesBg" class="flames-container">
+        <div class="flame" style="width: 25vw; height: 25vw; left: 10%; animation-duration: 4s;"></div>
+        <div class="flame" style="width: 35vw; height: 35vw; left: 40%; animation-duration: 6s; animation-delay: 1s;"></div>
+        <div class="flame" style="width: 20vw; height: 20vw; left: 75%; animation-duration: 5s; animation-delay: 2s;"></div>
+    </div>
+
+    <!-- ==========================================
+       1. LOGIN CARD (AUTH SCREEN)
+       ========================================== -->
+    <div id="adminAuthScreen" class="auth-bg min-h-screen flex items-center justify-center p-4 relative z-10">
+        <div class="glass-effect p-8 rounded-3xl w-full max-w-md border-t-8 border-orange-500 transition-all duration-300">
+            <div class="text-center mb-6">
+                <div class="inline-flex items-center justify-center w-16 h-16 rounded-full mb-4 bg-orange-100 text-orange-600 shadow-inner">
+                    <i class="bi bi-shield-lock-fill text-3xl"></i>
                 </div>
-                
-                <button type="submit" class="btn btn-primary auth-submit-btn">
-                    <i class="fa-solid fa-unlock-keyhole"></i> Log In
+                <h2 class="text-2xl font-black text-gray-800">NGAE Food - Admin</h2>
+                <p class="text-gray-500 text-sm mt-1">Ukurasa wa kuingia Mkurugenzi / Admin</p>
+            </div>
+
+            <div id="loginError" class="hidden mb-4 p-3 bg-red-100 text-red-700 font-bold rounded-lg text-sm text-center"></div>
+
+            <form id="adminLoginForm" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-bold text-gray-700 mb-1">Username / Jina la Kuingia</label>
+                    <input type="text" id="adminUser" required placeholder="Jina la kuingia..." class="w-full border border-gray-300 rounded-xl p-3 focus:ring-2 focus:ring-orange-500 outline-none">
+                </div>
+                <div>
+                    <label class="block text-sm font-bold text-gray-700 mb-1">Nenosiri (Password)</label>
+                    <input type="password" id="adminPass" required placeholder="••••••••" class="w-full border border-gray-300 rounded-xl p-3 focus:ring-2 focus:ring-orange-500 outline-none">
+                </div>
+                <button type="submit" class="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold py-3 rounded-xl shadow-lg transition-transform hover:-translate-y-0.5">
+                    Ingia Mfumoni
                 </button>
             </form>
-            
-            <div class="auth-footer">
-                <a href="index.html" class="back-link">
-                    <i class="fa-solid fa-arrow-left-long"></i> Back to Shop Catalog
-                </a>
+            <div class="mt-6 text-center">
+                <a href="index.html" class="text-sm text-gray-500 hover:text-gray-800 font-medium">&larr; Rudi Mwanzo</a>
             </div>
-        </section>
+        </div>
+    </div>
 
-        <!-- Dashboard Control Center (Hidden by Default) -->
-        <section class="panel admin-dashboard-panel" id="admin-dashboard-container" style="display: none;">
-            <header class="admin-dashboard-header">
-                <div class="admin-title-group">
-                    <div class="admin-logo">
-                        <i class="fa-solid fa-chart-line"></i>
-                    </div>
-                    <div>
-                        <h2>Boss Control Center</h2>
-                        <p>Store Revenue, Inventory Sales & Analytics</p>
-                    </div>
+    <!-- ==========================================
+       2. MAIN ADMIN DASHBOARD (HIDDEN BY DEFAULT)
+       ========================================== -->
+    <div id="adminDashboard" class="hidden min-h-screen flex flex-col md:flex-row relative z-10 flex-1">
+        
+        <!-- Sidebar Navigation -->
+        <aside class="w-full md:w-64 bg-gray-900 text-gray-300 flex flex-col shadow-xl flex-none">
+            <div class="p-6 border-b border-gray-800 flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                    <i class="bi bi-shield-fill-check text-orange-500 text-2xl"></i>
+                    <span class="font-bold text-white tracking-wider">NGAE ADMIN</span>
                 </div>
-                
-                <a href="index.html" class="btn btn-secondary">
-                    <i class="fa-solid fa-arrow-left-long"></i> Go to Shop Catalog
-                </a>
-            </header>
-
-            <!-- Periods Selector Tab List -->
-            <nav class="tab-headers">
-                <button class="tab-btn active" data-period="today">
-                    <i class="fa-solid fa-calendar-day"></i> Leo (Today)
+                <button onclick="logoutAdmin()" class="md:hidden text-white text-2xl"><i class="bi bi-power"></i></button>
+            </div>
+            
+            <nav class="flex-1 p-4 space-y-2">
+                <button onclick="switchTab('tab-home')" id="btn-tab-home" class="nav-tab w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left font-bold transition-all bg-orange-500 text-white">
+                    <i class="bi bi-speedometer2"></i> Mwanzo (Overview)
                 </button>
-                <button class="tab-btn" data-period="week">
-                    <i class="fa-solid fa-calendar-week"></i> Wiki Hii (This Week)
+                <button onclick="switchTab('tab-staff')" id="btn-tab-staff" class="nav-tab w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left font-bold transition-all hover:bg-gray-800">
+                    <i class="bi bi-people-fill"></i> Wafanyakazi (Staff)
                 </button>
-                <button class="tab-btn" data-period="month">
-                    <i class="fa-solid fa-calendar-days"></i> Mwezi Huu (This Month)
+                <button onclick="switchTab('tab-products')" id="btn-tab-products" class="nav-tab w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left font-bold transition-all hover:bg-gray-800">
+                    <i class="bi bi-box-seam-fill"></i> Usimamizi wa Bidhaa
+                </button>
+                <button onclick="switchTab('tab-cashflow')" id="btn-tab-cashflow" class="nav-tab w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left font-bold transition-all hover:bg-gray-800 text-red-400 hover:text-red-300">
+                    <i class="bi bi-wallet2 text-red-500 animate-pulse"></i> Cash Flowing
+                </button>
+                <button onclick="switchTab('tab-suggestions')" id="btn-tab-suggestions" class="nav-tab w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left font-bold transition-all hover:bg-gray-800 text-orange-400 hover:text-orange-300">
+                    <i class="bi bi-chat-left-text-fill"></i> Mapendekezo ya Staff
                 </button>
             </nav>
 
-            <!-- Metrics Card Section -->
-            <div class="admin-stat-summary">
-                <div class="admin-stat-card">
-                    <span class="stat-label">Total Revenue</span>
-                    <span class="stat-value text-green" id="admin-total-revenue">$0.00</span>
-                </div>
-                <div class="admin-stat-card">
-                    <span class="stat-label">Total Items Sold</span>
-                    <span class="stat-value" id="admin-total-items">0</span>
-                </div>
+            <div class="p-4 border-t border-gray-800">
+                <button onclick="logoutAdmin()" class="w-full flex items-center justify-center gap-2 bg-red-600 hover:bg-red-700 text-white font-bold py-2.5 rounded-xl transition-colors">
+                    <i class="bi bi-box-arrow-left"></i> Toka Admin
+                </button>
             </div>
+        </aside>
 
-            <!-- Detailed Sales Table -->
-            <div class="sales-details-section">
-                <h3>Items Catalog Distribution</h3>
-                <div class="table-scroll-wrapper">
-                    <table class="admin-sales-table">
+        <!-- Main Workspace -->
+        <main class="flex-1 flex flex-col overflow-hidden bg-gray-100">
+            
+            <!-- Top Header -->
+            <header class="bg-white p-4 shadow-sm flex justify-between items-center border-b border-gray-200">
+                <h1 class="text-xl font-black text-gray-800" id="currentSectionTitle">Mwanzo (Overview)</h1>
+                <div class="flex items-center gap-3 relative">
+                    <!-- Notification Bell -->
+                    <div class="relative">
+                        <button onclick="toggleNotificationsDropdown()" class="w-10 h-10 rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-700 flex items-center justify-center transition-colors relative border border-gray-200 no-print">
+                            <i class="bi bi-bell-fill text-lg"></i>
+                            <span id="notifBadge" class="hidden absolute -top-1.5 -right-1.5 bg-red-600 text-white text-[10px] font-black px-1.5 py-0.5 rounded-full border border-white animate-bounce">0</span>
+                        </button>
+
+                        <!-- Notification Dropdown Panel -->
+                        <div id="notifDropdown" class="hidden absolute right-0 mt-2 w-85 bg-white rounded-2xl shadow-xl border border-gray-100 flex-col z-50 overflow-hidden transform origin-top-right transition-all no-print">
+                            <div class="bg-gray-50 p-3 border-b border-gray-100 flex justify-between items-center">
+                                <h4 class="text-[11px] font-bold text-gray-700 uppercase flex items-center gap-1.5"><i class="bi bi-bell-fill text-orange-500"></i> Taarifa Mpya</h4>
+                                <div class="flex gap-2">
+                                    <button onclick="markAllNotifsRead()" class="text-[9px] font-bold text-orange-600 hover:text-orange-700 uppercase">Soma Zote</button>
+                                    <span class="text-gray-300">|</span>
+                                    <button onclick="clearAllNotifs()" class="text-[9px] font-bold text-red-500 hover:text-red-600 uppercase">Futa</button>
+                                </div>
+                            </div>
+                            <div class="max-h-64 overflow-y-auto custom-scrollbar divide-y divide-gray-50" id="notifListContainer">
+                                <!-- Notifications dynamically loaded -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <span class="bg-orange-100 text-orange-700 text-sm font-bold px-3 py-1 rounded-full flex items-center gap-1">
+                        <i class="bi bi-person-badge"></i> Mkurugenzi Kuu
+                    </span>
+                </div>
+            </header>
+
+            <!-- Dashboard Content Container -->
+            <div class="flex-1 p-6 overflow-y-auto custom-scrollbar">
+
+                <!-- 2A. TAB: OVERVIEW (HOME) -->
+                <section id="tab-home" class="tab-content space-y-6">
+                    <!-- Status Cards -->
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex items-center justify-between">
+                            <div>
+                                <p class="text-gray-400 text-xs font-bold uppercase tracking-wider">Wafanyakazi</p>
+                                <h3 class="text-3xl font-black text-gray-800 mt-1" id="statStaffCount">0</h3>
+                            </div>
+                            <div class="w-14 h-14 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-2xl"><i class="bi bi-people-fill"></i></div>
+                        </div>
+
+                        <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex items-center justify-between">
+                            <div>
+                                <p class="text-gray-400 text-xs font-bold uppercase tracking-wider">Aina za Bidhaa</p>
+                                <h3 class="text-3xl font-black text-gray-800 mt-1" id="statProductsCount">0</h3>
+                            </div>
+                            <div class="w-14 h-14 rounded-full bg-purple-100 text-purple-600 flex items-center justify-center text-2xl"><i class="bi bi-box-seam-fill"></i></div>
+                        </div>
+
+                        <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex items-center justify-between">
+                            <div>
+                                <p class="text-gray-400 text-xs font-bold uppercase tracking-wider">Jumla ya Mauzo ya Maduka</p>
+                                <h3 class="text-2xl font-black text-green-600 mt-1" id="statTotalSales">Tsh 0</h3>
+                            </div>
+                            <div class="w-14 h-14 rounded-full bg-green-100 text-green-600 flex items-center justify-center text-2xl"><i class="bi bi-cash-stack"></i></div>
+                        </div>
+                    </div>
+
+                    <!-- Shop Statistics Table -->
+                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+                        <h2 class="text-lg font-bold text-gray-800 mb-4 border-b pb-2">
+                            <i class="bi bi-shop text-orange-500 mr-2"></i> Muhtasari wa Maduka na Mauzo ya Wafanyabiashara
+                        </h2>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left text-sm">
+                                <thead class="bg-gray-50 text-gray-600 border-b border-gray-200">
+                                    <tr>
+                                        <th class="p-3 font-bold">Mahali Duka Lilipo</th>
+                                        <th class="p-3 font-bold">Muuzaji (Seller)</th>
+                                        <th class="p-3 font-bold text-right">Pesa Iliyokabidhiwa (Submitted)</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="shopOverviewTableBody" class="divide-y divide-gray-100">
+                                    <!-- Populated from JS -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 2B. TAB: STAFF MANAGEMENT -->
+                <section id="tab-staff" class="tab-content hidden space-y-6">
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                        <!-- Add Staff Form -->
+                        <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 h-fit">
+                            <h2 class="text-lg font-bold text-gray-800 mb-4 border-b pb-2">
+                                <i class="bi bi-person-plus text-orange-500 mr-2"></i> Ongeza Mfanyakazi Mpya
+                            </h2>
+                            <form id="addStaffForm" class="space-y-4">
+                                <div>
+                                    <label class="block text-sm font-bold text-gray-700 mb-1">Majina Kamili</label>
+                                    <input type="text" id="staffName" required placeholder="Mfano: JUMA KIBWANA" class="w-full border border-gray-300 rounded-xl p-3 focus:ring-2 focus:ring-orange-500 outline-none">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-bold text-gray-700 mb-1">Jukumu (Role)</label>
+                                    <select id="staffRole" required class="w-full border border-gray-300 rounded-xl p-3 focus:ring-2 focus:ring-orange-500 outline-none bg-white">
+                                        <option value="operator">Operator (Kutuma Mzigo)</option>
+                                        <option value="seller">Seller (Muuzaji Dukani)</option>
+                                        <option value="storekeeper">Store Keeper (Mlinzi wa Stoo)</option>
+                                        <option value="manufacturer">Manufacturer (Mzalishaji Kiwandani)</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-bold text-gray-700 mb-1">ID Maalum (Hiari)</label>
+                                    <input type="text" id="staffCustomId" placeholder="Mh. NGAE100 (Wacha wazi ili auto-generate)" class="w-full border border-gray-300 rounded-xl p-3 focus:ring-2 focus:ring-orange-500 outline-none uppercase">
+                                </div>
+                                <button type="submit" class="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold py-3 rounded-xl shadow-md transition-transform hover:-translate-y-0.5">
+                                    Tengeneza Akaunti
+                                </button>
+                            </form>
+                        </div>
+
+                        <!-- Staff List -->
+                        <div class="lg:col-span-2 bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+                            <h2 class="text-lg font-bold text-gray-800 mb-4 border-b pb-2">
+                                <i class="bi bi-people text-orange-500 mr-2"></i> Orodha ya Wafanyakazi wote
+                            </h2>
+                            <div class="overflow-x-auto">
+                                <table class="w-full text-left text-sm">
+                                    <thead class="bg-gray-50 text-gray-600 border-b border-gray-200">
+                                        <tr>
+                                            <th class="p-3 font-bold">Majina Kamili</th>
+                                            <th class="p-3 font-bold">Staff ID</th>
+                                            <th class="p-3 font-bold">Jukumu (Role)</th>
+                                            <th class="p-3 font-bold text-center">Kitendo</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="staffTableBody" class="divide-y divide-gray-100">
+                                        <!-- Populated from JS -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 2C. TAB: PRODUCT MANAGEMENT -->
+                <section id="tab-products" class="tab-content hidden space-y-6">
+                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+                        <div class="flex justify-between items-center border-b pb-3 mb-4">
+                            <h2 class="text-lg font-bold text-gray-800">
+                                <i class="bi bi-box-seam text-orange-500 mr-2"></i> Orodha ya Bidhaa na Bei Zake
+                            </h2>
+                            <span class="text-xs text-gray-500 font-bold uppercase">* Admin pekee ndie anayeruhusiwa kuedit hapa</span>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left text-sm">
+                                <thead class="bg-gray-50 text-gray-600 border-b border-gray-200">
+                                    <tr>
+                                        <th class="p-3 font-bold">Jina la Bidhaa</th>
+                                        <th class="p-3 font-bold text-right">Bei (Tsh)</th>
+                                        <th class="p-3 font-bold text-right">Mizigo Iliyopo (Stock)</th>
+                                        <th class="p-3 font-bold text-center">Hatua (Edit)</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="productsTableBody" class="divide-y divide-gray-100">
+                                    <!-- Populated from JS -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 2D. TAB: CASH FLOWING (Personal Ledger) -->
+                <section id="tab-cashflow" class="tab-content hidden space-y-6">
+                    <!-- Stat Cards (Personal Inflows) -->
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                        <div class="bg-white p-5 rounded-2xl shadow-sm border-l-4 border-l-red-600 border border-gray-100">
+                            <p class="text-gray-400 text-xs font-bold uppercase tracking-wider">Kuingiza Leo</p>
+                            <h3 class="text-xl font-black text-red-600 mt-1" id="cfToday">Tsh 0</h3>
+                        </div>
+                        <div class="bg-white p-5 rounded-2xl shadow-sm border-l-4 border-l-red-600 border border-gray-100">
+                            <p class="text-gray-400 text-xs font-bold uppercase tracking-wider">Kuingiza Wiki Hii</p>
+                            <h3 class="text-xl font-black text-red-600 mt-1" id="cfWeek">Tsh 0</h3>
+                        </div>
+                        <div class="bg-white p-5 rounded-2xl shadow-sm border-l-4 border-l-red-600 border border-gray-100">
+                            <p class="text-gray-400 text-xs font-bold uppercase tracking-wider">Kuingiza Mwezi Huu</p>
+                            <h3 class="text-xl font-black text-red-600 mt-1" id="cfMonth">Tsh 0</h3>
+                        </div>
+                        <div class="bg-white p-5 rounded-2xl shadow-sm border-l-4 border-l-red-600 border border-gray-100">
+                            <p class="text-gray-400 text-xs font-bold uppercase tracking-wider">Kuingiza Mwaka Huu</p>
+                            <h3 class="text-xl font-black text-red-600 mt-1" id="cfYear">Tsh 0</h3>
+                        </div>
+                    </div>
+
+                    <!-- Ledger section -->
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                        
+                        <!-- Actions Form Panel (White/Red theme) -->
+                        <div class="space-y-6">
+                            
+                            <!-- Current Balance Card -->
+                            <div class="bg-red-600 text-white p-6 rounded-2xl shadow-md relative overflow-hidden">
+                                <div class="relative z-10">
+                                    <p class="text-white/80 text-xs font-bold uppercase tracking-wider">Running Cash Balance</p>
+                                    <h3 class="text-3xl font-black mt-1" id="cfBalance">Tsh 0</h3>
+                                </div>
+                                <div class="absolute -right-8 -bottom-8 text-white/10 text-9xl font-black"><i class="bi bi-wallet2"></i></div>
+                            </div>
+
+                            <!-- Ingiza Cash Form -->
+                            <div class="bg-white p-5 rounded-2xl shadow-sm border border-red-100">
+                                <h3 class="text-md font-bold text-red-600 mb-3 border-b border-red-50 pb-2 flex items-center gap-2">
+                                    <i class="bi bi-plus-circle-fill"></i> Ingiza Cash (Cash In)
+                                </h3>
+                                <form id="addCashForm" class="space-y-3">
+                                    <div>
+                                        <label class="block text-xs font-bold text-gray-600 mb-1">Kiasi cha Cash (Tsh)</label>
+                                        <input type="number" id="cashInAmount" required placeholder="0.00" class="w-full border border-red-200 rounded-xl p-2.5 text-sm focus:ring-2 focus:ring-red-500 outline-none font-bold text-gray-800">
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-bold text-gray-600 mb-1">Maelezo / Chanzo</label>
+                                        <input type="text" id="cashInDesc" required placeholder="Mfano: Mauzo binafsi..." class="w-full border border-red-200 rounded-xl p-2.5 text-sm focus:ring-2 focus:ring-red-500 outline-none text-gray-700">
+                                    </div>
+                                    <button type="submit" class="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-2 rounded-xl text-sm transition-all hover:shadow-sm">
+                                        Ongeza Cash
+                                    </button>
+                                </form>
+                            </div>
+
+                            <!-- Ingiza Matumizi Form -->
+                            <div class="bg-white p-5 rounded-2xl shadow-sm border border-red-100">
+                                <h3 class="text-md font-bold text-red-600 mb-3 border-b border-red-50 pb-2 flex items-center gap-2">
+                                    <i class="bi bi-dash-circle-fill"></i> Ingiza Matumizi (Cash Out)
+                                </h3>
+                                <form id="addExpenseForm" class="space-y-3">
+                                    <div>
+                                        <label class="block text-xs font-bold text-gray-600 mb-1">Kiasi cha Matumizi (Tsh)</label>
+                                        <input type="number" id="cashOutAmount" required placeholder="0.00" class="w-full border border-red-200 rounded-xl p-2.5 text-sm focus:ring-2 focus:ring-red-500 outline-none font-bold text-gray-800">
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-bold text-gray-600 mb-1">Maelezo ya Matumizi</label>
+                                        <input type="text" id="cashOutDesc" required placeholder="Mfano: Mafuta ya gari..." class="w-full border border-red-200 rounded-xl p-2.5 text-sm focus:ring-2 focus:ring-red-500 outline-none text-gray-700">
+                                    </div>
+                                    <button type="submit" class="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-2 rounded-xl text-sm transition-all hover:shadow-sm">
+                                        Hifadhi Matumizi
+                                    </button>
+                                </form>
+                            </div>
+
+                        </div>
+
+                        <!-- Ledger Table & Printing -->
+                        <div class="lg:col-span-2 bg-white p-6 rounded-2xl shadow-sm border border-red-100 flex flex-col min-h-[400px]">
+                            <div class="flex justify-between items-center border-b border-red-100 pb-3 mb-4">
+                                <h3 class="text-md font-bold text-red-600 flex items-center gap-2">
+                                    <i class="bi bi-journals"></i> Kitabu cha Mahesabu (Ledger)
+                                </h3>
+                                <button onclick="printPersonalReport()" class="bg-red-600 hover:bg-red-700 text-white text-xs font-bold px-3 py-2 rounded-xl transition-all shadow-sm flex items-center gap-2">
+                                    <i class="bi bi-printer-fill"></i> Print Ripoti
+                                </button>
+                            </div>
+                            
+                            <div class="flex-1 overflow-auto custom-scrollbar">
+                                <table class="w-full text-left text-sm relative">
+                                    <thead class="bg-red-50 text-red-800 sticky top-0 z-10 shadow-sm border-b border-red-200">
+                                        <tr class="text-xs uppercase">
+                                            <th class="p-3 font-bold">Tarehe</th>
+                                            <th class="p-3 font-bold">Aina</th>
+                                            <th class="p-3 font-bold">Maelezo</th>
+                                            <th class="p-3 font-bold text-right">Kiasi (Tsh)</th>
+                                            <th class="p-3 font-bold text-right">Balance (Tsh)</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="cashFlowHistoryBody" class="divide-y divide-red-50">
+                                        <!-- Populated from JS -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                    </div>
+                </section>
+
+                <!-- 2E. TAB: STAFF SUGGESTIONS (Admin Side) -->
+                <section id="tab-suggestions" class="tab-content hidden space-y-6 flex-1 flex flex-col min-h-0">
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 flex-1 min-h-[480px]">
+                        
+                        <!-- Left Panel: Thread List -->
+                        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 flex flex-col h-[480px]">
+                            <h3 class="text-md font-bold text-gray-800 border-b pb-2 mb-3"><i class="bi bi-chat-dots-fill text-orange-500 mr-2"></i>Mapendekezo ya Wafanyakazi</h3>
+                            <div class="flex-1 overflow-y-auto custom-scrollbar space-y-2 pr-1" id="adminSuggestionsList">
+                                <!-- Loaded dynamically -->
+                            </div>
+                        </div>
+
+                        <!-- Right Panel: Conversation Details -->
+                        <div class="lg:col-span-2 bg-white rounded-2xl shadow-sm border border-gray-100 flex flex-col h-[480px] overflow-hidden">
+                            <div class="bg-gray-50 p-4 border-b border-gray-100 flex-none flex justify-between items-center">
+                                <div>
+                                    <h4 class="font-bold text-gray-800 text-sm" id="activeSuggSender">Mfanyakazi: (Hakuna Aliyechaguliwa)</h4>
+                                    <p class="text-xs text-gray-500" id="activeSuggMeta">Chagua pendekezo kushoto ili kujibu</p>
+                                </div>
+                            </div>
+
+                            <!-- Conversation Bubbles -->
+                            <div class="flex-1 p-5 overflow-y-auto custom-scrollbar space-y-4 bg-gray-50 flex flex-col min-h-0" id="adminActiveSuggChat">
+                                <div class="text-center text-gray-400 text-sm py-16">
+                                    <i class="bi bi-chat-left-dots text-4xl text-gray-300"></i>
+                                    <p class="mt-2">Chagua pendekezo la mfanyakazi kwenye orodha kushoto ili kusoma na kujibu ujumbe wao binafsi.</p>
+                                </div>
+                            </div>
+
+                            <!-- Admin Reply Form -->
+                            <form id="adminReplySuggestionForm" class="hidden p-4 border-t border-gray-100 bg-white flex gap-2 items-end flex-none">
+                                <input type="hidden" id="activeSuggId">
+                                <div class="flex-1">
+                                    <textarea id="adminReplyText" required placeholder="Andika jibu lako hapa..." rows="2" class="w-full border border-gray-300 rounded-xl p-2.5 text-sm focus:ring-2 focus:ring-orange-500 outline-none"></textarea>
+                                </div>
+                                <button type="submit" class="bg-orange-500 hover:bg-orange-600 text-white font-bold px-5 py-3 rounded-xl shadow-md transition-colors h-fit flex items-center gap-1.5">
+                                    <i class="bi bi-send"></i> Jibu
+                                </button>
+                            </form>
+                        </div>
+
+                    </div>
+                </section>
+
+            </div>
+        </main>
+    </div>
+
+    <!-- ==========================================
+       3. EDIT PRODUCT MODAL
+       ========================================== -->
+    <div id="editProductModal" class="hidden fixed inset-0 z-50 items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
+        <div class="bg-white rounded-2xl w-full max-w-md overflow-hidden shadow-2xl transform transition-all">
+            <div class="bg-orange-500 p-5 flex justify-between items-center text-white">
+                <h3 class="font-bold text-lg"><i class="bi bi-pencil-square mr-2"></i> Rekebisha Bidhaa</h3>
+                <button onclick="closeProductModal()" class="text-2xl hover:text-orange-200">&times;</button>
+            </div>
+            <form id="editProductForm" class="p-6 space-y-4">
+                <input type="hidden" id="editProdId">
+                <div>
+                    <label class="block text-sm font-bold text-gray-700 mb-1">Jina la Bidhaa</label>
+                    <input type="text" id="editProdName" required class="w-full border border-gray-300 rounded-xl p-3 focus:ring-2 focus:ring-orange-500 outline-none">
+                </div>
+                <div>
+                    <label class="block text-sm font-bold text-gray-700 mb-1">Bei ya Bidhaa (Tsh)</label>
+                    <input type="number" id="editProdPrice" required class="w-full border border-gray-300 rounded-xl p-3 focus:ring-2 focus:ring-orange-500 outline-none font-bold text-gray-800 text-lg">
+                </div>
+                <div>
+                    <label class="block text-sm font-bold text-gray-700 mb-1">Stock Iliyopo (Balance)</label>
+                    <input type="number" id="editProdStock" required class="w-full border border-gray-300 rounded-xl p-3 focus:ring-2 focus:ring-orange-500 outline-none font-bold text-gray-800 text-lg">
+                </div>
+                <div class="flex gap-3 pt-2">
+                    <button type="button" onclick="closeProductModal()" class="flex-1 py-3 bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold rounded-xl transition-colors">Ghairi</button>
+                    <button type="submit" class="flex-1 py-3 bg-orange-500 hover:bg-orange-600 text-white font-bold rounded-xl shadow-md transition-colors">Hifadhi Mabadiliko</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="app.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Check if admin is already authenticated in session
+            const isAdmin = sessionStorage.getItem('ngae_admin_auth');
+            if (isAdmin) {
+                showDashboard();
+            } else {
+                showLoginForm();
+            }
+
+            // Auth form submit
+            document.getElementById('adminLoginForm').addEventListener('submit', (e) => {
+                e.preventDefault();
+                const user = document.getElementById('adminUser').value;
+                const pass = document.getElementById('adminPass').value;
+
+                if (user.toLowerCase() === 'admin' && pass === 'admin') {
+                    sessionStorage.setItem('ngae_admin_auth', 'true');
+                    showDashboard();
+                } else {
+                    const err = document.getElementById('loginError');
+                    err.textContent = "Kosa: Jina au nenosiri si sahihi!";
+                    err.classList.remove('hidden');
+                }
+            });
+
+            // Add staff form submit
+            document.getElementById('addStaffForm').addEventListener('submit', (e) => {
+                e.preventDefault();
+                const name = document.getElementById('staffName').value;
+                const role = document.getElementById('staffRole').value;
+                const customId = document.getElementById('staffCustomId').value;
+
+                if (window.appAddStaff) {
+                    const newId = window.appAddStaff(name, role, customId);
+                    if (newId) {
+                        alert(`Akaunti mpya imetengenezwa!\nMajina: ${name}\nStaff ID: ${newId}\nJukumu: ${role}`);
+                        document.getElementById('addStaffForm').reset();
+                        renderStaff();
+                        renderOverview();
+                    }
+                }
+            });
+
+            // Edit product form submit
+            document.getElementById('editProductForm').addEventListener('submit', (e) => {
+                e.preventDefault();
+                const id = document.getElementById('editProdId').value;
+                const name = document.getElementById('editProdName').value;
+                const price = parseFloat(document.getElementById('editProdPrice').value);
+                const stock = parseInt(document.getElementById('editProdStock').value);
+
+                if (window.appUpdateProduct) {
+                    const success = window.appUpdateProduct(id, name, price, stock);
+                    if (success) {
+                        closeProductModal();
+                        renderProducts();
+                        renderOverview();
+                        alert("Mabadiliko ya bidhaa yamehifadhiwa.");
+                    }
+                }
+            });
+
+            // Cash Flow form submit - Inflow
+            document.getElementById('addCashForm').addEventListener('submit', (e) => {
+                e.preventDefault();
+                const amt = parseFloat(document.getElementById('cashInAmount').value);
+                const desc = document.getElementById('cashInDesc').value;
+
+                if (window.appAddPersonalCash) {
+                    window.appAddPersonalCash(amt, desc);
+                    alert("Cash imeingizwa kikamilifu!");
+                    document.getElementById('addCashForm').reset();
+                    renderCashFlow();
+                }
+            });
+
+            // Cash Flow form submit - Outflow (Expense)
+            document.getElementById('addExpenseForm').addEventListener('submit', (e) => {
+                e.preventDefault();
+                const amt = parseFloat(document.getElementById('cashOutAmount').value);
+                const desc = document.getElementById('cashOutDesc').value;
+
+                if (window.appAddPersonalExpense) {
+                    window.appAddPersonalExpense(amt, desc);
+                    alert("Matumizi yamehifadhiwa!");
+                    document.getElementById('addExpenseForm').reset();
+                    renderCashFlow();
+                }
+            });
+
+            // Suggestions admin reply submit
+            document.getElementById('adminReplySuggestionForm').addEventListener('submit', (e) => {
+                e.preventDefault();
+                const suggId = document.getElementById('activeSuggId').value;
+                const replyText = document.getElementById('adminReplyText').value;
+
+                if (window.appReplyToSuggestion) {
+                    window.appReplyToSuggestion(suggId, replyText);
+                    document.getElementById('adminReplyText').value = '';
+                    renderSuggestions();
+                }
+            });
+
+            // Periodically refresh notifications & overview stats in background
+            setInterval(() => {
+                const isLogged = sessionStorage.getItem('ngae_admin_auth');
+                if (isLogged) {
+                    if (window.appData) {
+                        const raw = localStorage.getItem('ngae_app_data');
+                        if (raw) window.appData = JSON.parse(raw);
+                    }
+                    renderNotifications();
+                    const activeTab = document.querySelector('.tab-content:not(.hidden)');
+                    if (activeTab && activeTab.id === 'tab-home') {
+                        renderOverview();
+                    }
+                }
+            }, 4000);
+
+            // Initial load of notifications badge
+            renderNotifications();
+
+            // Hide notifications dropdown when clicking outside
+            document.addEventListener('click', (e) => {
+                const dropdown = document.getElementById('notifDropdown');
+                const bellBtn = e.target.closest('button');
+                if (dropdown && !dropdown.classList.contains('hidden') && (!bellBtn || !bellBtn.onclick || !bellBtn.onclick.toString().includes('toggleNotificationsDropdown'))) {
+                    if (!e.target.closest('#notifDropdown')) {
+                        dropdown.classList.add('hidden');
+                    }
+                }
+            });
+        });
+
+        function showLoginForm() {
+            document.getElementById('adminAuthScreen').classList.remove('hidden');
+            document.getElementById('flamesBg').classList.remove('hidden');
+            document.getElementById('adminDashboard').classList.add('hidden');
+        }
+
+        function showDashboard() {
+            document.getElementById('adminAuthScreen').classList.add('hidden');
+            document.getElementById('flamesBg').classList.add('hidden');
+            document.getElementById('adminDashboard').classList.remove('hidden');
+            
+            renderOverview();
+            renderStaff();
+            renderProducts();
+            renderCashFlow();
+            renderSuggestions();
+            renderNotifications();
+        }
+
+        function logoutAdmin() {
+            sessionStorage.removeItem('ngae_admin_auth');
+            showLoginForm();
+        }
+
+        function switchTab(tabId) {
+            // Hide all tabs
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            
+            // Remove active classes on nav buttons
+            document.querySelectorAll('.nav-tab').forEach(el => {
+                el.classList.remove('bg-orange-500', 'bg-red-600', 'text-white');
+                el.classList.add('hover:bg-gray-800');
+            });
+
+            // Show current tab
+            document.getElementById(tabId).classList.remove('hidden');
+            
+            // Set active class on nav button
+            const activeBtn = document.getElementById('btn-' + tabId);
+            if (tabId === 'tab-cashflow') {
+                activeBtn.classList.add('bg-red-600', 'text-white');
+            } else {
+                activeBtn.classList.add('bg-orange-500', 'text-white');
+            }
+            activeBtn.classList.remove('hover:bg-gray-800');
+
+            // Change header title
+            const titleEl = document.getElementById('currentSectionTitle');
+            if (tabId === 'tab-home') titleEl.textContent = 'Mwanzo (Overview)';
+            else if (tabId === 'tab-staff') titleEl.textContent = 'Usimamizi wa Wafanyakazi';
+            else if (tabId === 'tab-products') titleEl.textContent = 'Usimamizi wa Bidhaa';
+            else if (tabId === 'tab-cashflow') {
+                titleEl.textContent = 'CASH FLOWING';
+                renderCashFlow();
+            }
+            else if (tabId === 'tab-suggestions') {
+                titleEl.textContent = 'Mapendekezo ya Staff';
+                renderSuggestions();
+            }
+        }
+
+        // --- RENDER FUNCTIONS ---
+
+        function renderOverview() {
+            if (!window.appData) return;
+
+            // Total staff count
+            const staffCount = Object.keys(window.appData.staff || {}).length;
+            document.getElementById('statStaffCount').textContent = staffCount;
+
+            // Total products
+            const productsCount = (window.appData.products || []).length;
+            document.getElementById('statProductsCount').textContent = productsCount;
+
+            // Total sales submitted across all shops
+            let totalSubmitted = 0;
+            const finances = window.appData.finances || {};
+            Object.values(finances).forEach(f => {
+                totalSubmitted += f.submitted || 0;
+            });
+            document.getElementById('statTotalSales').textContent = "Tsh " + totalSubmitted.toLocaleString();
+
+            // Render shops table
+            const tbody = document.getElementById('shopOverviewTableBody');
+            tbody.innerHTML = '';
+            
+            (window.appData.shops || []).forEach(shop => {
+                const shopFinance = finances[shop.id] || { submitted: 0 };
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-gray-50 transition-colors";
+                tr.innerHTML = `
+                    <td class="p-3 font-bold text-gray-800">${shop.location}</td>
+                    <td class="p-3 text-gray-600">${shop.sellerName} (ID: ${shop.sellerId})</td>
+                    <td class="p-3 text-right text-green-600 font-bold">Tsh ${shopFinance.submitted.toLocaleString()}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function renderStaff() {
+            if (!window.appData) return;
+            
+            const tbody = document.getElementById('staffTableBody');
+            tbody.innerHTML = '';
+            
+            const staff = window.appData.staff || {};
+            
+            Object.entries(staff).forEach(([id, info]) => {
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-gray-50 transition-colors";
+                
+                let roleBadge = '';
+                if (info.role === 'operator') roleBadge = '<span class="bg-orange-100 text-orange-800 text-xs font-bold px-2.5 py-1 rounded">Operator</span>';
+                else if (info.role === 'seller') roleBadge = '<span class="bg-blue-100 text-blue-800 text-xs font-bold px-2.5 py-1 rounded">Seller</span>';
+                else if (info.role === 'storekeeper') roleBadge = '<span class="bg-green-100 text-green-800 text-xs font-bold px-2.5 py-1 rounded">Store Keeper</span>';
+                else if (info.role === 'manufacturer') roleBadge = '<span class="bg-purple-100 text-purple-800 text-xs font-bold px-2.5 py-1 rounded">Manufacturer</span>';
+
+                tr.innerHTML = `
+                    <td class="p-3 font-bold text-gray-800">${info.name}</td>
+                    <td class="p-3 font-mono text-gray-600 font-bold">${id}</td>
+                    <td class="p-3">${roleBadge}</td>
+                    <td class="p-3 text-center">
+                        <button onclick="deleteStaffMember('${id}')" class="text-red-600 hover:text-red-800 font-bold text-sm bg-red-50 hover:bg-red-100 px-3 py-1.5 rounded-lg transition-colors">
+                            <i class="bi bi-trash"></i> Futa
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function deleteStaffMember(staffId) {
+            // Block deleting core demo staff without warning
+            if (['NGAE001', 'NGAE016', 'NGAE021', 'NGAE027'].includes(staffId)) {
+                if (!confirm("Onyo: Huyu ni mfanyakazi mkuu wa mfumo. Una uhakika unataka kumfuta?")) return;
+            } else {
+                if (!confirm(`Una uhakika unataka kufuta akaunti ${staffId}?`)) return;
+            }
+
+            if (window.appDeleteStaff) {
+                window.appDeleteStaff(staffId);
+                renderStaff();
+                renderOverview();
+            }
+        }
+
+        function renderProducts() {
+            if (!window.appData) return;
+
+            const tbody = document.getElementById('productsTableBody');
+            tbody.innerHTML = '';
+            
+            const products = window.appData.products || [];
+            products.forEach(p => {
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-gray-50 transition-colors";
+                tr.innerHTML = `
+                    <td class="p-3 font-bold text-gray-800">${p.name}</td>
+                    <td class="p-3 text-right font-bold text-orange-600">Tsh ${p.price.toLocaleString()}</td>
+                    <td class="p-3 text-right font-bold text-blue-600">${p.stock.toLocaleString()} pcs</td>
+                    <td class="p-3 text-center">
+                        <button onclick="openProductModal('${p.id}', '${p.name}', ${p.price}, ${p.stock})" class="text-orange-600 hover:text-orange-800 font-bold text-sm bg-orange-50 hover:bg-orange-100 px-4 py-1.5 rounded-lg transition-colors">
+                            <i class="bi bi-pencil-square"></i> Rekebisha
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function openProductModal(id, name, price, stock) {
+            document.getElementById('editProdId').value = id;
+            document.getElementById('editProdName').value = name;
+            document.getElementById('editProdPrice').value = price;
+            document.getElementById('editProdStock').value = stock;
+
+            const modal = document.getElementById('editProductModal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+        function closeProductModal() {
+            const modal = document.getElementById('editProductModal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }
+
+        // --- CASH FLOW RENDER & PRINT ---
+
+        function renderCashFlow() {
+            if (!window.appData || !window.appData.cashFlow) return;
+
+            const cf = window.appData.cashFlow;
+            document.getElementById('cfBalance').textContent = "Tsh " + (cf.balance || 0).toLocaleString();
+
+            if (window.appGetPersonalCashFlowStats) {
+                const stats = window.appGetPersonalCashFlowStats();
+                document.getElementById('cfToday').textContent = "Tsh " + stats.today.toLocaleString();
+                document.getElementById('cfWeek').textContent = "Tsh " + stats.week.toLocaleString();
+                document.getElementById('cfMonth').textContent = "Tsh " + stats.month.toLocaleString();
+                document.getElementById('cfYear').textContent = "Tsh " + stats.year.toLocaleString();
+            }
+
+            const tbody = document.getElementById('cashFlowHistoryBody');
+            tbody.innerHTML = '';
+
+            const txs = cf.transactions || [];
+            [...txs].reverse().forEach(t => {
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-red-50/50 transition-colors";
+                
+                const typeBadge = t.type === 'IN' 
+                    ? '<span class="text-green-600 font-bold"><i class="bi bi-arrow-down-left-circle-fill"></i> IN</span>'
+                    : '<span class="text-red-600 font-bold"><i class="bi bi-arrow-up-right-circle-fill"></i> OUT</span>';
+                
+                const amtColor = t.type === 'IN' ? 'text-green-600' : 'text-red-600';
+                const amtPrefix = t.type === 'IN' ? '+' : '-';
+
+                tr.innerHTML = `
+                    <td class="p-3 text-gray-500 text-xs">${t.date}</td>
+                    <td class="p-3">${typeBadge}</td>
+                    <td class="p-3 font-semibold text-gray-700">${t.description}</td>
+                    <td class="p-3 text-right font-bold ${amtColor}">${amtPrefix}Tsh ${t.amount.toLocaleString()}</td>
+                    <td class="p-3 text-right font-bold text-gray-700">Tsh ${(t.runningBalance || 0).toLocaleString()}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function printPersonalReport() {
+            if (!window.appData || !window.appData.cashFlow) return;
+            
+            const cf = window.appData.cashFlow;
+            const stats = window.appGetPersonalCashFlowStats ? window.appGetPersonalCashFlowStats() : { today: 0, week: 0, month: 0, year: 0 };
+            
+            const printWindow = window.open('', '_blank');
+            if (!printWindow) {
+                alert("Tafadhali ruhusu Popups kwenye kivinjari chako ili uweze kuona ripoti.");
+                return;
+            }
+            
+            let rowsHtml = '';
+            const txs = cf.transactions || [];
+            [...txs].reverse().forEach(t => {
+                rowsHtml += `
+                    <tr style="border-bottom: 1px solid #fee2e2;">
+                        <td style="padding: 10px; font-size: 12px; color: #555;">${t.date}</td>
+                        <td style="padding: 10px; font-weight: bold; color: ${t.type === 'IN' ? '#16a34a' : '#dc2626'};">${t.type}</td>
+                        <td style="padding: 10px; font-weight: 500;">${t.description}</td>
+                        <td style="padding: 10px; text-align: right; font-weight: bold; color: ${t.type === 'IN' ? '#16a34a' : '#dc2626'};">${t.type==='IN'?'+':'-'} Tsh ${t.amount.toLocaleString()}</td>
+                        <td style="padding: 10px; text-align: right; font-weight: bold; color: #333;">Tsh ${(t.runningBalance || 0).toLocaleString()}</td>
+                    </tr>
+                `;
+            });
+
+            printWindow.document.write(`
+                <html>
+                <head>
+                    <title>Ripoti ya Cash Flowing - NGAE Food</title>
+                    <style>
+                        body { font-family: 'Poppins', sans-serif; padding: 40px; color: #333; }
+                        .header { text-align: center; border-bottom: 3px double #dc2626; padding-bottom: 20px; margin-bottom: 30px; }
+                        .header h1 { color: #dc2626; margin: 0; font-size: 28px; }
+                        .header p { color: #666; margin: 5px 0 0; font-size: 14px; }
+                        .summary-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-bottom: 30px; }
+                        .card { border: 1px solid #fee2e2; background-color: #fef2f2; padding: 15px; border-radius: 10px; text-align: center; }
+                        .card p { margin: 0; font-size: 11px; font-weight: bold; color: #991b1b; text-transform: uppercase; }
+                        .card h3 { margin: 5px 0 0; font-size: 16px; color: #dc2626; font-weight: 900; }
+                        .balance-box { background-color: #dc2626; color: white; padding: 20px; border-radius: 12px; text-align: center; margin-bottom: 30px; }
+                        .balance-box p { margin: 0; font-size: 12px; text-transform: uppercase; font-weight: bold; }
+                        .balance-box h2 { margin: 5px 0 0; font-size: 32px; font-weight: 900; }
+                        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+                        th { background-color: #fef2f2; color: #991b1b; padding: 12px 10px; text-align: left; font-size: 12px; text-transform: uppercase; border-bottom: 2px solid #fee2e2; }
+                        @media print {
+                            .no-print { display: none; }
+                        }
+                    </style>
+                </head>
+                <body>
+                    <div class="header">
+                        <h1>NGAE FOOD PROCESSING HUB</h1>
+                        <p>Ripoti Binafsi ya Cash Flowing & Matumizi ya Admin</p>
+                        <p style="font-size: 11px; color: #999; margin-top: 5px;">Imezalishwa tarehe: ${new Date().toLocaleString()}</p>
+                    </div>
+
+                    <div class="balance-box">
+                        <p>Bakaa ya Cash Iliyopo (Current Running Balance)</p>
+                        <h2>Tsh ${cf.balance.toLocaleString()}</h2>
+                    </div>
+
+                    <div class="summary-grid">
+                        <div class="card">
+                            <p>Kuingiza Leo</p>
+                            <h3>Tsh ${stats.today.toLocaleString()}</h3>
+                        </div>
+                        <div class="card">
+                            <p>Kuingiza Wiki Hii</p>
+                            <h3>Tsh ${stats.week.toLocaleString()}</h3>
+                        </div>
+                        <div class="card">
+                            <p>Kuingiza Mwezi Huu</p>
+                            <h3>Tsh ${stats.month.toLocaleString()}</h3>
+                        </div>
+                        <div class="card">
+                            <p>Kuingiza Mwaka Huu</p>
+                            <h3>Tsh ${stats.year.toLocaleString()}</h3>
+                        </div>
+                    </div>
+
+                    <h2 style="font-size: 16px; border-bottom: 1px solid #ccc; padding-bottom: 5px; color: #dc2626; text-transform: uppercase;">Kitabu cha Mahesabu (Transaction Ledger)</h2>
+                    <table>
                         <thead>
                             <tr>
-                                <th>Item Name</th>
-                                <th class="text-right">Qty Sold</th>
-                                <th class="text-right">Total Revenue</th>
+                                <th>Tarehe</th>
+                                <th>Aina</th>
+                                <th>Maelezo</th>
+                                <th style="text-align: right;">Kiasi (Tsh)</th>
+                                <th style="text-align: right;">Balance (Tsh)</th>
                             </tr>
                         </thead>
-                        <tbody id="admin-sales-body">
-                            <!-- Populated dynamically -->
+                        <tbody>
+                            ${rowsHtml}
                         </tbody>
                     </table>
+
+                    <div style="margin-top: 50px; text-align: center;" class="no-print">
+                        <button onclick="window.print()" style="background-color: #dc2626; color: white; border: none; padding: 12px 30px; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 14px;">Print Ripoti Hii</button>
+                    </div>
+                </body>
+                </html>
+            `);
+            printWindow.document.close();
+        }
+
+        // --- STAFF SUGGESTIONS & CHAT CONTROL ---
+        function renderSuggestions() {
+            if (!window.appData || !window.appGetAllSuggestions) return;
+            const suggs = window.appGetAllSuggestions();
+            const listContainer = document.getElementById('adminSuggestionsList');
+            listContainer.innerHTML = '';
+
+            if (suggs.length === 0) {
+                listContainer.innerHTML = `<div class="text-center text-gray-400 text-xs py-10">Hakuna mapendekezo yaliyopokelewa.</div>`;
+                document.getElementById('activeSuggSender').textContent = "Mfanyakazi: (Hakuna Aliyechaguliwa)";
+                document.getElementById('activeSuggMeta').textContent = "Chagua pendekezo kushoto ili kujibu";
+                document.getElementById('adminActiveSuggChat').innerHTML = `
+                    <div class="text-center text-gray-400 text-sm py-16">
+                        <i class="bi bi-chat-left-dots text-4xl text-gray-300"></i>
+                        <p class="mt-2">Chagua pendekezo la mfanyakazi kwenye orodha kushoto ili kusoma na kujibu ujumbe wao binafsi.</p>
+                    </div>
+                `;
+                document.getElementById('adminReplySuggestionForm').classList.add('hidden');
+                return;
+            }
+
+            const sortedSuggs = [...suggs].sort((a,b) => new Date(b.dateRaw) - new Date(a.dateRaw));
+
+            sortedSuggs.forEach(s => {
+                const item = document.createElement('div');
+                const activeId = document.getElementById('activeSuggId').value;
+                const isActive = (s.id === activeId);
+                
+                item.className = `p-3 rounded-xl cursor-pointer transition-colors border mb-2 ${
+                    isActive 
+                    ? 'bg-orange-50 border-orange-200 text-orange-950 font-bold shadow-sm' 
+                    : 'bg-gray-50 border-gray-100 hover:bg-gray-100 text-gray-700'
+                }`;
+                
+                const roleLabels = { 'operator': 'Usafirishaji', 'seller': 'Muuzaji', 'manufacturer': 'Uzalishaji', 'storekeeper': 'Stoo' };
+                const swRole = roleLabels[s.senderRole] || s.senderRole;
+                
+                const repliesCount = s.replies ? s.replies.length : 0;
+                const badgeHtml = repliesCount > 0 
+                    ? `<span class="bg-green-100 text-green-700 text-[10px] font-bold px-1.5 py-0.5 rounded-full"><i class="bi bi-check2-all"></i> Majibu: ${repliesCount}</span>` 
+                    : `<span class="bg-red-100 text-red-700 text-[10px] font-bold px-1.5 py-0.5 rounded-full">Inasubiri</span>`;
+
+                item.innerHTML = `
+                    <div class="flex justify-between items-start mb-1 gap-1">
+                        <span class="font-bold text-xs uppercase block truncate max-w-[120px]">${s.senderName}</span>
+                        ${badgeHtml}
+                    </div>
+                    <div class="flex justify-between items-center text-[10px] text-gray-500 mb-1.5">
+                        <span class="font-semibold text-orange-600">${swRole} (${s.senderId})</span>
+                        <span>${s.date}</span>
+                    </div>
+                    <p class="text-xs text-gray-600 truncate font-normal">${s.message}</p>
+                `;
+                
+                item.onclick = () => {
+                    document.getElementById('activeSuggId').value = s.id;
+                    renderSuggestions();
+                };
+                
+                listContainer.appendChild(item);
+            });
+            
+            const activeId = document.getElementById('activeSuggId').value;
+            if (activeId) {
+                renderActiveSuggestionChat(activeId);
+            }
+        }
+
+        function renderActiveSuggestionChat(suggId) {
+            const sugg = window.appGetAllSuggestions().find(s => s.id === suggId);
+            if (!sugg) return;
+
+            const roleLabels = { 'operator': 'Usafirishaji', 'seller': 'Muuzaji', 'manufacturer': 'Uzalishaji', 'storekeeper': 'Stoo' };
+            const swRole = roleLabels[sugg.senderRole] || sugg.senderRole;
+
+            document.getElementById('activeSuggSender').textContent = `${sugg.senderName} (${sugg.senderId})`;
+            document.getElementById('activeSuggMeta').textContent = `Kitengo: ${swRole} | Iliwasilishwa: ${sugg.date}`;
+
+            const chatContainer = document.getElementById('adminActiveSuggChat');
+            chatContainer.innerHTML = '';
+
+            const staffDiv = document.createElement('div');
+            staffDiv.className = "flex flex-col items-start space-y-1";
+            staffDiv.innerHTML = `
+                <div class="bg-blue-600 text-white p-3 rounded-2xl rounded-tl-none max-w-lg text-sm shadow-sm font-semibold">
+                    ${sugg.message}
                 </div>
-            </div>
+                <span class="text-[10px] text-gray-400 font-bold ml-1">${sugg.date} (${sugg.senderName})</span>
+            `;
+            chatContainer.appendChild(staffDiv);
 
-            <!-- Footer Admin Commands -->
-            <footer class="admin-actions-bar">
-                <button class="btn btn-danger" id="reset-sales-btn">
-                    <i class="fa-solid fa-power-off"></i> Wipe Sales History
-                </button>
-            </footer>
-        </section>
+            if (sugg.replies && sugg.replies.length > 0) {
+                sugg.replies.forEach(r => {
+                    const replyDiv = document.createElement('div');
+                    const isAdmin = (r.sender === 'admin');
+                    
+                    if (isAdmin) {
+                        replyDiv.className = "flex flex-col items-end space-y-1 mt-2";
+                        replyDiv.innerHTML = `
+                            <div class="bg-gray-200 text-gray-800 p-3 rounded-2xl rounded-tr-none max-w-lg text-sm shadow-sm">
+                                ${r.message}
+                            </div>
+                            <span class="text-[10px] text-gray-500 font-bold mr-1">${r.date} (Wewe - Admin)</span>
+                        `;
+                    } else {
+                        replyDiv.className = "flex flex-col items-start space-y-1 mt-2";
+                        replyDiv.innerHTML = `
+                            <div class="bg-blue-600 text-white p-3 rounded-2xl rounded-tl-none max-w-lg text-sm shadow-sm">
+                                ${r.message}
+                            </div>
+                            <span class="text-[10px] text-gray-400 font-bold ml-1">${r.date} (${sugg.senderName})</span>
+                        `;
+                    }
+                    chatContainer.appendChild(replyDiv);
+                });
+            }
 
-        <!-- System Copyright Footer -->
-        <footer class="app-footer">
-            <p>&copy; 2026 StellarShop Inc. All Rights Reserved.</p>
-        </footer>
-    </div>
+            document.getElementById('adminReplySuggestionForm').classList.remove('hidden');
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+
+        // --- NOTIFICATIONS CONTROL PANEL ---
+        function toggleNotificationsDropdown() {
+            const dropdown = document.getElementById('notifDropdown');
+            if (dropdown.classList.contains('hidden')) {
+                dropdown.classList.remove('hidden');
+                if (window.appMarkNotificationsAsRead) {
+                    window.appMarkNotificationsAsRead();
+                }
+                renderNotifications();
+            } else {
+                dropdown.classList.add('hidden');
+            }
+        }
+
+        function renderNotifications() {
+            if (!window.appGetNotifications) return;
+            const notifs = window.appGetNotifications();
+            const badge = document.getElementById('notifBadge');
+            const listContainer = document.getElementById('notifListContainer');
+
+            const unreadCount = window.appGetUnreadNotificationsCount ? window.appGetUnreadNotificationsCount() : 0;
+            if (unreadCount > 0) {
+                badge.textContent = unreadCount;
+                badge.classList.remove('hidden');
+            } else {
+                badge.classList.add('hidden');
+            }
+
+            listContainer.innerHTML = '';
+            if (notifs.length === 0) {
+                listContainer.innerHTML = `<div class="text-center text-gray-400 text-xs py-10"><i class="bi bi-bell-slash text-2xl"></i><p class="mt-1">Hakuna taarifa yoyote mpya bado.</p></div>`;
+                return;
+            }
+
+            [...notifs].reverse().forEach(n => {
+                const item = document.createElement('div');
+                item.className = `p-3 text-xs border-b border-gray-50 hover:bg-gray-50 transition-colors ${!n.read ? 'bg-orange-50/40 font-semibold' : ''}`;
+                item.innerHTML = `
+                    <div class="flex justify-between items-center mb-1">
+                        <span class="font-bold text-orange-600">${n.title}</span>
+                        <span class="text-[9px] text-gray-400">${n.date}</span>
+                    </div>
+                    <p class="text-gray-600 text-[11px] leading-relaxed font-normal">${n.message}</p>
+                `;
+                listContainer.appendChild(item);
+            });
+        }
+
+        function markAllNotifsRead() {
+            if (window.appMarkNotificationsAsRead) {
+                window.appMarkNotificationsAsRead();
+                renderNotifications();
+            }
+        }
+
+        function clearAllNotifs() {
+            if (window.appClearNotifications) {
+                window.appClearNotifications();
+                renderNotifications();
+            }
+        }
+    </script>
 </body>
 </html>

@@ -1,383 +1,790 @@
-// ==========================================================================
-// Application State
-// ==========================================================================
-const state = {
-    commodities: []
+/**
+ * NGAE FOOD PROCESSORS HUB
+ * Core Application Logic - Client-Side (LocalStorage)
+ * 
+ * Staff Accounts (Role -> Valid IDs):
+ *   operator     -> NGAE001 (MUSSA AMIRI SHEIZA)
+ *   seller       -> NGAE016 (ISSAYA KAKOA - SONI)
+ *                   NGAE017 (ZAINABU HINYA - LUSHOTO)
+ *   storekeeper  -> NGAE021 (MR ACADEMIA)
+ *   manufacturer -> NGAE027 (DULLAH SHEIZA)
+ */
+
+// ==========================================
+// STATIC DATA (Seed Data)
+// ==========================================
+
+const INITIAL_STAFF = {
+    'NGAE001': { name: 'MUSSA AMIRI SHEIZA', role: 'operator' },
+    'NGAE002': { name: 'AMANI STAFF', role: 'operator' },
+    'NGAE016': { name: 'ISSAYA KAKOA', role: 'seller', shopId: 'shop_soni' },
+    'NGAE017': { name: 'ZAINABU HINYA (ZAISHA)', role: 'seller', shopId: 'shop_lushoto' },
+    'NGAE018': { name: 'SONI ISLAMIC', role: 'seller', shopId: 'shop_mwalimu' },
+    'NGAE019': { name: 'LWANDAI SECONDARY', role: 'seller', shopId: 'shop_lwandai' },
+    'NGAE020': { name: 'ROSMIN', role: 'seller', shopId: 'shop_rosmin' },
+    'NGAE021': { name: 'MR ACADEMIA', role: 'storekeeper' },
+    'NGAE022': { name: 'STORE ASSIST', role: 'storekeeper' },
+    'NGAE027': { name: 'DULLAH SHEIZA', role: 'manufacturer' },
+    'NGAE028': { name: 'FACTORY WORKER', role: 'manufacturer' },
 };
 
-// ==========================================================================
-// DOM Elements
-// ==========================================================================
-const form = document.getElementById('commodity-form');
-const nameInput = document.getElementById('commodity-name');
-const priceInput = document.getElementById('commodity-price');
-const nameError = document.getElementById('name-error');
-const priceError = document.getElementById('price-error');
+const INITIAL_PRODUCTS = [
+    { id: 'p_andazi', name: 'ANDAZI', price: 1000, stock: 21112 },
+    { id: 'p_andazi_kavu', name: 'ANDAZI KAVU', price: 1000, stock: 32 },
+    { id: 'p_bend_rose', name: 'BEND ROSE', price: 1000, stock: 26477 },
+    { id: 'p_big_sadoline', name: 'BIG SIZE SADOLINE', price: 8000, stock: 9759 },
+    { id: 'p_bingo', name: 'BINGO', price: 500, stock: 15756 },
+    { id: 'p_biscuit_300', name: 'BISCUIT YA MIA TATU', price: 300, stock: 4641 },
+    { id: 'p_cake_kubwa', name: 'CAKE KUBWA', price: 7000, stock: 2709 },
+    { id: 'p_cake_vpnd', name: 'CAKE VPND', price: 1000, stock: 28408 },
+    { id: 'p_cinamon', name: 'CINAMON', price: 500, stock: 18029 },
+    { id: 'p_cup_cake', name: 'CUP CAKE', price: 5000, stock: 943 },
+    { id: 'p_donat', name: 'DONAT', price: 1000, stock: 13632 },
+    { id: 'p_islamic_kubwa', name: 'ISLAMIC (scones kubwa)', price: 200, stock: 88520 },
+    { id: 'p_islamic_ndogo', name: 'ISLAMIC (scones ndogo)', price: 100, stock: 75135 },
+    { id: 'p_kfp', name: 'K.F.P', price: 1000, stock: 36786 },
+    { id: 'p_ndizi', name: 'NDIZI', price: 1000, stock: 9457 },
+    { id: 'p_r_sless', name: 'R.SLESS', price: 1500, stock: 18418 },
+    { id: 'p_round', name: 'ROUND', price: 800, stock: 15554 },
+    { id: 'p_round_kubwa', name: 'ROUND KUBWA', price: 1000, stock: 113 },
+    { id: 'p_scones', name: 'SCONES', price: 1000, stock: 4890 },
+    { id: 'p_scones_lwandai', name: 'SCONES LWANDAI SECONDARY', price: 1000, stock: 3010 },
+    { id: 'p_small_biscuits', name: 'SMALL SIZE BISCUITS', price: 4000, stock: 1983 },
+    { id: 'p_super', name: 'SUPER', price: 2000, stock: 29104 },
+    { id: 'p_zain', name: 'ZAIN', price: 1000, stock: 18161 },
+];
 
-const addBtn = document.getElementById('add-btn');
-const demoBtn = document.getElementById('demo-btn');
-const clearBtn = document.getElementById('clear-btn');
+const INITIAL_SHOPS = [
+    { id: 'shop_soni', location: 'TANGA, SONI', sellerName: 'ISSAYA KAKOA', sellerId: 'NGAE016' },
+    { id: 'shop_lushoto', location: 'TANGA, LUSHOTO', sellerName: 'ZAINABU HINYA (ZAISHA)', sellerId: 'NGAE017' },
+    { id: 'shop_mwalimu', location: 'TANGA, mwalimu wa zamu', sellerName: 'SONI ISLAMIC', sellerId: 'NGAE018' },
+    { id: 'shop_lwandai', location: 'TANGA, LUSHTO LWANDAI', sellerName: 'LWANDAI SECONDARY', sellerId: 'NGAE019' },
+    { id: 'shop_rosmin', location: 'TANGA, lushoto', sellerName: 'ROSMIN', sellerId: 'NGAE020' },
+    { id: 'shop_cathy', location: 'TANGA, lushoto CATHY', sellerName: 'CATHY HAMMER SECONDARY', sellerId: 'NGAE025' },
+];
 
-const limitCounter = document.getElementById('limit-counter');
+const INITIAL_RAW_MATERIALS = [
+    { id: 'mat_ngano', name: 'Ngano', unit: 'Kilo', stock: 18000 },
+    { id: 'mat_mafuta', name: 'Mafuta ya Kupikia', unit: 'Lita', stock: 40 },
+    { id: 'mat_umeme', name: 'Umeme', unit: 'Lita', stock: 1192 },
+];
 
-const emptyState = document.getElementById('empty-state');
-const commoditiesList = document.getElementById('commodities-list');
-const analyticsDashboard = document.getElementById('analytics-dashboard');
-const checkoutAction = document.getElementById('checkout-action');
+const INITIAL_DISPATCH_HISTORY = [
+    { date: '16 Aug 2026', productId: 'p_andazi', productName: 'ANDAZI', shopId: 'shop_soni', shopLocation: 'TANGA (SONI)', quantity: 205, unit: 'pcs' },
+    { date: '16 Aug 2026', productId: 'p_andazi_kavu', productName: 'ANDAZI KAVU', shopId: 'shop_soni', shopLocation: 'TANGA (SONI)', quantity: 18, unit: 'pcs' },
+    { date: '16 Aug 2026', productId: 'p_round', productName: 'ROUND', shopId: 'shop_soni', shopLocation: 'TANGA (SONI)', quantity: 105, unit: 'pcs' },
+    { date: '14 Aug 2026', productId: 'p_andazi', productName: 'ANDAZI', shopId: 'shop_soni', shopLocation: 'TANGA (SONI)', quantity: 452, unit: 'pcs' },
+    { date: '14 Aug 2026', productId: 'p_super', productName: 'SUPER', shopId: 'shop_soni', shopLocation: 'TANGA (SONI)', quantity: 48, unit: 'pcs' },
+    { date: '14 Aug 2026', productId: 'p_kfp', productName: 'K.F.P', shopId: 'shop_soni', shopLocation: 'TANGA (SONI)', quantity: 93, unit: 'pcs' },
+    { date: '14 Aug 2026', productId: 'p_round', productName: 'ROUND', shopId: 'shop_soni', shopLocation: 'TANGA (SONI)', quantity: 387, unit: 'pcs' },
+    { date: '13 Aug 2026', productId: 'p_super', productName: 'SUPER', shopId: 'shop_soni', shopLocation: 'TANGA (SONI)', quantity: 46, unit: 'pcs' },
+    { date: '13 Aug 2026', productId: 'p_andazi_kavu', productName: 'ANDAZI KAVU', shopId: 'shop_soni', shopLocation: 'TANGA (SONI)', quantity: 633, unit: 'pcs' },
+    { date: '16 Aug 2026', productId: 'p_andazi_kavu', productName: 'ANDAZI KAVU', shopId: 'shop_lushoto', shopLocation: 'TANGA (LUSHOTO)', quantity: 140, unit: 'pcs' },
+    { date: '16 Aug 2026', productId: 'p_round', productName: 'ROUND', shopId: 'shop_lushoto', shopLocation: 'TANGA (LUSHOTO)', quantity: 140, unit: 'pcs' },
+    { date: '16 Aug 2026', productId: 'p_kfp', productName: 'K.F.P', shopId: 'shop_lushoto', shopLocation: 'TANGA (LUSHOTO)', quantity: 116, unit: 'pcs' },
+    { date: '17 Aug 2026', productId: 'p_scones_lwandai', productName: 'SCONES LWANDAI SECONDARY', shopId: 'shop_lwandai', shopLocation: 'TANGA (LUSHTO LWANDAI)', quantity: 200, unit: 'pcs' },
+];
 
-// Stats Elements
-const statSubtotal = document.getElementById('stat-subtotal');
-const statAverage = document.getElementById('stat-average');
-const statHighest = document.getElementById('stat-highest');
-const statLowest = document.getElementById('stat-lowest');
+const INITIAL_RAW_MATERIALS_HISTORY = [
+    { date: '15 Aug 2026', dateRaw: '2026-08-15', materialName: 'Ngano', unit: 'Kilo', qty: 10000, pricePerUnit: 2800, materialId: 'mat_ngano' },
+    { date: '15 Aug 2026', dateRaw: '2026-08-15', materialName: 'Ngano', unit: 'Kilo', qty: 250, pricePerUnit: 1700, materialId: 'mat_ngano' },
+    { date: '10 Aug 2026', dateRaw: '2026-08-10', materialName: 'Mafuta ya Kupikia', unit: 'Lita', qty: 20, pricePerUnit: 2000, materialId: 'mat_mafuta' },
+    { date: '10 Aug 2026', dateRaw: '2026-08-10', materialName: 'Umeme', unit: 'Lita', qty: 1222, pricePerUnit: 100, materialId: 'mat_umeme' },
+    { date: '10 Aug 2026', dateRaw: '2026-08-10', materialName: 'Ngano', unit: 'Kilo', qty: 10000, pricePerUnit: 1000, materialId: 'mat_ngano' },
+    { date: '09 Aug 2026', dateRaw: '2026-08-09', materialName: 'Mafuta ya Kupikia', unit: 'Lita', qty: 100, pricePerUnit: 2000, materialId: 'mat_mafuta' },
+];
 
-// Receipt Overlay Elements
-const generateReceiptBtn = document.getElementById('generate-receipt-btn');
-const receiptOverlay = document.getElementById('receipt-overlay');
-const closeReceiptBtn = document.getElementById('close-receipt-btn');
-const printReceiptBtn = document.getElementById('print-receipt-btn');
+const INITIAL_RAW_MATERIALS_DISPATCH_HISTORY = [
+    { date: '15 Aug 2026', materialName: 'Ngano', unit: 'Kilo', qty: 500, materialId: 'mat_ngano' },
+    { date: '12 Aug 2026', materialName: 'Ngano', unit: 'Kilo', qty: 1000, materialId: 'mat_ngano' },
+    { date: '10 Aug 2026', materialName: 'Mafuta ya Kupikia', unit: 'Lita', qty: 80, materialId: 'mat_mafuta' },
+];
 
-const receiptNo = document.getElementById('receipt-no');
-const receiptDate = document.getElementById('receipt-date');
-const receiptItemsBody = document.getElementById('receipt-items-body');
-const receiptTotalItems = document.getElementById('receipt-total-items');
-const receiptAvgPrice = document.getElementById('receipt-avg-price');
-const receiptGrandTotal = document.getElementById('receipt-grand-total');
-const receiptTimestamp = document.getElementById('receipt-timestamp');
+const INITIAL_PRODUCTION_LOG = [
+    { date: '17 Aug 2026', dateRaw: '2026-08-17', productId: 'p_andazi', productName: 'ANDAZI', quantity: 1200, notes: '' },
+    { date: '17 Aug 2026', dateRaw: '2026-08-17', productId: 'p_round', productName: 'ROUND', quantity: 800, notes: '' },
+    { date: '16 Aug 2026', dateRaw: '2026-08-16', productId: 'p_super', productName: 'SUPER', quantity: 600, notes: '' },
+    { date: '15 Aug 2026', dateRaw: '2026-08-15', productId: 'p_cake_kubwa', productName: 'CAKE KUBWA', quantity: 200, notes: '' },
+    { date: '14 Aug 2026', dateRaw: '2026-08-14', productId: 'p_andazi', productName: 'ANDAZI', quantity: 2000, notes: 'Kundi kubwa' },
+];
 
-// ==========================================================================
-// Sales History Database Helpers (localStorage)
-// ==========================================================================
+const INITIAL_FINANCES = {
+    'shop_soni': { submitted: 97618474, reportedDebt: 0 },
+    'shop_lushoto': { submitted: 10000000, reportedDebt: 0 },
+    'shop_mwalimu': { submitted: 5000000, reportedDebt: 0 },
+    'shop_lwandai': { submitted: 1500000, reportedDebt: 0 },
+    'shop_rosmin': { submitted: 800000, reportedDebt: 0 },
+};
 
-function getSalesHistory() {
-    try {
-        const data = localStorage.getItem('stellarshop_sales_v2');
-        return data ? JSON.parse(data) : [];
-    } catch (e) {
-        console.error("Failed to parse sales history", e);
-        return [];
+const INITIAL_CUSTOMER_ORDERS = [];
+
+// ==========================================
+// DATA LAYER
+// ==========================================
+
+const STORAGE_KEY = 'ngae_app_data';
+
+function loadData() {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) {
+        try {
+            const data = JSON.parse(raw);
+            if (!data.staff) {
+                data.staff = JSON.parse(JSON.stringify(INITIAL_STAFF));
+                saveData(data);
+            }
+            if (!data.cashFlow) {
+                data.cashFlow = { balance: 0, transactions: [] };
+                saveData(data);
+            }
+            if (!data.suggestions) {
+                data.suggestions = [];
+                saveData(data);
+            }
+            if (!data.notifications) {
+                data.notifications = [];
+                saveData(data);
+            }
+            return data;
+        } catch(e) {
+            console.error("Failed to parse app data, re-seeding...", e);
+        }
     }
+    // Seed initial data on first run
+    return seedData();
 }
 
-function saveTransactionToHistory(items, totalAmount) {
-    const history = getSalesHistory();
-    const transaction = {
-        id: crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).substring(2, 9),
-        timestamp: new Date().toISOString(),
-        items: items.map(it => ({ name: it.name, price: it.price })),
-        totalAmount: totalAmount
+function seedData() {
+    const data = {
+        staff: JSON.parse(JSON.stringify(INITIAL_STAFF)),
+        products: JSON.parse(JSON.stringify(INITIAL_PRODUCTS)),
+        shops: JSON.parse(JSON.stringify(INITIAL_SHOPS)),
+        rawMaterials: JSON.parse(JSON.stringify(INITIAL_RAW_MATERIALS)),
+        dispatchHistory: JSON.parse(JSON.stringify(INITIAL_DISPATCH_HISTORY)),
+        rawMaterialsHistory: JSON.parse(JSON.stringify(INITIAL_RAW_MATERIALS_HISTORY)),
+        rawMaterialsDispatchHistory: JSON.parse(JSON.stringify(INITIAL_RAW_MATERIALS_DISPATCH_HISTORY)),
+        productionLog: JSON.parse(JSON.stringify(INITIAL_PRODUCTION_LOG)),
+        finances: JSON.parse(JSON.stringify(INITIAL_FINANCES)),
+        customerOrders: JSON.parse(JSON.stringify(INITIAL_CUSTOMER_ORDERS)),
+        cashFlow: { balance: 0, transactions: [] },
+        suggestions: [],
+        notifications: []
     };
-    history.push(transaction);
-    localStorage.setItem('stellarshop_sales_v2', JSON.stringify(history));
+    saveData(data);
+    return data;
 }
 
-// ==========================================================================
-// Form Validation & Interaction Logic
-// ==========================================================================
+function saveData(data) {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+}
 
-function validateForm() {
-    let isValid = true;
+function appAddNotification(title, message) {
+    if (!appData.notifications) {
+        appData.notifications = [];
+    }
+    const now = new Date();
+    const dateStr = now.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+    const timeStr = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+
+    appData.notifications.push({
+        id: 'notif_' + Math.random().toString(36).substr(2, 9),
+        title: title,
+        message: message,
+        date: `${dateStr} ${timeStr}`,
+        dateRaw: now.toISOString(),
+        read: false
+    });
+    saveData(appData);
+    window.appData = appData;
+}
+
+// ==========================================
+// APP STATE - Loaded Once
+// ==========================================
+let appData = loadData();
+window.appData = appData;
+
+// ==========================================
+// AUTH FUNCTIONS
+// ==========================================
+
+window.appLogin = function(role, staffId) {
+    const staffRecord = appData.staff[staffId.toUpperCase()];
     
-    // Name validation
-    const name = nameInput.value.trim();
-    if (!name) {
-        nameInput.classList.add('invalid');
-        nameError.style.display = 'block';
-        isValid = false;
+    if (!staffRecord) {
+        alert("Namba ya ID haikupatikana. Tafadhali jaribu tena.\n\nMfano wa vitambulisho:\n- Operator: NGAE001\n- Seller: NGAE016\n- Store Keeper: NGAE021\n- Manufacturer: NGAE027");
+        return false;
+    }
+    
+    if (staffRecord.role !== role) {
+        alert(`ID ${staffId} ni ya ${staffRecord.role.toUpperCase()}, si ${role.toUpperCase()}. Tafadhali rudi na uchague jukumu sahihi.`);
+        return false;
+    }
+    
+    localStorage.setItem('ngae_logged_in_role', role);
+    localStorage.setItem('ngae_logged_in_id', staffId.toUpperCase());
+    localStorage.setItem('ngae_logged_in_name', staffRecord.name);
+    
+    // Redirect to correct dashboard
+    if(role === 'storekeeper') {
+        window.location.href = 'store_keeper.html';
     } else {
-        nameInput.classList.remove('invalid');
-        nameError.style.display = 'none';
+        window.location.href = role + '.html';
+    }
+    return true;
+};
+
+window.appLogout = function() {
+    localStorage.removeItem('ngae_logged_in_role');
+    localStorage.removeItem('ngae_logged_in_id');
+    localStorage.removeItem('ngae_logged_in_name');
+    window.location.href = 'index.html';
+};
+
+window.appProtectRoute = function(requiredRole) {
+    const loggedRole = localStorage.getItem('ngae_logged_in_role');
+    const loggedId = localStorage.getItem('ngae_logged_in_id');
+    
+    if (!loggedRole || !loggedId) {
+        window.location.href = 'login.html?role=' + requiredRole;
+        return false;
     }
     
-    // Price validation
-    const priceStr = priceInput.value.trim();
-    const price = parseFloat(priceStr);
-    
-    if (!priceStr || isNaN(price) || price < 0) {
-        priceInput.classList.add('invalid');
-        priceError.style.display = 'block';
-        isValid = false;
-    } else {
-        priceInput.classList.remove('invalid');
-        priceError.style.display = 'none';
+    if (loggedRole !== requiredRole) {
+        alert("Huna ruhusa ya kuingia ukurasa huu.");
+        window.location.href = 'login.html?role=' + requiredRole;
+        return false;
     }
     
-    return isValid;
-}
+    // Update staff name display if element exists
+    const nameEl = document.getElementById('staffNameDisplay');
+    const idEl = document.getElementById('staffIdDisplay');
+    if (nameEl) nameEl.textContent = localStorage.getItem('ngae_logged_in_name') || loggedId;
+    if (idEl) idEl.textContent = loggedId;
+    
+    return true;
+};
 
-// Clear Validation styling
-function resetValidation() {
-    nameInput.classList.remove('invalid');
-    priceInput.classList.remove('invalid');
-    nameError.style.display = 'none';
-    priceError.style.display = 'none';
-}
+// ==========================================
+// OPERATOR FUNCTIONS
+// ==========================================
 
-// Add Item
-function addCommodity(name, price) {
-    state.commodities.push({
-        id: crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).substring(2, 9),
-        name: name,
-        price: parseFloat(price)
+window.appDispatchProduct = function(productId, shopId, qty, unit) {
+    const product = appData.products.find(p => p.id === productId);
+    const shop = appData.shops.find(s => s.id === shopId);
+    
+    if (!product || !shop) return false;
+    if (product.stock < qty) return false;
+    
+    // Deduct from product stock
+    product.stock -= qty;
+    
+    // Add to dispatch history
+    const now = new Date();
+    const dateStr = now.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+    
+    appData.dispatchHistory.push({
+        date: dateStr,
+        dateRaw: now.toISOString().split('T')[0],
+        productId: product.id,
+        productName: product.name,
+        shopId: shop.id,
+        shopLocation: shop.location,
+        quantity: qty,
+        unit: unit || 'pcs'
     });
     
-    updateUI();
-}
-
-// Delete Item
-function deleteCommodity(id) {
-    state.commodities = state.commodities.filter(item => item.id !== id);
-    updateUI();
-}
-
-// Clear All
-function clearCatalog() {
-    if (state.commodities.length === 0) return;
-    if (confirm("Are you sure you want to clear your current basket?")) {
-        state.commodities = [];
-        updateUI();
-    }
-}
-
-// Load Mock Demo Data
-function loadDemoData() {
-    const demoItems = [
-        { name: "Wireless Headphones", price: 79.99 },
-        { name: "Mechanical Keyboard", price: 129.50 },
-        { name: "Ergonomic Office Chair", price: 249.00 },
-        { name: "UltraWide Monitor 34\"", price: 399.99 },
-        { name: "USB-C Hub Multiport", price: 45.00 }
-    ];
-    
-    state.commodities = [];
-    demoItems.forEach(item => {
-        state.commodities.push({
-            id: crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).substring(2, 9),
-            name: item.name,
-            price: item.price
-        });
-    });
-    
-    updateUI();
-}
-
-// ==========================================================================
-// UI Rendering & Data Binding
-// ==========================================================================
-
-function updateUI() {
-    const itemCount = state.commodities.length;
-    
-    // Update count labels
-    limitCounter.textContent = `${itemCount} Item${itemCount === 1 ? '' : 's'}`;
-    
-    // Handle Empty vs Display State
-    if (itemCount === 0) {
-        emptyState.style.display = 'flex';
-        commoditiesList.style.display = 'none';
-        analyticsDashboard.style.display = 'none';
-        checkoutAction.style.display = 'none';
-        
-        commoditiesList.innerHTML = '';
-    } else {
-        emptyState.style.display = 'none';
-        commoditiesList.style.display = 'flex';
-        analyticsDashboard.style.display = 'grid';
-        checkoutAction.style.display = 'block';
-        
-        renderCommoditiesList();
-        calculateAnalytics();
-    }
-}
-
-// Render dynamic catalog list
-function renderCommoditiesList() {
-    commoditiesList.innerHTML = '';
-    
-    state.commodities.forEach((item, index) => {
-        const card = document.createElement('div');
-        card.className = 'commodity-card';
-        card.setAttribute('data-id', item.id);
-        
-        card.innerHTML = `
-            <div class="item-info">
-                <span class="item-index-tag">Item #${index + 1}</span>
-                <span class="item-name" title="${item.name}">${item.name}</span>
-            </div>
-            <div class="item-meta">
-                <span class="item-price">$${item.price.toFixed(2)}</span>
-                <button class="item-delete-btn" aria-label="Delete ${item.name}">
-                    <i class="fa-solid fa-trash-can"></i>
-                </button>
-            </div>
-        `;
-        
-        // Add Delete Event Listener
-        card.querySelector('.item-delete-btn').addEventListener('click', () => {
-            deleteCommodity(item.id);
-        });
-        
-        commoditiesList.appendChild(card);
-    });
-}
-
-// Calculate summaries
-function calculateAnalytics() {
-    if (state.commodities.length === 0) return;
-    
-    let subtotal = 0;
-    let highestPrice = -Infinity;
-    let lowestPrice = Infinity;
-    let highestItem = null;
-    let lowestItem = null;
-    
-    state.commodities.forEach(item => {
-        subtotal += item.price;
-        if (item.price > highestPrice) {
-            highestPrice = item.price;
-            highestItem = item;
-        }
-        if (item.price < lowestPrice) {
-            lowestPrice = item.price;
-            lowestItem = item;
-        }
-    });
-    
-    const average = subtotal / state.commodities.length;
-    
-    // Bind results to display
-    statSubtotal.textContent = `$${subtotal.toFixed(2)}`;
-    statAverage.textContent = `$${average.toFixed(2)}`;
-    
-    if (highestItem) {
-        statHighest.textContent = `$${highestItem.price.toFixed(2)}`;
-        statHighest.title = highestItem.name;
+    // Initialize shop finances if not exists
+    if (!appData.finances[shop.id]) {
+        appData.finances[shop.id] = { submitted: 0, reportedDebt: 0 };
     }
     
-    if (lowestItem) {
-        statLowest.textContent = `$${lowestItem.price.toFixed(2)}`;
-        statLowest.title = lowestItem.name;
+    saveData(appData);
+    window.appData = appData;
+    
+    // Add notification
+    appAddNotification('Usafirishaji Mpya', `Operator amesafirisha ${qty} ${unit || 'pcs'} ya ${product.name} kwenda duka la ${shop.location}.`);
+    
+    return true;
+};
+
+// ==========================================
+// SELLER FUNCTIONS
+// ==========================================
+
+window.appSubmitSales = function(amount, notes) {
+    const staffId = localStorage.getItem('ngae_logged_in_id');
+    const staffRecord = appData.staff[staffId];
+    if (!staffRecord || !staffRecord.shopId) return false;
+    
+    const shopId = staffRecord.shopId;
+    if (!appData.finances[shopId]) {
+        appData.finances[shopId] = { submitted: 0, reportedDebt: 0, salesHistory: [], personalExpenses: [] };
     }
-}
-
-// ==========================================================================
-// Digital Receipt Overlay Manager
-// ==========================================================================
-
-function checkoutBasket() {
-    if (state.commodities.length === 0) return;
+    if (!appData.finances[shopId].salesHistory) {
+        appData.finances[shopId].salesHistory = [];
+    }
     
-    // Calculate subtotal
-    let subtotal = 0;
-    state.commodities.forEach(item => subtotal += item.price);
-    
-    // Save to sales database
-    saveTransactionToHistory(state.commodities, subtotal);
-    
-    // Open receipt modal view
-    openReceipt(subtotal);
-    
-    // Clear current basket
-    state.commodities = [];
-    updateUI();
-}
-
-function openReceipt(subtotal) {
-    // Fill receipt details
-    const randomNo = Math.floor(100000 + Math.random() * 900000);
-    receiptNo.textContent = `ST-${randomNo}`;
+    appData.finances[shopId].submitted += amount;
     
     const now = new Date();
-    receiptDate.textContent = now.toLocaleDateString();
-    receiptTimestamp.textContent = `Issued: ${now.toLocaleString()}`;
+    const dateStr = now.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+    const timeStr = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
     
-    // Fill items
-    receiptItemsBody.innerHTML = '';
-    
-    const history = getSalesHistory();
-    const lastTransaction = history[history.length - 1];
-    const items = lastTransaction ? lastTransaction.items : [];
-    
-    items.forEach((item, index) => {
-        const row = document.createElement('tr');
-        row.innerHTML = `
-            <td class="col-num">${index + 1}</td>
-            <td class="col-item">${item.name}</td>
-            <td class="col-price">$${item.price.toFixed(2)}</td>
-        `;
-        receiptItemsBody.appendChild(row);
+    appData.finances[shopId].salesHistory.push({
+        amount: amount,
+        notes: notes || 'Mauzo ya Kawaida',
+        date: `${dateStr} ${timeStr}`,
+        dateRaw: now.toISOString()
     });
     
-    const average = subtotal / items.length;
+    saveData(appData);
+    window.appData = appData;
     
-    receiptTotalItems.textContent = items.length;
-    receiptAvgPrice.textContent = `$${average.toFixed(2)}`;
-    receiptGrandTotal.textContent = `$${subtotal.toFixed(2)}`;
+    // Add notification
+    const shopLoc = appData.shops.find(s => s.id === shopId)?.location || 'dukani';
+    appAddNotification('Mauzo Yaliyowasilishwa', `Muuzaji wa duka la ${shopLoc} amewasilisha mauzo ya Tsh ${amount.toLocaleString()}.`);
     
-    // Show modal
-    receiptOverlay.style.display = 'flex';
-    document.body.style.overflow = 'hidden'; // Lock background scrolling
-}
+    return true;
+};
 
-function closeReceipt() {
-    receiptOverlay.style.display = 'none';
-    document.body.style.overflow = 'auto'; // Unlock background scrolling
-}
-
-// ==========================================================================
-// Event Listeners Registration
-// ==========================================================================
-
-form.addEventListener('submit', (e) => {
-    e.preventDefault();
+window.appReportDebt = function(amount, reason) {
+    const staffId = localStorage.getItem('ngae_logged_in_id');
+    const staffRecord = appData.staff[staffId];
+    if (!staffRecord || !staffRecord.shopId) return false;
     
-    if (validateForm()) {
-        const name = nameInput.value.trim();
-        const price = priceInput.value.trim();
+    const shopId = staffRecord.shopId;
+    if (!appData.finances[shopId]) {
+        appData.finances[shopId] = { submitted: 0, reportedDebt: 0, salesHistory: [], personalExpenses: [] };
+    }
+    
+    appData.finances[shopId].reportedDebt += amount;
+    saveData(appData);
+    window.appData = appData;
+    return true;
+};
+
+window.appAddSellerExpense = function(amount, description) {
+    const staffId = localStorage.getItem('ngae_logged_in_id');
+    const staffRecord = appData.staff[staffId];
+    if (!staffRecord || !staffRecord.shopId) return false;
+    
+    const shopId = staffRecord.shopId;
+    if (!appData.finances[shopId]) {
+        appData.finances[shopId] = { submitted: 0, reportedDebt: 0, salesHistory: [], personalExpenses: [] };
+    }
+    if (!appData.finances[shopId].personalExpenses) {
+        appData.finances[shopId].personalExpenses = [];
+    }
+    
+    const now = new Date();
+    const dateStr = now.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+    const timeStr = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+    
+    appData.finances[shopId].personalExpenses.push({
+        amount: parseFloat(amount),
+        description: description,
+        date: `${dateStr} ${timeStr}`,
+        dateRaw: now.toISOString()
+    });
+    
+    saveData(appData);
+    window.appData = appData;
+    return true;
+};
+
+// ==========================================
+// STORE KEEPER FUNCTIONS
+// ==========================================
+
+window.appReceiveMaterial = function(materialName, unit, qty, pricePerUnit) {
+    const now = new Date();
+    const dateStr = now.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+    
+    // Find or create material
+    let mat = appData.rawMaterials.find(m => m.name.toUpperCase() === materialName.toUpperCase());
+    if (!mat) {
+        mat = { id: 'mat_' + materialName.toLowerCase().replace(/\s+/g,'_'), name: materialName, unit: unit, stock: 0 };
+        appData.rawMaterials.push(mat);
+    }
+    
+    mat.stock += qty;
+    
+    appData.rawMaterialsHistory.push({
+        date: dateStr,
+        dateRaw: now.toISOString().split('T')[0],
+        materialName: materialName,
+        materialId: mat.id,
+        unit: unit,
+        qty: qty,
+        pricePerUnit: pricePerUnit
+    });
+    
+    saveData(appData);
+    window.appData = appData;
+    
+    // Add notification
+    appAddNotification('Malighafi Zimepokelewa', `Stoo imepokea ${qty} ${unit} za ${materialName} kutoka kwa msambazaji.`);
+    
+    return true;
+};
+
+window.appDispatchMaterial = function(materialId, qty) {
+    const mat = appData.rawMaterials.find(m => m.id === materialId);
+    if (!mat || mat.stock < qty) return false;
+    
+    mat.stock -= qty;
+    
+    const now = new Date();
+    const dateStr = now.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+    
+    appData.rawMaterialsDispatchHistory.push({
+        date: dateStr,
+        dateRaw: now.toISOString().split('T')[0],
+        materialName: mat.name,
+        materialId: mat.id,
+        unit: mat.unit,
+        qty: qty
+    });
+    
+    saveData(appData);
+    window.appData = appData;
+    
+    // Add notification
+    appAddNotification('Malighafi Zimetolewa', `Stoo imetoa ${qty} ${mat.unit} za ${mat.name} kwenda kiwandani.`);
+    
+    return true;
+};
+
+// ==========================================
+// MANUFACTURER FUNCTIONS
+// ==========================================
+
+window.appRecordProduction = function(productId, qty, notes) {
+    const product = appData.products.find(p => p.id === productId);
+    if (!product) return false;
+    
+    // Add to product stock
+    product.stock += qty;
+    
+    const now = new Date();
+    const dateStr = now.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+    
+    appData.productionLog.push({
+        date: dateStr,
+        dateRaw: now.toISOString().split('T')[0],
+        productId: product.id,
+        productName: product.name,
+        quantity: qty,
+        notes: notes || ''
+    });
+    
+    saveData(appData);
+    window.appData = appData;
+    
+    // Add notification
+    appAddNotification('Uzalishaji Mpya', `Kiwanda kimesajili uzalishaji wa ${qty} pcs za ${product.name}.`);
+    
+    return true;
+};
+
+// ==========================================
+// CUSTOMER ORDER FUNCTIONS
+// ==========================================
+
+window.appPlaceOrder = function({ customer_name, phone, region, district, ward, street, items, total }) {
+    // Generate Order ID
+    const orderId = 'ORD-' + Math.random().toString(36).substr(2, 6).toUpperCase();
+    const now = new Date();
+    const dateStr = now.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+    
+    const order = {
+        id: orderId,
+        customer_name,
+        phone,
+        address: `${street}, ${ward}, ${district}, ${region}`,
+        items,
+        total,
+        date: dateStr,
+        dateRaw: now.toISOString(),
+        status: 'Pending'
+    };
+    
+    appData.customerOrders.push(order);
+    saveData(appData);
+    window.appData = appData;
+    return orderId;
+};
+
+window.appTrackOrder = function(orderId) {
+    return appData.customerOrders.find(o => o.id === orderId.toUpperCase()) || null;
+};
+
+// ==========================================
+// ADMIN FUNCTIONS
+// ==========================================
+
+window.appAddStaff = function(name, role, customId) {
+    let newId = customId ? customId.toUpperCase().trim() : null;
+    if (!newId) {
+        let maxNum = 0;
+        Object.keys(appData.staff).forEach(id => {
+            const match = id.match(/^NGAE(\d+)$/);
+            if (match) {
+                const num = parseInt(match[1]);
+                if (num > maxNum) maxNum = num;
+            }
+        });
+        const nextNum = String(maxNum + 1).padStart(3, '0');
+        newId = 'NGAE' + nextNum;
+    }
+
+    if (appData.staff[newId]) {
+        alert(`ID ${newId} tayari inatumiwa na ${appData.staff[newId].name}.`);
+        return false;
+    }
+
+    const newStaff = { name, role };
+    if (role === 'seller') {
+        const shopId = 'shop_' + name.toLowerCase().replace(/\s+/g,'_');
+        newStaff.shopId = shopId;
         
-        addCommodity(name, price);
-        
-        // Reset form
-        form.reset();
-        resetValidation();
-        nameInput.focus();
+        if (!appData.shops.some(s => s.id === shopId)) {
+            appData.shops.push({
+                id: shopId,
+                location: 'TANGA, ' + name.toUpperCase(),
+                sellerName: name,
+                sellerId: newId
+            });
+        }
+    }
+
+    appData.staff[newId] = newStaff;
+    saveData(appData);
+    window.appData = appData;
+    return newId;
+};
+
+window.appDeleteStaff = function(staffId) {
+    if (appData.staff[staffId]) {
+        delete appData.staff[staffId];
+        saveData(appData);
+        window.appData = appData;
+        return true;
+    }
+    return false;
+};
+
+window.appUpdateProduct = function(productId, name, price, stock) {
+    const product = appData.products.find(p => p.id === productId);
+    if (!product) return false;
+    product.name = name;
+    product.price = parseFloat(price);
+    product.stock = parseInt(stock);
+    saveData(appData);
+    window.appData = appData;
+    return true;
+};
+
+// ==========================================
+// CASH FLOWING FUNCTIONS (ADMIN PERSONAL)
+// ==========================================
+
+window.appAddPersonalCash = function(amount, description) {
+    if (!appData.cashFlow) {
+        appData.cashFlow = { balance: 0, transactions: [] };
+    }
+    const amt = parseFloat(amount);
+    appData.cashFlow.balance += amt;
+
+    const now = new Date();
+    const dateStr = now.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+    const timeStr = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+
+    appData.cashFlow.transactions.push({
+        type: 'IN',
+        amount: amt,
+        description: description,
+        date: `${dateStr} ${timeStr}`,
+        dateRaw: now.toISOString(),
+        runningBalance: appData.cashFlow.balance
+    });
+
+    saveData(appData);
+    window.appData = appData;
+    return true;
+};
+
+window.appAddPersonalExpense = function(amount, description) {
+    if (!appData.cashFlow) {
+        appData.cashFlow = { balance: 0, transactions: [] };
+    }
+    const amt = parseFloat(amount);
+    appData.cashFlow.balance -= amt;
+
+    const now = new Date();
+    const dateStr = now.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+    const timeStr = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+
+    appData.cashFlow.transactions.push({
+        type: 'OUT',
+        amount: amt,
+        description: description,
+        date: `${dateStr} ${timeStr}`,
+        dateRaw: now.toISOString(),
+        runningBalance: appData.cashFlow.balance
+    });
+
+    saveData(appData);
+    window.appData = appData;
+    return true;
+};
+
+window.appGetPersonalCashFlowStats = function() {
+    if (!appData.cashFlow || !appData.cashFlow.transactions) {
+        return { today: 0, week: 0, month: 0, year: 0 };
+    }
+
+    const now = new Date();
+    let today = 0, week = 0, month = 0, year = 0;
+
+    appData.cashFlow.transactions.forEach(t => {
+        if (t.type === 'IN') {
+            const tDate = new Date(t.dateRaw);
+            
+            // Check Year
+            if (tDate.getFullYear() === now.getFullYear()) {
+                year += t.amount;
+
+                // Check Month
+                if (tDate.getMonth() === now.getMonth()) {
+                    month += t.amount;
+
+                    // Check Today
+                    if (tDate.toDateString() === now.toDateString()) {
+                        today += t.amount;
+                    }
+                }
+
+                // Check Week
+                const diffTime = Math.abs(now - tDate);
+                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                if (diffDays <= 7) {
+                    week += t.amount;
+                }
+            }
+        }
+    });
+
+    return { today, week, month, year };
+};
+
+// ==========================================
+// STAFF SUGGESTIONS & FEEDBACK (MAPENDEKEZO)
+// ==========================================
+
+window.appSubmitSuggestion = function(message) {
+    if (!appData.suggestions) {
+        appData.suggestions = [];
+    }
+
+    const staffId = localStorage.getItem('ngae_logged_in_id');
+    const staffName = localStorage.getItem('ngae_logged_in_name') || 'Mfanyakazi';
+    const staffRole = localStorage.getItem('ngae_logged_in_role') || 'staff';
+
+    if (!staffId) return false;
+
+    const now = new Date();
+    const dateStr = now.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+    const timeStr = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+
+    appData.suggestions.push({
+        id: 'sugg_' + Math.random().toString(36).substr(2, 9),
+        senderId: staffId,
+        senderName: staffName,
+        senderRole: staffRole,
+        date: `${dateStr} ${timeStr}`,
+        dateRaw: now.toISOString(),
+        message: message,
+        replies: []
+    });
+
+    saveData(appData);
+    window.appData = appData;
+    return true;
+};
+
+window.appReplyToSuggestion = function(suggestionId, replyText) {
+    if (!appData.suggestions) return false;
+
+    const sugg = appData.suggestions.find(s => s.id === suggestionId);
+    if (!sugg) return false;
+
+    const now = new Date();
+    const dateStr = now.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+    const timeStr = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+
+    sugg.replies.push({
+        sender: 'admin',
+        message: replyText,
+        date: `${dateStr} ${timeStr}`,
+        dateRaw: now.toISOString()
+    });
+
+    saveData(appData);
+    window.appData = appData;
+    return true;
+};
+
+window.appGetStaffSuggestions = function() {
+    if (!appData.suggestions) return [];
+    const staffId = localStorage.getItem('ngae_logged_in_id');
+    if (!staffId) return [];
+    return appData.suggestions.filter(s => s.senderId === staffId);
+};
+
+window.appGetAllSuggestions = function() {
+    return appData.suggestions || [];
+};
+
+// ==========================================
+// NOTIFICATIONS FUNCTIONS
+// ==========================================
+
+window.appGetUnreadNotificationsCount = function() {
+    if (!appData.notifications) return 0;
+    return appData.notifications.filter(n => !n.read).length;
+};
+
+window.appGetNotifications = function() {
+    return appData.notifications || [];
+};
+
+window.appMarkNotificationsAsRead = function() {
+    if (!appData.notifications) return;
+    appData.notifications.forEach(n => n.read = true);
+    saveData(appData);
+    window.appData = appData;
+};
+
+window.appClearNotifications = function() {
+    appData.notifications = [];
+    saveData(appData);
+    window.appData = appData;
+};
+
+// ==========================================
+// HOMEPAGE - Update cart badge count
+// ==========================================
+document.addEventListener('DOMContentLoaded', () => {
+    const badge = document.getElementById('cartBadgeCount');
+    if (badge) {
+        const count = appData.customerOrders ? appData.customerOrders.length : 0;
+        if (count > 0) {
+            badge.textContent = count;
+            badge.style.display = 'block';
+        }
     }
 });
 
-// Clear input validation errors on input event
-nameInput.addEventListener('input', () => {
-    nameInput.classList.remove('invalid');
-    nameError.style.display = 'none';
-});
-
-priceInput.addEventListener('input', () => {
-    priceInput.classList.remove('invalid');
-    priceError.style.display = 'none';
-});
-
-demoBtn.addEventListener('click', loadDemoData);
-clearBtn.addEventListener('click', clearCatalog);
-
-generateReceiptBtn.addEventListener('click', checkoutBasket);
-closeReceiptBtn.addEventListener('click', closeReceipt);
-
-// Close overlay on clicking outside modal
-receiptOverlay.addEventListener('click', (e) => {
-    if (e.target === receiptOverlay) {
-        closeReceipt();
-    }
-});
-
-// ESC key listener to close modals
-document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && receiptOverlay.style.display === 'flex') {
-        closeReceipt();
-    }
-});
-
-printReceiptBtn.addEventListener('click', () => {
-    window.print();
-});
-
-// Initialize dashboard UI
-updateUI();
+console.log("NGAE Food App initialized. Products:", appData.products.length, "| Orders:", appData.customerOrders.length);

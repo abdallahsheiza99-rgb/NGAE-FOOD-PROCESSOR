@@ -145,6 +145,14 @@ function loadData() {
                 data.notifications = [];
                 saveData(data);
             }
+            if (!data.manufacturerMaterials) {
+                data.manufacturerMaterials = {};
+                saveData(data);
+            }
+            if (!data.adminExpenses) {
+                data.adminExpenses = [];
+                saveData(data);
+            }
             return data;
         } catch(e) {
             console.error("Failed to parse app data, re-seeding...", e);
@@ -168,7 +176,9 @@ function seedData() {
         customerOrders: JSON.parse(JSON.stringify(INITIAL_CUSTOMER_ORDERS)),
         cashFlow: { balance: 0, transactions: [] },
         suggestions: [],
-        notifications: []
+        notifications: [],
+        manufacturerMaterials: {},
+        adminExpenses: []
     };
     saveData(data);
     return data;
@@ -429,7 +439,7 @@ window.appReceiveMaterial = function(materialName, unit, qty, pricePerUnit) {
     return true;
 };
 
-window.appDispatchMaterial = function(materialId, qty) {
+window.appDispatchMaterial = function(materialId, qty, manufacturerId) {
     const mat = appData.rawMaterials.find(m => m.id === materialId);
     if (!mat || mat.stock < qty) return false;
     
@@ -437,6 +447,7 @@ window.appDispatchMaterial = function(materialId, qty) {
     
     const now = new Date();
     const dateStr = now.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+    const manufacturerName = appData.staff[manufacturerId] ? appData.staff[manufacturerId].name : 'Producer';
     
     appData.rawMaterialsDispatchHistory.push({
         date: dateStr,
@@ -444,14 +455,25 @@ window.appDispatchMaterial = function(materialId, qty) {
         materialName: mat.name,
         materialId: mat.id,
         unit: mat.unit,
-        qty: qty
+        qty: qty,
+        manufacturerId: manufacturerId,
+        manufacturerName: manufacturerName
     });
+    
+    // Increment manufacturer raw materials balance
+    if (!appData.manufacturerMaterials) {
+        appData.manufacturerMaterials = {};
+    }
+    if (!appData.manufacturerMaterials[manufacturerId]) {
+        appData.manufacturerMaterials[manufacturerId] = {};
+    }
+    appData.manufacturerMaterials[manufacturerId][materialId] = (appData.manufacturerMaterials[manufacturerId][materialId] || 0) + qty;
     
     saveData(appData);
     window.appData = appData;
     
     // Add notification
-    appAddNotification('Malighafi Zimetolewa', `Stoo imetoa ${qty} ${mat.unit} za ${mat.name} kwenda kiwandani.`);
+    appAddNotification('Malighafi Zimetolewa', `Stoo imetoa ${qty} ${mat.unit} za ${mat.name} kwenda kwa ${manufacturerName}.`);
     
     return true;
 };
@@ -771,6 +793,110 @@ window.appClearNotifications = function() {
     appData.notifications = [];
     saveData(appData);
     window.appData = appData;
+};
+
+// ==========================================
+// ADMIN EXPENSES & OVERALL STATISTICS
+// ==========================================
+
+window.appAddAdminExpense = function(description, amount) {
+    if (!appData.adminExpenses) {
+        appData.adminExpenses = [];
+    }
+    const now = new Date();
+    const dateStr = now.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+    appData.adminExpenses.push({
+        id: 'exp_' + Math.random().toString(36).substr(2, 9),
+        description: description,
+        amount: parseFloat(amount),
+        date: dateStr,
+        dateRaw: now.toISOString()
+    });
+    saveData(appData);
+    window.appData = appData;
+    
+    // Add notification
+    appAddNotification('Matumizi Mapya ya Admin', `Admin amesajili matumizi mpya: "${description}" ya Tsh ${parseFloat(amount).toLocaleString()}.`);
+    
+    return true;
+};
+
+window.appGetExpensesList = function() {
+    const list = [];
+    
+    // Store keeper raw material purchases
+    const receipts = appData.rawMaterialsHistory || [];
+    receipts.forEach(r => {
+        list.push({
+            date: r.date,
+            dateRaw: r.dateRaw,
+            description: `Kununua ${r.materialName} (${r.qty} ${r.unit})`,
+            amount: r.qty * r.pricePerUnit,
+            type: 'Stoo'
+        });
+    });
+    
+    // Custom Admin expenses
+    const adminExps = appData.adminExpenses || [];
+    adminExps.forEach(e => {
+        list.push({
+            date: e.date,
+            dateRaw: e.dateRaw,
+            description: e.description,
+            amount: e.amount,
+            type: 'Admin'
+        });
+    });
+    
+    // Sort by latest
+    return list.sort((a,b) => new Date(b.dateRaw) - new Date(a.dateRaw));
+};
+
+window.appGetOverallStatistics = function() {
+    // 1. Total Sales (submitted sales from shops)
+    let totalSales = 0;
+    const finances = appData.finances || {};
+    Object.values(finances).forEach(f => {
+        totalSales += f.submitted || 0;
+    });
+    
+    // 2. Total Expenses (Stoo purchases + Admin expenses)
+    let totalExpenses = 0;
+    const expenses = window.appGetExpensesList();
+    expenses.forEach(e => {
+        totalExpenses += e.amount;
+    });
+    
+    // 3. Profit / Loss
+    const netProfit = totalSales - totalExpenses;
+    
+    return {
+        totalSales,
+        totalExpenses,
+        netProfit,
+        isLoss: netProfit < 0
+    };
+};
+
+window.appGetManufacturerMaterials = function(manufacturerId) {
+    if (!appData.manufacturerMaterials || !appData.manufacturerMaterials[manufacturerId]) {
+        return [];
+    }
+    const mats = appData.manufacturerMaterials[manufacturerId];
+    const list = [];
+    Object.keys(mats).forEach(materialId => {
+        const qty = mats[materialId];
+        const rawMat = appData.rawMaterials.find(m => m.id === materialId);
+        if (rawMat && qty > 0) {
+            list.push({
+                materialId: materialId,
+                name: rawMat.name,
+                unit: rawMat.unit,
+                qty: qty
+            });
+        }
+    });
+    return list;
 };
 
 // ==========================================

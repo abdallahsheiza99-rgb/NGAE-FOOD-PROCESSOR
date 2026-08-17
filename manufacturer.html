@@ -52,6 +52,16 @@
         <!-- Action Message -->
         <div id="actionMessage" class="hidden mb-4 p-3 rounded-lg font-bold"></div>
 
+        <!-- Bakaa ya Malighafi Ulizopewa Card -->
+        <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 mb-6">
+            <h2 class="text-xs font-bold text-blue-600 mb-3 uppercase tracking-wider flex items-center gap-1.5">
+                <i class="bi bi-box-seam-fill"></i> Bakaa ya Malighafi Ulizopewa (Current Raw Materials Stock)
+            </h2>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4" id="manufacturerMaterialsBalance">
+                <!-- Dynamically rendered -->
+            </div>
+        </div>
+
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
 
             <!-- Production Log -->
@@ -206,10 +216,31 @@
                     if(d.toDateString() === now.toDateString()) totalToday += entry.quantity;
                 }
             });
+            const staffId = localStorage.getItem('ngae_logged_in_id') || 'NGAE027';
 
             document.getElementById('prodToday').textContent = totalToday.toLocaleString();
             document.getElementById('prodMonth').textContent = totalMonth.toLocaleString();
             document.getElementById('prodYear').textContent = totalYear.toLocaleString();
+
+            // Render active materials stock balance
+            const mBalanceContainer = document.getElementById('manufacturerMaterialsBalance');
+            mBalanceContainer.innerHTML = '';
+            if (window.appGetManufacturerMaterials) {
+                const mats = window.appGetManufacturerMaterials(staffId);
+                if (mats.length === 0) {
+                    mBalanceContainer.innerHTML = `<div class="col-span-full text-center text-gray-400 text-xs py-2">Huna malighafi yoyote iliyokabidhiwa bado.</div>`;
+                } else {
+                    mats.forEach(m => {
+                        const mCard = document.createElement('div');
+                        mCard.className = "bg-blue-50 border border-blue-100 p-3 rounded-lg text-center shadow-sm";
+                        mCard.innerHTML = `
+                            <p class="text-[10px] font-bold text-blue-700 uppercase tracking-wider">${m.name}</p>
+                            <h4 class="text-base font-black text-blue-900 mt-1">${m.qty.toFixed(1)} <span class="text-[10px] uppercase font-bold text-blue-500">${m.unit}</span></h4>
+                        `;
+                        mBalanceContainer.appendChild(mCard);
+                    });
+                }
+            }
 
             const prodBody = document.getElementById('productionLogBody');
             prodBody.innerHTML = '';
@@ -226,10 +257,10 @@
                 prodBody.appendChild(tr);
             });
 
-            // Raw materials received from storekeeper
+            // Raw materials received from storekeeper (filtered by logged-in manufacturer)
             const matBody = document.getElementById('rawMaterialsReceivedBody');
             matBody.innerHTML = '';
-            const dispatches = window.appData.rawMaterialsDispatchHistory || [];
+            const dispatches = (window.appData.rawMaterialsDispatchHistory || []).filter(d => d.manufacturerId === staffId);
             [...dispatches].reverse().forEach(d => {
                 const tr = document.createElement('tr');
                 tr.className = "hover:bg-blue-50 transition-colors";

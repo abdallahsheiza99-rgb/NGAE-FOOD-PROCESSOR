@@ -3,17 +3,82 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Seller Dashboard - NGAE Food</title>
+    <title>Seller Dashboard - NGAE Food Processors Hub</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
-        /* Custom scrollbar ya jedwali */
-        .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
-        .custom-scrollbar::-webkit-scrollbar-track { background: #f3f4f6; border-radius: 10px; }
-        .custom-scrollbar::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 10px; }
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #9ca3af; }
-        .modal-active { display: flex !important; }
-        
+        * {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+
+        /* Glassmorphism & Card Styling */
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.6);
+        }
+
+        .gradient-card-1 {
+            background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+        }
+
+        .gradient-card-2 {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        }
+
+        .gradient-card-3 {
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+        }
+
+        .gradient-card-4 {
+            background: linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%);
+        }
+
+        .gradient-hero {
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #064e3b 100%);
+        }
+
+        .gradient-seller-card {
+            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+        }
+
+        /* Animations */
+        @keyframes pulseGlow {
+            0%, 100% { transform: scale(1); opacity: 0.9; }
+            50% { transform: scale(1.05); opacity: 1; }
+        }
+
+        .animate-glow {
+            animation: pulseGlow 4s infinite ease-in-out;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #f1f5f9;
+            border-radius: 10px;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 10px;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+
+        .nav-btn.active {
+            background-color: #059669;
+            color: #ffffff;
+            box-shadow: 0 4px 12px rgba(5, 150, 105, 0.3);
+        }
+
         @media print {
             body * { visibility: hidden; }
             #printArea, #printArea * { visibility: visible; }
@@ -22,213 +87,525 @@
         }
     </style>
 </head>
-<body class="bg-gray-100 text-gray-800 h-screen flex flex-col overflow-hidden">
+<body class="bg-slate-100 text-slate-800 min-h-screen flex flex-col">
 
-    <header class="bg-white p-4 shadow-sm flex-none border-b-4 border-green-500 z-20">
-        <div class="max-w-7xl mx-auto flex justify-between items-center w-full">
-            <div>
-                <h1 class="text-xl md:text-2xl font-bold text-gray-800">Karibu Dukani, <span id="staffNameDisplay">ISSAYA KAKOA</span></h1>
-                <p class="text-xs md:text-sm text-gray-500">Seller ID: <span id="staffIdDisplay">NGAE016</span></p>
-            </div>
-            <div class="flex gap-3">
-                <button onclick="toggleModal('submitSalesModal')" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-xl font-bold shadow-md transition-all flex items-center text-sm md:text-base">
-                    <i class="bi bi-wallet2 mr-2"></i> Wasilisha Mauzo
-                </button>
-                <button onclick="toggleSuggestionsModal()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl font-bold transition-all flex items-center text-sm md:text-base">
-                    <i class="bi bi-chat-left-text md:mr-2"></i> <span class="hidden md:inline">Mapendekezo</span>
-                </button>
-                <button onclick="window.appLogout()" class="bg-red-500 text-white px-4 py-2 rounded-xl font-bold hover:bg-red-600 transition-all flex items-center text-sm md:text-base">
-                    <i class="bi bi-box-arrow-right md:mr-2"></i> <span class="hidden md:inline">Toka</span>
-                </button>
+    <!-- HEADER / BAR YA JUU -->
+    <header class="bg-slate-900 text-white sticky top-0 z-40 shadow-lg border-b border-slate-800">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                
+                <!-- Logo & Brand -->
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-500 to-teal-400 flex items-center justify-center shadow-md">
+                        <i class="bi bi-shop text-white text-xl"></i>
+                    </div>
+                    <div>
+                        <h1 class="font-extrabold text-base tracking-wide text-white leading-tight">NGAE <span class="text-emerald-400">FOOD</span></h1>
+                        <p class="text-[10px] text-slate-400 font-semibold tracking-wider uppercase">Portal ya Muuzaji Dukani (Seller)</p>
+                    </div>
+                </div>
+
+                <!-- Clock & Quick Seller Status -->
+                <div class="hidden md:flex items-center gap-6">
+                    <div class="text-right">
+                        <p class="text-xs text-slate-400 font-medium" id="headerDateDisplay">--/--/----</p>
+                        <p class="text-xs font-bold text-emerald-400" id="headerTimeDisplay">00:00:00</p>
+                    </div>
+                    
+                    <div class="h-8 w-[1px] bg-slate-800"></div>
+
+                    <!-- Seller Thumbnail -->
+                    <div class="flex items-center gap-3 bg-slate-800/80 px-3 py-1.5 rounded-full border border-slate-700">
+                        <img id="headerSellerImg" src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80" alt="Seller Photo" class="w-8 h-8 rounded-full object-cover border-2 border-emerald-500">
+                        <div class="text-left">
+                            <p class="text-xs font-bold text-slate-200" id="headerSellerName">ISSAYA KAKOA</p>
+                            <p class="text-[10px] text-emerald-400 font-semibold flex items-center gap-1">
+                                <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping"></span> 
+                                <span id="headerShopLocation">TANGA, SONI</span>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Logout Action -->
+                <div class="flex items-center gap-2">
+                    <button onclick="window.appLogout()" class="bg-red-600/90 hover:bg-red-600 text-white text-xs font-bold px-3.5 py-2 rounded-xl transition-all shadow-sm flex items-center gap-1.5">
+                        <i class="bi bi-box-arrow-right"></i> <span class="hidden sm:inline">Ondoka</span>
+                    </button>
+                </div>
             </div>
         </div>
     </header>
 
-    <main class="flex-1 flex flex-col max-w-7xl mx-auto w-full p-4 overflow-hidden gap-4">
-        
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 flex-none">
-            <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-200 border-l-4 border-l-blue-500">
-                <h3 class="text-gray-500 text-xs font-bold uppercase">Thamani ya Mzigo Wote</h3>
-                <p class="text-2xl md:text-3xl font-black text-gray-800 mt-1" id="totalCargoValue">Tsh 0</p>
-            </div>
-            
-            <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-200 border-l-4 border-l-green-500">
-                <h3 class="text-gray-500 text-xs font-bold uppercase">Pesa Uliyokabidhi Tayari</h3>
-                <p class="text-2xl md:text-3xl font-black text-green-600 mt-1" id="totalSubmittedCash">Tsh 0</p>
-            </div>
+    <!-- NAVIGATION MENU (MENU KUU YA SELLER) -->
+    <nav class="bg-white border-b border-slate-200 sticky top-16 z-30 shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between overflow-x-auto custom-scrollbar py-2 gap-2">
+                <div class="flex items-center gap-2">
+                    <!-- Tab 1: Overview -->
+                    <button onclick="switchTab('overview')" id="nav-overview" class="nav-btn active px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2 transition-all whitespace-nowrap text-slate-600 hover:bg-slate-100">
+                        <i class="bi bi-grid-1x2-fill text-sm"></i>
+                        <span>Muhtasari (Overview)</span>
+                    </button>
 
-            <div class="bg-gradient-to-r from-orange-500 to-red-600 p-5 rounded-2xl shadow-md text-white flex flex-col justify-between">
-                <div>
-                    <h3 class="text-white/80 text-xs font-bold uppercase">Deni / Kiasi Kilichobaki</h3>
-                    <p class="text-2xl md:text-3xl font-black mt-1" id="totalDebt">Tsh 0</p>
-                </div>
-                <button onclick="toggleModal('debtReportModal')" class="mt-3 bg-white text-red-600 text-xs font-bold py-1.5 px-3 rounded-lg shadow-sm hover:bg-gray-100 self-start">
-                    Ripoti ya Deni <i class="bi bi-arrow-right-short"></i>
-                </button>
-            </div>
-        </div>
+                    <!-- Tab 2: Received Cargo -->
+                    <button onclick="switchTab('cargo')" id="nav-cargo" class="nav-btn px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2 transition-all whitespace-nowrap text-slate-600 hover:bg-slate-100">
+                        <i class="bi bi-box-seam-fill text-sm"></i>
+                        <span>Mzigo Uliopokelewa</span>
+                    </button>
 
-        <div id="salesMessage" class="hidden font-bold p-3 rounded-lg flex-none"></div>
+                    <!-- Tab 3: Daily Submitted Sales -->
+                    <button onclick="switchTab('sales')" id="nav-sales" class="nav-btn px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2 transition-all whitespace-nowrap text-slate-600 hover:bg-slate-100">
+                        <i class="bi bi-cash-stack text-sm"></i>
+                        <span>Mauzo Yaliyowasilishwa</span>
+                    </button>
 
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 flex-1 min-h-0 overflow-y-auto custom-scrollbar">
-            
-            <!-- COLUMN 1: RECEIVED CARGO -->
-            <div class="bg-white rounded-2xl shadow-sm border border-gray-200 flex flex-col h-[480px] overflow-hidden" id="printArea">
-                <div class="p-4 border-b border-gray-100 bg-gray-50 flex justify-between items-center flex-none">
-                    <h2 class="text-md font-bold text-gray-800"><i class="bi bi-box-seam text-blue-600 mr-2"></i> Mzigo Uliopokelewa Kutoka Kiwandani</h2>
-                    <button onclick="window.print()" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded-lg text-sm font-bold shadow-sm flex items-center no-print">
-                        <i class="bi bi-printer mr-1"></i> Print Mzigo
+                    <!-- Tab 4: Suggestions -->
+                    <button onclick="switchTab('suggestions')" id="nav-suggestions" class="nav-btn px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2 transition-all whitespace-nowrap text-slate-600 hover:bg-slate-100">
+                        <i class="bi bi-chat-left-quote-fill text-sm"></i>
+                        <span>Mapendekezo Yangu</span>
+                    </button>
+
+                    <!-- Tab 5: Personal Expenses -->
+                    <button onclick="switchTab('expenses')" id="nav-expenses" class="nav-btn px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2 transition-all whitespace-nowrap text-slate-600 hover:bg-slate-100">
+                        <i class="bi bi-wallet2 text-sm"></i>
+                        <span>Matumizi Yangu</span>
                     </button>
                 </div>
-                <div class="flex-1 overflow-auto custom-scrollbar">
-                    <table class="min-w-full text-left relative whitespace-nowrap">
-                        <thead class="sticky top-0 bg-gray-50 z-10 shadow-sm border-b border-gray-200">
-                            <tr class="text-gray-500 text-xs uppercase tracking-wide">
-                                <th class="px-4 py-3 font-bold">Tarehe</th>
-                                <th class="px-4 py-3 font-bold">Bidhaa</th>
-                                <th class="px-4 py-3 text-center font-bold">Idadi (Qty)</th>
-                                <th class="px-4 py-3 text-right font-bold">Thamani (Tsh)</th>
-                            </tr>
-                        </thead>
-                        <tbody id="receivedItemsBody" class="divide-y divide-gray-100">
-                            <!-- Rows will be injected by JS -->
-                        </tbody>
-                    </table>
+            </div>
+        </div>
+    </nav>
+
+    <!-- CONTAINER YA MAUDHUI -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-1 w-full space-y-8">
+        
+        <!-- Quick Notification Alert -->
+        <div id="salesMessage" class="hidden font-bold p-4 rounded-2xl shadow-md transition-all"></div>
+
+        <!-- =================================================================== -->
+        <!-- VIEW 1: OVERVIEW DASHBOARD (KADI SITA ZA MUHTASARI)                 -->
+        <!-- =================================================================== -->
+        <section id="view-overview" class="space-y-8">
+            
+            <!-- Banner la Karibu Seller -->
+            <div class="gradient-hero p-6 md:p-8 rounded-3xl text-white shadow-xl relative overflow-hidden">
+                <div class="absolute -right-10 -bottom-10 w-64 h-64 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none"></div>
+                <div class="relative z-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                    <div>
+                        <span class="bg-emerald-500/20 text-emerald-400 text-xs font-extrabold px-3 py-1 rounded-full uppercase tracking-wider border border-emerald-500/30">SELLER DASHBOARD HUB</span>
+                        <h2 class="text-2xl md:text-3xl font-black mt-2">Habari, <span id="bannerSellerName" class="text-emerald-400">ISSAYA KAKOA</span>!</h2>
+                        <p class="text-slate-300 text-xs md:text-sm mt-1">Karibu kwenye Mfumo wa Mauzo na Usimamizi wa Duka - NGAE Food Processors Hub.</p>
+                    </div>
+                    <div class="flex flex-wrap items-center gap-3">
+                        <button onclick="toggleModal('submitSalesModal')" class="bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-extrabold px-4 py-3 rounded-2xl shadow-lg transition-all flex items-center gap-2 transform hover:-translate-y-0.5">
+                            <i class="bi bi-wallet2 text-base"></i> Wasilisha Mauzo
+                        </button>
+                        <button onclick="toggleModal('debtReportModal')" class="bg-amber-600 hover:bg-amber-500 text-white text-xs font-extrabold px-4 py-3 rounded-2xl shadow-lg transition-all flex items-center gap-2 transform hover:-translate-y-0.5">
+                            <i class="bi bi-exclamation-triangle-fill text-base"></i> Ripoti Deni
+                        </button>
+                    </div>
                 </div>
             </div>
 
-            <!-- COLUMN 2: SALES SUBMITTED HISTORY & PERSONAL EXPENSES -->
-            <div class="space-y-4">
-                
-                <!-- SUBMITTED SALES HISTORY -->
-                <div class="bg-white rounded-2xl shadow-sm border border-gray-200 flex flex-col h-[260px] overflow-hidden">
-                    <div class="p-4 border-b border-gray-100 bg-gray-50 flex justify-between items-center flex-none">
-                        <h2 class="text-md font-bold text-green-700 flex items-center gap-1">
-                            <i class="bi bi-wallet2"></i> Mauzo Yaliyowasilishwa kila siku
-                        </h2>
-                        <button onclick="printSubmittedSalesReport()" class="bg-green-600 hover:bg-green-700 text-white text-xs font-bold px-3 py-1.5 rounded-lg shadow-sm flex items-center">
-                            <i class="bi bi-printer mr-1"></i> Print Ripoti
+            <!-- GRID YA KADI SITA (THE 6 CARDS REQUIRED BY USER) -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+
+                <!-- CARD 1: THAMANI YA MZIGO WOTE -->
+                <div class="bg-white rounded-3xl p-6 shadow-md border border-slate-100 hover:shadow-xl transition-all duration-300 relative overflow-hidden group">
+                    <div class="absolute top-0 right-0 w-32 h-32 bg-blue-500/5 rounded-bl-full pointer-events-none group-hover:scale-110 transition-transform"></div>
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="w-12 h-12 rounded-2xl bg-blue-500/10 text-blue-600 flex items-center justify-center font-bold">
+                            <i class="bi bi-box-seam-fill text-2xl"></i>
+                        </div>
+                        <span class="text-[10px] font-black uppercase tracking-wider text-blue-600 bg-blue-50 px-2.5 py-1 rounded-full border border-blue-100">Mzigo Ingia</span>
+                    </div>
+                    <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Thamani ya Mzigo Wote</p>
+                    <h3 class="text-2xl md:text-3xl font-black text-slate-800 mt-1" id="totalCargoValue">Tsh 0</h3>
+                    <p class="text-[11px] text-slate-500 mt-2 flex items-center gap-1 font-medium">
+                        <i class="bi bi-info-circle text-blue-500"></i> Thamani ya mizigo yote iliyopelekwa dukani
+                    </p>
+                </div>
+
+                <!-- CARD 2: PESA ULIYOKABIDHI TAYARI -->
+                <div class="bg-white rounded-3xl p-6 shadow-md border border-slate-100 hover:shadow-xl transition-all duration-300 relative overflow-hidden group">
+                    <div class="absolute top-0 right-0 w-32 h-32 bg-emerald-500/5 rounded-bl-full pointer-events-none group-hover:scale-110 transition-transform"></div>
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="w-12 h-12 rounded-2xl bg-emerald-500/10 text-emerald-600 flex items-center justify-center font-bold">
+                            <i class="bi bi-cash-coin text-2xl"></i>
+                        </div>
+                        <span class="text-[10px] font-black uppercase tracking-wider text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-100">Pesa Zilizokabidhiwa</span>
+                    </div>
+                    <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Pesa Uliyokabidhi Tayari</p>
+                    <h3 class="text-2xl md:text-3xl font-black text-emerald-600 mt-1" id="totalSubmittedCash">Tsh 0</h3>
+                    <p class="text-[11px] text-slate-500 mt-2 flex items-center gap-1 font-medium">
+                        <i class="bi bi-check-circle-fill text-emerald-500"></i> Jumla ya fedha ambazo seller amezikabidhi
+                    </p>
+                </div>
+
+                <!-- CARD 3: DENI / KIASI KILICHOBAKI -->
+                <div class="bg-white rounded-3xl p-6 shadow-md border border-slate-100 hover:shadow-xl transition-all duration-300 relative overflow-hidden group">
+                    <div class="absolute top-0 right-0 w-32 h-32 bg-amber-500/5 rounded-bl-full pointer-events-none group-hover:scale-110 transition-transform"></div>
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="w-12 h-12 rounded-2xl bg-amber-500/10 text-amber-600 flex items-center justify-center font-bold">
+                            <i class="bi bi-exclamation-diamond-fill text-2xl"></i>
+                        </div>
+                        <button onclick="toggleModal('debtReportModal')" class="text-[10px] font-black uppercase tracking-wider text-white bg-gradient-to-r from-amber-500 to-red-500 px-3 py-1 rounded-full shadow-sm hover:opacity-90 transition-opacity">
+                            Ripoti Deni <i class="bi bi-arrow-right-short"></i>
                         </button>
                     </div>
-                    <div class="flex-1 overflow-auto custom-scrollbar">
-                        <table class="min-w-full text-left relative whitespace-nowrap">
-                            <thead class="sticky top-0 bg-gray-50 z-10 shadow-sm border-b border-gray-200">
-                                <tr class="text-gray-500 text-xs uppercase tracking-wide">
-                                    <th class="px-4 py-3 font-bold">Tarehe & Muda</th>
-                                    <th class="px-4 py-3 font-bold">Maelezo</th>
-                                    <th class="px-4 py-3 text-right font-bold">Mauzo (Tsh)</th>
+                    <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Deni / Kiasi Kilichobaki</p>
+                    <h3 class="text-2xl md:text-3xl font-black text-slate-800 mt-1" id="totalDebt">Tsh 0</h3>
+                    <p class="text-[11px] text-slate-500 mt-2 flex items-center gap-1 font-medium">
+                        <i class="bi bi-clock-history text-amber-500"></i> Pesa ambazo seller bado hajakabidhi
+                    </p>
+                </div>
+
+                <!-- CARD 4: HALI YA DUKA (CONDITION DRIVEN) -->
+                <div class="bg-white rounded-3xl p-6 shadow-md border border-slate-100 hover:shadow-xl transition-all duration-300 relative overflow-hidden group">
+                    <div class="absolute top-0 right-0 w-32 h-32 bg-teal-500/5 rounded-bl-full pointer-events-none group-hover:scale-110 transition-transform"></div>
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="w-12 h-12 rounded-2xl bg-teal-500/10 text-teal-600 flex items-center justify-center font-bold">
+                            <i class="bi bi-shop-window text-2xl"></i>
+                        </div>
+                        <span id="storeStatusBadge" class="text-[10px] font-black uppercase tracking-wider bg-emerald-100 text-emerald-700 px-3 py-1 rounded-full border border-emerald-200">
+                            HALI YA DUKA
+                        </span>
+                    </div>
+                    <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Hali ya Duka</p>
+                    <h3 class="text-lg md:text-xl font-black text-slate-800 mt-2 leading-tight" id="storeStatusText">
+                        VITU BADO VIPO DUKANI
+                    </h3>
+                    <p class="text-[11px] text-slate-500 mt-2 flex items-center gap-1 font-medium">
+                        <i class="bi bi-shield-check text-teal-500"></i> Kipimo cha kiasi cha mzigo uliosalia dukani
+                    </p>
+                </div>
+
+                <!-- CARD 5: MAUZO RANK / NASHIKA NAFASI YA NGAPI -->
+                <div class="bg-white rounded-3xl p-6 shadow-md border border-slate-100 hover:shadow-xl transition-all duration-300 relative overflow-hidden group">
+                    <div class="absolute top-0 right-0 w-32 h-32 bg-purple-500/5 rounded-bl-full pointer-events-none group-hover:scale-110 transition-transform"></div>
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="w-12 h-12 rounded-2xl bg-purple-500/10 text-purple-600 flex items-center justify-center font-bold">
+                            <i class="bi bi-trophy-fill text-2xl"></i>
+                        </div>
+                        <span class="text-[10px] font-black uppercase tracking-wider text-purple-600 bg-purple-50 px-2.5 py-1 rounded-full border border-purple-100">Mauzo Rank</span>
+                    </div>
+                    <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Nafasi Yangu Kwenye Mauzo</p>
+                    <h3 class="text-xl md:text-2xl font-black text-purple-700 mt-1" id="salesRankText">🥇 Nafasi ya 1 kati ya Maduka 6</h3>
+                    <p class="text-[11px] text-slate-500 mt-2 flex items-center gap-1 font-medium">
+                        <i class="bi bi-graph-up-arrow text-purple-500"></i> Inapimwa kulingana na mauzo ya maduka mengine yote
+                    </p>
+                </div>
+
+                <!-- CARD 6: SELLER PROFILE PHOTO CARD (EDITED BY ADMIN) -->
+                <div class="gradient-seller-card rounded-3xl p-6 shadow-xl text-white relative overflow-hidden flex items-center gap-4">
+                    <div class="absolute right-0 bottom-0 translate-x-4 translate-y-4 w-32 h-32 bg-emerald-500/10 rounded-full blur-2xl pointer-events-none"></div>
+                    <img id="cardSellerImg" src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&auto=format&fit=crop&q=80" alt="Seller" class="w-20 h-20 rounded-2xl object-cover border-2 border-emerald-500 shadow-md flex-none">
+                    <div class="flex-1 min-w-0">
+                        <span class="bg-emerald-500/20 text-emerald-400 text-[9px] font-black px-2.5 py-0.5 rounded-full uppercase border border-emerald-500/30 tracking-wider">Muuzaji (Seller)</span>
+                        <h4 class="font-black text-base md:text-lg truncate mt-1 text-white" id="cardSellerName">ISSAYA KAKOA</h4>
+                        <p class="text-xs text-slate-300 font-semibold" id="cardShopLocation">TANGA, SONI</p>
+                        <p class="text-[10px] text-slate-400 mt-1">ID: <span id="cardSellerId" class="font-bold text-emerald-400">NGAE016</span></p>
+                        <p class="text-[9px] text-slate-400 italic mt-1 flex items-center gap-1">
+                            <i class="bi bi-pencil-square text-emerald-400"></i> Picha imepakiwa na inaweza kubadilishwa na Admin
+                        </p>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- PREVIEW TABLES KATIKA OVERVIEW -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <!-- Received Cargo Preview -->
+                <div class="bg-white rounded-3xl p-6 shadow-sm border border-slate-200">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="font-extrabold text-sm text-slate-800 flex items-center gap-2">
+                            <i class="bi bi-box-seam text-blue-600"></i> Mzigo wa Hivi Karibuni
+                        </h3>
+                        <button onclick="switchTab('cargo')" class="text-xs font-bold text-blue-600 hover:underline">Tazama Wote &rarr;</button>
+                    </div>
+                    <div class="overflow-x-auto custom-scrollbar">
+                        <table class="w-full text-left text-xs">
+                            <thead class="bg-slate-50 text-slate-500 uppercase font-bold border-b">
+                                <tr>
+                                    <th class="p-2">Tarehe</th>
+                                    <th class="p-2">Bidhaa</th>
+                                    <th class="p-2 text-center">Idadi</th>
+                                    <th class="p-2 text-right">Thamani</th>
                                 </tr>
                             </thead>
-                            <tbody id="salesHistoryBody" class="divide-y divide-gray-100">
-                                <!-- Rows injected by JS -->
+                            <tbody id="overviewCargoBody" class="divide-y divide-slate-100">
+                                <!-- JS Injected -->
                             </tbody>
                         </table>
                     </div>
                 </div>
 
-                <!-- PERSONAL EXPENSES (MATUMIZI YANGU YA LEO) -->
-                <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-4 grid grid-cols-1 md:grid-cols-3 gap-4">
-                    
-                    <!-- Expense Form -->
-                    <div class="md:col-span-1 border-b md:border-b-0 md:border-r border-gray-100 pb-3 md:pb-0 md:pr-3">
-                        <h3 class="text-xs font-bold text-red-600 mb-2 flex items-center gap-1 uppercase tracking-wider">
-                            <i class="bi bi-dash-circle-fill animate-pulse"></i> Matumizi Yangu Ya Leo
+                <!-- Recent Sales Preview -->
+                <div class="bg-white rounded-3xl p-6 shadow-sm border border-slate-200">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="font-extrabold text-sm text-slate-800 flex items-center gap-2">
+                            <i class="bi bi-cash-stack text-emerald-600"></i> Mauzo Yaliyowasilishwa Karibuni
                         </h3>
-                        <form id="sellerExpenseForm" class="space-y-2">
-                            <div>
-                                <label class="block text-[10px] font-bold text-gray-500 uppercase">Kiasi cha Pesa (Tsh)</label>
-                                <input type="number" id="sellerExpAmount" required placeholder="Mfano: 5000" class="w-full border border-gray-300 rounded-lg p-2 text-xs focus:ring-1 focus:ring-red-500 outline-none font-bold">
-                            </div>
-                            <div>
-                                <label class="block text-[10px] font-bold text-gray-500 uppercase">Maelezo ya Matumizi</label>
-                                <input type="text" id="sellerExpDesc" required placeholder="Chakula, Mifuko..." class="w-full border border-gray-300 rounded-lg p-2 text-xs focus:ring-1 focus:ring-red-500 outline-none">
-                            </div>
-                            <button type="submit" class="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-1.5 rounded-lg text-xs transition-colors shadow-sm">
-                                Rekodi Matumizi
-                            </button>
-                        </form>
+                        <button onclick="switchTab('sales')" class="text-xs font-bold text-emerald-600 hover:underline">Tazama Yote &rarr;</button>
                     </div>
+                    <div class="overflow-x-auto custom-scrollbar">
+                        <table class="w-full text-left text-xs">
+                            <thead class="bg-slate-50 text-slate-500 uppercase font-bold border-b">
+                                <tr>
+                                    <th class="p-2">Tarehe</th>
+                                    <th class="p-2">Maelezo</th>
+                                    <th class="p-2 text-right">Kiasi (Tsh)</th>
+                                </tr>
+                            </thead>
+                            <tbody id="overviewSalesBody" class="divide-y divide-slate-100">
+                                <!-- JS Injected -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
 
-                    <!-- Expense History List -->
-                    <div class="md:col-span-2 flex flex-col h-[180px] overflow-hidden">
-                        <h3 class="text-xs font-bold text-gray-500 mb-2 border-b pb-1 flex justify-between items-center">
-                            <span>Kumbukumbu ya Matumizi Binafsi</span>
-                            <span class="text-[9px] text-gray-400 font-bold uppercase">* Haya ni matumizi yako binafsi</span>
-                        </h3>
-                        <div class="flex-1 overflow-auto custom-scrollbar">
-                            <table class="w-full text-left text-xs">
-                                <thead class="bg-gray-50 text-gray-600 sticky top-0">
-                                    <tr>
-                                        <th class="p-2">Tarehe</th>
-                                        <th class="p-2">Matumizi</th>
-                                        <th class="p-2 text-right">Kiasi (Tsh)</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="sellerExpenseHistoryBody" class="divide-y divide-gray-100">
-                                    <!-- Injected by JS -->
-                                </tbody>
-                            </table>
+        <!-- =================================================================== -->
+        <!-- VIEW 2: MZIGO ULIOPOKELEWA KUTOKA KIWANDANI                         -->
+        <!-- =================================================================== -->
+        <section id="view-cargo" class="hidden space-y-6">
+            <div class="bg-white rounded-3xl p-6 shadow-md border border-slate-200" id="printArea">
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6 pb-4 border-b border-slate-100">
+                    <div>
+                        <h2 class="text-lg font-extrabold text-slate-800 flex items-center gap-2">
+                            <i class="bi bi-box-seam-fill text-blue-600"></i> Mzigo Uliopokelewa Kutoka Kiwandani
+                        </h2>
+                        <p class="text-xs text-slate-500 mt-0.5">Orodha kamili ya bidhaa zilizotumwa na Operator kuingia dukani</p>
+                    </div>
+                    <div class="flex items-center gap-3 no-print w-full md:w-auto">
+                        <div class="relative flex-1 md:flex-initial">
+                            <i class="bi bi-search absolute left-3 top-2.5 text-slate-400 text-xs"></i>
+                            <input type="text" id="searchCargoInput" onkeyup="filterCargoTable()" placeholder="Tafuta bidhaa..." class="pl-8 pr-3 py-1.5 border border-slate-200 rounded-xl text-xs focus:ring-2 focus:ring-blue-500 outline-none w-full md:w-48">
                         </div>
+                        <button onclick="window.print()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl text-xs font-bold shadow-md flex items-center gap-1.5 transition-all">
+                            <i class="bi bi-printer-fill"></i> Print Mzigo
+                        </button>
                     </div>
-
                 </div>
 
+                <div class="overflow-x-auto custom-scrollbar">
+                    <table class="min-w-full text-left text-xs whitespace-nowrap">
+                        <thead class="bg-slate-50 text-slate-500 uppercase font-bold border-b border-slate-200">
+                            <tr>
+                                <th class="p-3">Tarehe</th>
+                                <th class="p-3">Jina la Bidhaa</th>
+                                <th class="p-3 text-center">Idadi (Qty)</th>
+                                <th class="p-3 text-right">Bei kwa Kipimo (Tsh)</th>
+                                <th class="p-3 text-right font-black text-slate-700">Jumla Thamani (Tsh)</th>
+                            </tr>
+                        </thead>
+                        <tbody id="receivedItemsBody" class="divide-y divide-slate-100">
+                            <!-- Rows injected by JS -->
+                        </tbody>
+                    </table>
+                </div>
             </div>
+        </section>
 
-        </div>
+        <!-- =================================================================== -->
+        <!-- VIEW 3: MAUZO YALIYOWASILISHWA KILA SIKU                           -->
+        <!-- =================================================================== -->
+        <section id="view-sales" class="hidden space-y-6">
+            <div class="bg-white rounded-3xl p-6 shadow-md border border-slate-200">
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6 pb-4 border-b border-slate-100">
+                    <div>
+                        <h2 class="text-lg font-extrabold text-emerald-800 flex items-center gap-2">
+                            <i class="bi bi-cash-stack text-emerald-600"></i> Mauzo Yaliyowasilishwa Kila Siku
+                        </h2>
+                        <p class="text-xs text-slate-500 mt-0.5">Kumbukumbu ya fedha zote ulizokabidhi kwa kampuni/admin</p>
+                    </div>
+                    <div class="flex items-center gap-3 flex-wrap">
+                        <button onclick="toggleModal('submitSalesModal')" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-xl text-xs font-bold shadow-md flex items-center gap-1.5 transition-all">
+                            <i class="bi bi-plus-circle-fill"></i> Wasilisha Mauzo Mapya
+                        </button>
+                        <button onclick="printSubmittedSalesReport()" class="bg-slate-800 hover:bg-slate-900 text-white px-4 py-2 rounded-xl text-xs font-bold shadow-md flex items-center gap-1.5 transition-all">
+                            <i class="bi bi-printer-fill"></i> Print Ripoti
+                        </button>
+                    </div>
+                </div>
+
+                <div class="overflow-x-auto custom-scrollbar">
+                    <table class="min-w-full text-left text-xs whitespace-nowrap">
+                        <thead class="bg-slate-50 text-slate-500 uppercase font-bold border-b border-slate-200">
+                            <tr>
+                                <th class="p-3">Tarehe & Muda</th>
+                                <th class="p-3">Maelezo / Notes</th>
+                                <th class="p-3 text-right font-black text-emerald-700">Mauzo Yaliyowasilishwa (Tsh)</th>
+                            </tr>
+                        </thead>
+                        <tbody id="salesHistoryBody" class="divide-y divide-slate-100">
+                            <!-- Rows injected by JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- =================================================================== -->
+        <!-- VIEW 4: MAPENDEKEZO YANGU                                           -->
+        <!-- =================================================================== -->
+        <section id="view-suggestions" class="hidden space-y-6">
+            <div class="bg-white rounded-3xl p-6 shadow-md border border-slate-200 flex flex-col h-[600px]">
+                <div class="flex justify-between items-center pb-4 border-b border-slate-100 flex-none">
+                    <div>
+                        <h2 class="text-lg font-extrabold text-slate-800 flex items-center gap-2">
+                            <i class="bi bi-chat-left-quote-fill text-blue-600"></i> Mapendekezo Yangu kwa Uongozi
+                        </h2>
+                        <p class="text-xs text-slate-500 mt-0.5">Tuma maoni, ushauri au matatizo ya duka na upate majibu ya Mkurugenzi/Admin</p>
+                    </div>
+                </div>
+
+                <div class="flex-1 p-4 overflow-y-auto custom-scrollbar space-y-4 bg-slate-50/70 rounded-2xl my-4 min-h-0 border border-slate-100" id="suggestionsChatList">
+                    <!-- Chat messages injected by JS -->
+                </div>
+
+                <form id="suggestionSubmitForm" class="flex-none pt-2 flex gap-3 items-end">
+                    <div class="flex-1">
+                        <label class="block text-[11px] font-bold text-slate-500 uppercase mb-1">Andika Ujumbe au Pendekezo</label>
+                        <textarea id="suggestionMessage" required placeholder="Andika maoni yako hapa..." rows="2" class="w-full border border-slate-300 rounded-2xl p-3 text-xs focus:ring-2 focus:ring-blue-500 outline-none"></textarea>
+                    </div>
+                    <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-extrabold px-6 py-3 rounded-2xl shadow-md transition-all h-fit flex items-center gap-1.5 text-xs">
+                        <i class="bi bi-send-fill"></i> Tuma Pendekezo
+                    </button>
+                </form>
+            </div>
+        </section>
+
+        <!-- =================================================================== -->
+        <!-- VIEW 5: MATUMIZI YANGU BINAFI                                      -->
+        <!-- =================================================================== -->
+        <section id="view-expenses" class="hidden space-y-6">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Expense Entry Form -->
+                <div class="bg-white p-6 rounded-3xl shadow-md border border-slate-200">
+                    <h3 class="text-sm font-extrabold text-red-600 mb-4 flex items-center gap-2 uppercase tracking-wider border-b pb-3">
+                        <i class="bi bi-dash-circle-fill"></i> Rekodi Matumizi Yangu Ya Leo
+                    </h3>
+                    <form id="sellerExpenseForm" class="space-y-4">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Kiasi cha Pesa (Tsh)</label>
+                            <input type="number" id="sellerExpAmount" required placeholder="Mfano: 5000" class="w-full border border-slate-300 rounded-2xl p-3 text-sm focus:ring-2 focus:ring-red-500 outline-none font-bold">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Maelezo ya Matumizi</label>
+                            <input type="text" id="sellerExpDesc" required placeholder="Chakula, Nauli, Mifuko..." class="w-full border border-slate-300 rounded-2xl p-3 text-xs focus:ring-2 focus:ring-red-500 outline-none">
+                        </div>
+                        <button type="submit" class="w-full bg-red-600 hover:bg-red-700 text-white font-extrabold py-3 rounded-2xl text-xs transition-all shadow-md flex items-center justify-center gap-2">
+                            <i class="bi bi-check2-circle text-base"></i> Rekodi Matumizi
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Expense History Table -->
+                <div class="lg:col-span-2 bg-white p-6 rounded-3xl shadow-md border border-slate-200 flex flex-col h-[400px]">
+                    <div class="flex justify-between items-center mb-4 border-b pb-3 flex-none">
+                        <h3 class="text-sm font-extrabold text-slate-800 flex items-center gap-2">
+                            <i class="bi bi-journal-text text-red-500"></i> Kumbukumbu ya Matumizi Binafsi
+                        </h3>
+                        <span class="text-[10px] text-slate-400 font-bold uppercase">* Matumizi haya hayakatwi kwenye mauzo</span>
+                    </div>
+                    <div class="flex-1 overflow-auto custom-scrollbar">
+                        <table class="w-full text-left text-xs whitespace-nowrap">
+                            <thead class="bg-slate-50 text-slate-500 uppercase font-bold sticky top-0 border-b">
+                                <tr>
+                                    <th class="p-3">Tarehe</th>
+                                    <th class="p-3">Matumizi / Maelezo</th>
+                                    <th class="p-3 text-right font-black text-red-600">Kiasi (Tsh)</th>
+                                </tr>
+                            </thead>
+                            <tbody id="sellerExpenseHistoryBody" class="divide-y divide-slate-100">
+                                <!-- Injected by JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
+
     </main>
 
-    <!-- Modal ya Kuwasilisha Mauzo -->
-    <div id="submitSalesModal" class="hidden fixed inset-0 z-50 items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
-        <div class="bg-white rounded-2xl w-full max-w-md overflow-hidden shadow-2xl transform transition-all">
-            <div class="bg-green-600 p-4 flex justify-between items-center text-white">
-                <h3 class="font-bold"><i class="bi bi-wallet2 mr-2"></i> Wasilisha Mauzo</h3>
-                <button onclick="toggleModal('submitSalesModal')" class="text-2xl hover:text-green-200">&times;</button>
+    <!-- MODAL: WASILISHA MAUZO -->
+    <div id="submitSalesModal" class="hidden fixed inset-0 z-50 items-center justify-center bg-slate-900/60 p-4 backdrop-blur-sm">
+        <div class="bg-white rounded-3xl w-full max-w-md overflow-hidden shadow-2xl transform transition-all border border-slate-100">
+            <div class="bg-emerald-600 p-5 flex justify-between items-center text-white">
+                <h3 class="font-extrabold text-base flex items-center gap-2">
+                    <i class="bi bi-wallet2"></i> Wasilisha Mauzo kwa Admin
+                </h3>
+                <button onclick="toggleModal('submitSalesModal')" class="text-2xl font-bold hover:text-emerald-200">&times;</button>
             </div>
-            <form id="submitSalesForm" class="p-5">
-                <div class="mb-4">
-                    <label class="block text-sm font-bold text-gray-700 mb-1">Kiasi cha Pesa Kinachowasilishwa (Tsh)</label>
-                    <input type="number" id="submittedAmount" required class="w-full border border-gray-300 rounded-xl p-3 focus:ring-2 focus:ring-green-500 outline-none text-xl font-black text-green-700">
+            <form id="submitSalesForm" class="p-6 space-y-4">
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Kiasi cha Pesa Kinachowasilishwa (Tsh)</label>
+                    <input type="number" id="submittedAmount" required placeholder="0" class="w-full border border-slate-300 rounded-2xl p-3 focus:ring-2 focus:ring-emerald-500 outline-none text-xl font-black text-emerald-700">
                 </div>
-                <div class="mb-5">
-                    <label class="block text-sm font-bold text-gray-700 mb-1">Maelezo Mengine (Hiari)</label>
-                    <textarea id="salesNotes" rows="2" class="w-full border border-gray-300 rounded-xl p-3 focus:ring-2 focus:ring-green-500 outline-none"></textarea>
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Maelezo Mengine (Hiari)</label>
+                    <textarea id="salesNotes" rows="2" placeholder="Mfano: Mauzo ya siku ya leo tarehe..." class="w-full border border-slate-300 rounded-2xl p-3 text-xs focus:ring-2 focus:ring-emerald-500 outline-none"></textarea>
                 </div>
-                <button type="submit" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 rounded-xl shadow-md transition-colors">
-                    Tuma Mauzo
+                <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold py-3.5 rounded-2xl shadow-md transition-all text-sm">
+                    Tuma Mauzo Sasa
                 </button>
             </form>
         </div>
     </div>
 
-    <!-- Modal ya Kuripoti Deni -->
-    <div id="debtReportModal" class="hidden fixed inset-0 z-50 items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
-        <div class="bg-white rounded-2xl w-full max-w-md overflow-hidden shadow-2xl transform transition-all">
-            <div class="bg-red-600 p-4 flex justify-between items-center text-white">
-                <h3 class="font-bold"><i class="bi bi-exclamation-triangle-fill mr-2"></i> Ripoti Sababu ya Deni</h3>
-                <button onclick="toggleModal('debtReportModal')" class="text-2xl hover:text-red-200">&times;</button>
+    <!-- MODAL: RIPOTI DENI -->
+    <div id="debtReportModal" class="hidden fixed inset-0 z-50 items-center justify-center bg-slate-900/60 p-4 backdrop-blur-sm">
+        <div class="bg-white rounded-3xl w-full max-w-md overflow-hidden shadow-2xl transform transition-all border border-slate-100">
+            <div class="bg-amber-600 p-5 flex justify-between items-center text-white">
+                <h3 class="font-extrabold text-base flex items-center gap-2">
+                    <i class="bi bi-exclamation-triangle-fill"></i> Ripoti Sababu ya Deni
+                </h3>
+                <button onclick="toggleModal('debtReportModal')" class="text-2xl font-bold hover:text-amber-200">&times;</button>
             </div>
-            <form id="debtReportForm" class="p-5">
-                <div class="mb-4">
-                    <label class="block text-sm font-bold text-gray-700 mb-1">Kiasi cha Deni (Tsh)</label>
-                    <input type="number" id="debtAmount" required class="w-full border border-gray-300 rounded-xl p-3 focus:ring-2 focus:ring-red-500 outline-none text-lg font-bold text-red-600">
+            <form id="debtReportForm" class="p-6 space-y-4">
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Kiasi cha Deni (Tsh)</label>
+                    <input type="number" id="debtAmount" required placeholder="0" class="w-full border border-slate-300 rounded-2xl p-3 focus:ring-2 focus:ring-amber-500 outline-none text-lg font-black text-amber-700">
                 </div>
-                <div class="mb-5">
-                    <label class="block text-sm font-bold text-gray-700 mb-1">Sababu / Maelezo ya Deni</label>
-                    <textarea id="debtReason" rows="3" required class="w-full border border-gray-300 rounded-xl p-3 focus:ring-2 focus:ring-red-500 outline-none" placeholder="Mfano: Mzigo umeharibika, Mteja amekopa..."></textarea>
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Sababu / Maelezo ya Deni</label>
+                    <textarea id="debtReason" rows="3" required placeholder="Mfano: Mzigo umeharibika, Mteja amekopa..." class="w-full border border-slate-300 rounded-2xl p-3 text-xs focus:ring-2 focus:ring-amber-500 outline-none"></textarea>
                 </div>
-                <button type="submit" class="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-3 rounded-xl shadow-md transition-colors">
+                <button type="submit" class="w-full bg-amber-600 hover:bg-amber-700 text-white font-extrabold py-3.5 rounded-2xl shadow-md transition-all text-sm">
                     Tuma Ripoti ya Deni
                 </button>
             </form>
         </div>
     </div>
 
+    <!-- SCRIPTS SYSTEM -->
     <script src="app.js"></script>
     <script>
+        // Tab Switcher Handler
+        function switchTab(tabId) {
+            const views = ['overview', 'cargo', 'sales', 'suggestions', 'expenses'];
+            views.forEach(v => {
+                const el = document.getElementById('view-' + v);
+                const btn = document.getElementById('nav-' + v);
+                if (v === tabId) {
+                    if (el) el.classList.remove('hidden');
+                    if (btn) btn.classList.add('active');
+                } else {
+                    if (el) el.classList.add('hidden');
+                    if (btn) btn.classList.remove('active');
+                }
+            });
+            if (tabId === 'suggestions') {
+                renderSuggestionsChat();
+            }
+        }
+
         function toggleModal(modalId) {
             const modal = document.getElementById(modalId);
-            if(modal.classList.contains('hidden')) {
+            if (!modal) return;
+            if (modal.classList.contains('hidden')) {
                 modal.classList.remove('hidden');
                 modal.classList.add('flex');
             } else {
@@ -237,25 +614,41 @@
             }
         }
 
+        // Clock Ticker
+        function updateClock() {
+            const now = new Date();
+            const dateStr = now.toLocaleDateString('sw-TZ', { day: '2-digit', month: '2-digit', year: 'numeric' });
+            const timeStr = now.toLocaleTimeString('sw-TZ', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
+            
+            const dEl = document.getElementById('headerDateDisplay');
+            const tEl = document.getElementById('headerTimeDisplay');
+            if (dEl) dEl.textContent = dateStr;
+            if (tEl) tEl.textContent = timeStr;
+        }
+
         document.addEventListener('DOMContentLoaded', () => {
-            if(window.appProtectRoute) {
+            if (window.appProtectRoute) {
                 window.appProtectRoute('seller');
             }
-            
+
+            updateClock();
+            setInterval(updateClock, 1000);
+
             renderSellerDashboard();
 
+            // Submit Sales Form Listener
             document.getElementById('submitSalesForm').addEventListener('submit', (e) => {
                 e.preventDefault();
                 const amount = parseInt(document.getElementById('submittedAmount').value);
                 const notes = document.getElementById('salesNotes').value;
                 
-                if(window.appSubmitSales) {
+                if (window.appSubmitSales) {
                     window.appSubmitSales(amount, notes);
                     toggleModal('submitSalesModal');
                     
                     const msg = document.getElementById('salesMessage');
                     msg.textContent = `Mauzo ya Tsh ${amount.toLocaleString()} yamewasilishwa kikamilifu!`;
-                    msg.className = "mb-4 p-3 rounded-lg font-bold bg-green-100 text-green-700 block flex-none";
+                    msg.className = "p-4 rounded-2xl font-bold bg-emerald-100 text-emerald-800 border border-emerald-200 block shadow-sm";
                     setTimeout(() => msg.classList.add('hidden'), 5000);
                     
                     renderSellerDashboard();
@@ -263,18 +656,19 @@
                 }
             });
 
+            // Debt Report Form Listener
             document.getElementById('debtReportForm').addEventListener('submit', (e) => {
                 e.preventDefault();
                 const amount = parseInt(document.getElementById('debtAmount').value);
                 const reason = document.getElementById('debtReason').value;
                 
-                if(window.appReportDebt) {
+                if (window.appReportDebt) {
                     window.appReportDebt(amount, reason);
                     toggleModal('debtReportModal');
                     
                     const msg = document.getElementById('salesMessage');
                     msg.textContent = `Ripoti ya deni ya Tsh ${amount.toLocaleString()} imetumwa kikamilifu!`;
-                    msg.className = "mb-4 p-3 rounded-lg font-bold bg-orange-100 text-orange-700 block flex-none";
+                    msg.className = "p-4 rounded-2xl font-bold bg-amber-100 text-amber-800 border border-amber-200 block shadow-sm";
                     setTimeout(() => msg.classList.add('hidden'), 5000);
                     
                     renderSellerDashboard();
@@ -282,7 +676,7 @@
                 }
             });
 
-            // Seller Expense form submit
+            // Expense Form Listener
             document.getElementById('sellerExpenseForm').addEventListener('submit', (e) => {
                 e.preventDefault();
                 const amt = parseFloat(document.getElementById('sellerExpAmount').value);
@@ -296,111 +690,176 @@
                 }
             });
 
-            // Suggestions form submit
+            // Suggestion Submit Listener
             document.getElementById('suggestionSubmitForm').addEventListener('submit', (e) => {
                 e.preventDefault();
                 const msg = document.getElementById('suggestionMessage').value;
                 if (window.appSubmitSuggestion) {
                     window.appSubmitSuggestion(msg);
                     document.getElementById('suggestionMessage').value = '';
-                    renderSuggestionsModal();
+                    renderSuggestionsChat();
                 }
             });
         });
 
         function renderSellerDashboard() {
-            if(!window.appData) return;
-            
+            if (!window.appGetSellerStats) return;
+
             const staffId = localStorage.getItem('ngae_logged_in_id') || 'NGAE016';
-            const shop = window.appData.shops.find(s => s.sellerId === staffId) || window.appData.shops[0];
-            
-            document.getElementById('staffNameDisplay').textContent = shop.sellerName || "SELLER";
-            document.getElementById('staffIdDisplay').textContent = staffId;
-            
-            const receivedItems = window.appData.dispatchHistory.filter(h => h.shopId === shop.id);
-            
-            let totalValue = 0;
-            const tbody = document.getElementById('receivedItemsBody');
-            tbody.innerHTML = '';
-            
-            [...receivedItems].reverse().forEach(item => {
-                const tr = document.createElement('tr');
-                tr.className = "hover:bg-blue-50 transition-colors";
-                
-                const product = window.appData.products.find(p => p.id === item.productId);
-                const price = product ? product.price : 1000;
-                const itemValue = price * item.quantity;
-                totalValue += itemValue;
-                
-                tr.innerHTML = `
-                    <td class="px-4 py-3 text-sm text-gray-500">${item.date}</td>
-                    <td class="px-4 py-3 font-bold text-gray-800">${item.productName}</td>
-                    <td class="px-4 py-3 text-center font-semibold text-blue-600">
-                        ${item.quantity} <span class="text-[10px] uppercase text-gray-400">${item.unit}</span>
-                    </td>
-                    <td class="px-4 py-3 text-right font-bold text-orange-600">${itemValue.toLocaleString()}</td>
-                `;
-                tbody.appendChild(tr);
-            });
-            
-            const shopFinance = window.appData.finances[shop.id] || { submitted: 0, reportedDebt: 0, salesHistory: [], personalExpenses: [] };
-            
-            const remainingDebt = totalValue - shopFinance.submitted;
-            
-            document.getElementById('totalCargoValue').textContent = "Tsh " + totalValue.toLocaleString();
-            document.getElementById('totalSubmittedCash').textContent = "Tsh " + shopFinance.submitted.toLocaleString();
-            document.getElementById('totalDebt').textContent = "Tsh " + remainingDebt.toLocaleString();
+            const stats = window.appGetSellerStats(staffId);
 
-            // Render submitted sales history list
-            const salesTbody = document.getElementById('salesHistoryBody');
-            salesTbody.innerHTML = '';
-            const history = shopFinance.salesHistory || [];
-            [...history].reverse().forEach(h => {
+            // Populate Headers & Staff Info
+            document.getElementById('headerSellerName').textContent = stats.staffInfo.name;
+            document.getElementById('headerShopLocation').textContent = stats.staffInfo.shopLocation;
+            document.getElementById('headerSellerImg').src = stats.staffInfo.photo;
+
+            document.getElementById('bannerSellerName').textContent = stats.staffInfo.name;
+
+            // Card 6: Profile Card
+            document.getElementById('cardSellerName').textContent = stats.staffInfo.name;
+            document.getElementById('cardShopLocation').textContent = stats.staffInfo.shopLocation;
+            document.getElementById('cardSellerId').textContent = stats.staffInfo.id;
+            document.getElementById('cardSellerImg').src = stats.staffInfo.photo;
+
+            // KPI Cards 1, 2, 3
+            document.getElementById('totalCargoValue').textContent = "Tsh " + stats.totalCargoValue.toLocaleString();
+            document.getElementById('totalSubmittedCash').textContent = "Tsh " + stats.totalSubmittedCash.toLocaleString();
+            document.getElementById('totalDebt').textContent = "Tsh " + stats.remainingDebt.toLocaleString();
+
+            // Card 4: Store Status Condition
+            const statusTextEl = document.getElementById('storeStatusText');
+            const statusBadgeEl = document.getElementById('storeStatusBadge');
+            
+            statusTextEl.textContent = stats.storeStatusText;
+            if (stats.isStockSufficient) {
+                statusBadgeEl.className = "text-[10px] font-black uppercase tracking-wider bg-emerald-100 text-emerald-700 px-3 py-1 rounded-full border border-emerald-200";
+                statusTextEl.className = "text-lg md:text-xl font-black text-emerald-700 mt-2 leading-tight";
+            } else {
+                statusBadgeEl.className = "text-[10px] font-black uppercase tracking-wider bg-amber-100 text-amber-700 px-3 py-1 rounded-full border border-amber-200";
+                statusTextEl.className = "text-lg md:text-xl font-black text-amber-600 mt-2 leading-tight";
+            }
+
+            // Card 5: Sales Rank
+            let medal = "🥇";
+            if (stats.userRank === 2) medal = "🥈";
+            else if (stats.userRank === 3) medal = "🥉";
+            else if (stats.userRank > 3) medal = "🏅";
+
+            document.getElementById('salesRankText').textContent = `${medal} Nafasi ya ${stats.userRank} kati ya Maduka ${stats.totalShopsCount}`;
+
+            // Render Received Cargo Table (Full & Overview Preview)
+            const cargoBody = document.getElementById('receivedItemsBody');
+            const overviewCargoBody = document.getElementById('overviewCargoBody');
+            if (cargoBody) cargoBody.innerHTML = '';
+            if (overviewCargoBody) overviewCargoBody.innerHTML = '';
+
+            [...stats.receivedDispatches].reverse().forEach((item, index) => {
+                const prod = (window.appData.products || []).find(p => p.id === item.productId);
+                const price = prod ? prod.price : 1000;
+                const itemValue = price * (item.quantity || 0);
+
                 const tr = document.createElement('tr');
-                tr.className = "hover:bg-green-50 transition-colors";
+                tr.className = "hover:bg-slate-50 transition-colors";
                 tr.innerHTML = `
-                    <td class="px-4 py-2 text-gray-500 font-bold">${h.date}</td>
-                    <td class="px-4 py-2 text-gray-700 font-semibold">${h.notes}</td>
-                    <td class="px-4 py-2 text-right font-bold text-green-600">Tsh ${h.amount.toLocaleString()}</td>
+                    <td class="p-3 text-slate-500 font-medium">${item.date}</td>
+                    <td class="p-3 font-bold text-slate-800">${item.productName}</td>
+                    <td class="p-3 text-center font-bold text-blue-600">${item.quantity} <span class="text-[10px] text-slate-400 uppercase">${item.unit}</span></td>
+                    <td class="p-3 text-right text-slate-600 font-semibold">${price.toLocaleString()}</td>
+                    <td class="p-3 text-right font-black text-amber-600">${itemValue.toLocaleString()}</td>
                 `;
-                salesTbody.appendChild(tr);
+                if (cargoBody) cargoBody.appendChild(tr);
+
+                if (index < 5 && overviewCargoBody) {
+                    const trSimple = document.createElement('tr');
+                    trSimple.innerHTML = `
+                        <td class="p-2 text-slate-500 text-[11px]">${item.date}</td>
+                        <td class="p-2 font-bold text-slate-800 text-[11px]">${item.productName}</td>
+                        <td class="p-2 text-center text-blue-600 font-bold text-[11px]">${item.quantity}</td>
+                        <td class="p-2 text-right font-bold text-slate-700 text-[11px]">${itemValue.toLocaleString()}</td>
+                    `;
+                    overviewCargoBody.appendChild(trSimple);
+                }
             });
 
-            // Render personal expenses history list
-            const expTbody = document.getElementById('sellerExpenseHistoryBody');
-            expTbody.innerHTML = '';
-            const personalExps = shopFinance.personalExpenses || [];
-            [...personalExps].reverse().forEach(e => {
+            // Render Submitted Sales History Table (Full & Overview Preview)
+            const salesBody = document.getElementById('salesHistoryBody');
+            const overviewSalesBody = document.getElementById('overviewSalesBody');
+            if (salesBody) salesBody.innerHTML = '';
+            if (overviewSalesBody) overviewSalesBody.innerHTML = '';
+
+            [...stats.salesHistory].reverse().forEach((h, index) => {
                 const tr = document.createElement('tr');
-                tr.className = "hover:bg-red-50/50 transition-colors";
+                tr.className = "hover:bg-emerald-50/50 transition-colors";
                 tr.innerHTML = `
-                    <td class="p-2 text-gray-500 font-bold">${e.date}</td>
-                    <td class="p-2 text-gray-800 font-semibold">${e.description}</td>
-                    <td class="p-2 text-right font-bold text-red-600">Tsh ${e.amount.toLocaleString()}</td>
+                    <td class="p-3 text-slate-500 font-bold">${h.date}</td>
+                    <td class="p-3 text-slate-700 font-semibold">${h.notes || 'Mauzo ya Kawaida'}</td>
+                    <td class="p-3 text-right font-black text-emerald-600">Tsh ${h.amount.toLocaleString()}</td>
                 `;
-                expTbody.appendChild(tr);
+                if (salesBody) salesBody.appendChild(tr);
+
+                if (index < 5 && overviewSalesBody) {
+                    const trSimple = document.createElement('tr');
+                    trSimple.innerHTML = `
+                        <td class="p-2 text-slate-500 text-[11px]">${h.date}</td>
+                        <td class="p-2 text-slate-700 text-[11px] font-medium">${h.notes || 'Mauzo'}</td>
+                        <td class="p-2 text-right font-bold text-emerald-600 text-[11px]">${h.amount.toLocaleString()}</td>
+                    `;
+                    overviewSalesBody.appendChild(trSimple);
+                }
             });
+
+            // Render Personal Expenses History Table
+            const expBody = document.getElementById('sellerExpenseHistoryBody');
+            if (expBody) {
+                expBody.innerHTML = '';
+                [...stats.personalExpenses].reverse().forEach(e => {
+                    const tr = document.createElement('tr');
+                    tr.className = "hover:bg-red-50/40 transition-colors";
+                    tr.innerHTML = `
+                        <td class="p-3 text-slate-500 font-bold">${e.date}</td>
+                        <td class="p-3 text-slate-800 font-semibold">${e.description}</td>
+                        <td class="p-3 text-right font-black text-red-600">Tsh ${e.amount.toLocaleString()}</td>
+                    `;
+                    expBody.appendChild(tr);
+                });
+            }
         }
 
+        // Filter Cargo Search
+        function filterCargoTable() {
+            const input = document.getElementById('searchCargoInput');
+            const filter = input.value.toUpperCase();
+            const tbody = document.getElementById('receivedItemsBody');
+            const trs = tbody.getElementsByTagName('tr');
+
+            for (let i = 0; i < trs.length; i++) {
+                const tdText = trs[i].textContent || trs[i].innerText;
+                if (tdText.toUpperCase().indexOf(filter) > -1) {
+                    trs[i].style.display = "";
+                } else {
+                    trs[i].style.display = "none";
+                }
+            }
+        }
+
+        // Print Submitted Sales Report
         function printSubmittedSalesReport() {
-            if(!window.appData) return;
+            if (!window.appData) return;
             const staffId = localStorage.getItem('ngae_logged_in_id') || 'NGAE016';
-            const shop = window.appData.shops.find(s => s.sellerId === staffId) || window.appData.shops[0];
-            const shopFinance = window.appData.finances[shop.id] || { submitted: 0, salesHistory: [] };
+            const stats = window.appGetSellerStats(staffId);
             
             const printWindow = window.open('', '_blank');
-            if(!printWindow) {
+            if (!printWindow) {
                 alert("Tafadhali ruhusu Popups kwenye kivinjari chako ili uweze kuona ripoti.");
                 return;
             }
 
             let rowsHtml = '';
-            const history = shopFinance.salesHistory || [];
-            [...history].reverse().forEach(h => {
+            [...stats.salesHistory].reverse().forEach(h => {
                 rowsHtml += `
                     <tr style="border-bottom: 1px solid #e2e8f0;">
                         <td style="padding: 12px; font-size: 13px;">${h.date}</td>
-                        <td style="padding: 12px; font-size: 13px;">${h.notes}</td>
+                        <td style="padding: 12px; font-size: 13px;">${h.notes || 'Mauzo'}</td>
                         <td style="padding: 12px; font-size: 13px; text-align: right; font-weight: bold; color: #16a34a;">Tsh ${h.amount.toLocaleString()}</td>
                     </tr>
                 `;
@@ -409,7 +868,7 @@
             printWindow.document.write(`
                 <html>
                 <head>
-                    <title>Ripoti ya Mauzo Yaliyowasilishwa - ${shop.location}</title>
+                    <title>Ripoti ya Mauzo Yaliyowasilishwa - ${stats.shop.location}</title>
                     <style>
                         body { font-family: sans-serif; padding: 40px; color: #333; }
                         .header { text-align: center; border-bottom: 2px solid #16a34a; padding-bottom: 15px; margin-bottom: 30px; }
@@ -428,14 +887,14 @@
                 <body>
                     <div class="header">
                         <h1>NGAE FOOD PROCESSING HUB</h1>
-                        <p>Ripoti ya Mauzo Yaliyowasilishwa - ${shop.location}</p>
-                        <p style="font-size: 12px; color: #999;">Muuzaji: ${shop.sellerName} (ID: ${shop.sellerId})</p>
+                        <p>Ripoti ya Mauzo Yaliyowasilishwa - ${stats.shop.location}</p>
+                        <p style="font-size: 12px; color: #999;">Muuzaji: ${stats.staffInfo.name} (ID: ${stats.staffInfo.id})</p>
                         <p style="font-size: 11px; color: #aaa; margin-top: 5px;">Imezalishwa tarehe: ${new Date().toLocaleString()}</p>
                     </div>
 
                     <div class="total-box">
                         <p>Jumla ya Mauzo Yaliyowasilishwa (Total Submitted Cash)</p>
-                        <h2>Tsh ${shopFinance.submitted.toLocaleString()}</h2>
+                        <h2>Tsh ${stats.totalSubmittedCash.toLocaleString()}</h2>
                     </div>
 
                     <h3 style="font-size: 14px; color: #334155; margin-bottom: 10px; text-transform: uppercase;">Mtiririko wa Mauzo (Sales History)</h3>
@@ -461,27 +920,16 @@
             printWindow.document.close();
         }
 
-        // --- SUGGESTIONS CHAT SYSTEM ---
-        function toggleSuggestionsModal() {
-            const modal = document.getElementById('suggestionsModal');
-            if (modal.classList.contains('hidden')) {
-                modal.classList.remove('hidden');
-                modal.classList.add('flex');
-                renderSuggestionsModal();
-            } else {
-                modal.classList.add('hidden');
-                modal.classList.remove('flex');
-            }
-        }
-
-        function renderSuggestionsModal() {
-            if (!window.appData || !window.appGetStaffSuggestions) return;
+        // Suggestions Chat Handler
+        function renderSuggestionsChat() {
+            if (!window.appGetStaffSuggestions) return;
             const suggs = window.appGetStaffSuggestions();
             const chatList = document.getElementById('suggestionsChatList');
+            if (!chatList) return;
             chatList.innerHTML = '';
 
             if (suggs.length === 0) {
-                chatList.innerHTML = `<div class="text-center text-gray-400 text-sm py-8"><i class="bi bi-chat-quote text-3xl text-gray-300"></i><p class="mt-2">Huna mapendekezo yoyote bado. Tuma pendekezo lako la kwanza hapa chini!</p></div>`;
+                chatList.innerHTML = `<div class="text-center text-slate-400 text-sm py-12"><i class="bi bi-chat-quote text-4xl text-slate-300"></i><p class="mt-2">Huna mapendekezo yoyote bado. Tuma pendekezo yako hapo chini!</p></div>`;
                 return;
             }
 
@@ -489,10 +937,10 @@
                 const staffDiv = document.createElement('div');
                 staffDiv.className = "flex flex-col items-end space-y-1 mt-2";
                 staffDiv.innerHTML = `
-                    <div class="bg-blue-600 text-white p-3 rounded-2xl rounded-tr-none max-w-md text-sm shadow-sm">
+                    <div class="bg-blue-600 text-white p-3.5 rounded-2xl rounded-tr-none max-w-md text-xs shadow-sm">
                         ${s.message}
                     </div>
-                    <span class="text-[10px] text-gray-400 font-bold mr-1">${s.date} (Wewe)</span>
+                    <span class="text-[10px] text-slate-400 font-bold mr-1">${s.date} (Wewe)</span>
                 `;
                 chatList.appendChild(staffDiv);
 
@@ -501,10 +949,10 @@
                         const adminDiv = document.createElement('div');
                         adminDiv.className = "flex flex-col items-start space-y-1 mt-2";
                         adminDiv.innerHTML = `
-                            <div class="bg-gray-200 text-gray-800 p-3 rounded-2xl rounded-tl-none max-w-md text-sm shadow-sm">
+                            <div class="bg-slate-200 text-slate-800 p-3.5 rounded-2xl rounded-tl-none max-w-md text-xs shadow-sm">
                                 ${r.message}
                             </div>
-                            <span class="text-[10px] text-gray-500 font-bold ml-1">${r.date} (Mkurugenzi)</span>
+                            <span class="text-[10px] text-slate-500 font-bold ml-1">${r.date} (Mkurugenzi/Admin)</span>
                         `;
                         chatList.appendChild(adminDiv);
                     });
@@ -514,31 +962,5 @@
             chatList.scrollTop = chatList.scrollHeight;
         }
     </script>
-
-    <!-- Modal ya Mapendekezo Yangu -->
-    <div id="suggestionsModal" class="hidden fixed inset-0 z-50 items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
-        <div class="bg-white rounded-2xl w-full max-w-2xl overflow-hidden shadow-2xl transform transition-all flex flex-col h-[500px]">
-            <div class="bg-blue-600 p-4 flex justify-between items-center text-white flex-none">
-                <h3 class="font-bold"><i class="bi bi-chat-left-text-fill mr-2"></i> Mapendekezo Yangu kwa Admin</h3>
-                <button onclick="toggleSuggestionsModal()" class="text-2xl hover:text-blue-200">&times;</button>
-            </div>
-            
-            <div class="flex-1 p-5 overflow-y-auto custom-scrollbar space-y-4 bg-gray-50 flex flex-col min-h-0">
-                <div class="flex-1 overflow-y-auto space-y-3 custom-scrollbar pr-1" id="suggestionsChatList">
-                    <!-- Loaded dynamically from JS -->
-                </div>
-                
-                <form id="suggestionSubmitForm" class="flex-none border-t pt-3 flex gap-2 items-end">
-                    <div class="flex-1">
-                        <label class="block text-[11px] font-bold text-gray-500 uppercase mb-1">Andika Pendekezo au Ujumbe</label>
-                        <textarea id="suggestionMessage" required placeholder="Andika maoni yako hapa..." rows="2" class="w-full border border-gray-300 rounded-xl p-2.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none"></textarea>
-                    </div>
-                    <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-bold px-5 py-3 rounded-xl shadow-md transition-colors h-fit flex items-center gap-1">
-                        <i class="bi bi-send-fill"></i> Tuma
-                    </button>
-                </form>
-            </div>
-        </div>
-    </div>
 </body>
 </html>

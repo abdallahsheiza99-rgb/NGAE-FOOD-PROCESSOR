@@ -17,11 +17,11 @@
 const INITIAL_STAFF = {
     'NGAE001': { name: 'MUSSA AMIRI SHEIZA', role: 'operator', photo: 'https://images.unsplash.com/photo-1560250097-0b93528c311a?w=400&auto=format&fit=crop&q=80' },
     'NGAE002': { name: 'AMANI STAFF', role: 'operator', photo: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400&auto=format&fit=crop&q=80' },
-    'NGAE016': { name: 'ISSAYA KAKOA', role: 'seller', shopId: 'shop_soni' },
-    'NGAE017': { name: 'ZAINABU HINYA (ZAISHA)', role: 'seller', shopId: 'shop_lushoto' },
-    'NGAE018': { name: 'SONI ISLAMIC', role: 'seller', shopId: 'shop_mwalimu' },
-    'NGAE019': { name: 'LWANDAI SECONDARY', role: 'seller', shopId: 'shop_lwandai' },
-    'NGAE020': { name: 'ROSMIN', role: 'seller', shopId: 'shop_rosmin' },
+    'NGAE016': { name: 'ISSAYA KAKOA', role: 'seller', shopId: 'shop_soni', photo: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&auto=format&fit=crop&q=80' },
+    'NGAE017': { name: 'ZAINABU HINYA (ZAISHA)', role: 'seller', shopId: 'shop_lushoto', photo: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=400&auto=format&fit=crop&q=80' },
+    'NGAE018': { name: 'SONI ISLAMIC', role: 'seller', shopId: 'shop_mwalimu', photo: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400&auto=format&fit=crop&q=80' },
+    'NGAE019': { name: 'LWANDAI SECONDARY', role: 'seller', shopId: 'shop_lwandai', photo: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400&auto=format&fit=crop&q=80' },
+    'NGAE020': { name: 'ROSMIN', role: 'seller', shopId: 'shop_rosmin', photo: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400&auto=format&fit=crop&q=80' },
     'NGAE021': { name: 'MR ACADEMIA', role: 'storekeeper' },
     'NGAE022': { name: 'STORE ASSIST', role: 'storekeeper' },
     'NGAE027': { name: 'DULLAH SHEIZA', role: 'manufacturer' },
@@ -1141,6 +1141,86 @@ window.appGetStorekeeperStats = function(staffId = 'NGAE021') {
             status: 'Active (Kazini)',
             photo: photo
         }
+    };
+};
+
+// ==========================================
+// SELLER DASHBOARD HELPER
+// ==========================================
+window.appGetSellerStats = function(sellerId) {
+    if (!appData) appData = loadData();
+    const currentId = (sellerId || localStorage.getItem('ngae_logged_in_id') || 'NGAE016').toUpperCase();
+    const staffObj = (appData.staff && appData.staff[currentId]) ? appData.staff[currentId] : { name: 'ISSAYA KAKOA', role: 'seller', shopId: 'shop_soni' };
+    
+    // Find matching shop for this seller
+    const shop = (appData.shops || []).find(s => s.sellerId === currentId) || (appData.shops || [])[0] || { id: 'shop_soni', location: 'TANGA, SONI', sellerName: 'ISSAYA KAKOA' };
+    
+    // Dispatched cargo for this shop
+    const receivedDispatches = (appData.dispatchHistory || []).filter(h => h.shopId === shop.id);
+    let totalCargoValue = 0;
+    receivedDispatches.forEach(item => {
+        const prod = (appData.products || []).find(p => p.id === item.productId);
+        const price = prod ? prod.price : 1000;
+        totalCargoValue += (price * (item.quantity || 0));
+    });
+    
+    // Shop Finances
+    const shopFinance = (appData.finances && appData.finances[shop.id]) ? appData.finances[shop.id] : { submitted: 0, salesHistory: [], personalExpenses: [] };
+    const totalSubmittedCash = shopFinance.submitted || 0;
+    const remainingDebt = Math.max(0, totalCargoValue - totalSubmittedCash);
+    
+    // Hali ya duka condition logic:
+    // If remaining debt >= 1000000 -> VITU BADO VIPO DUKANI
+    // Else -> VITU VINAELEKEA KUISHA
+    const isStockSufficient = remainingDebt >= 1000000;
+    const storeStatusText = isStockSufficient ? "VITU BADO VIPO DUKANI" : "VITU VINAELEKEA KUISHA";
+    
+    // Calculate sales ranking among all shops
+    const shopRankings = (appData.shops || []).map(s => {
+        const fin = (appData.finances && appData.finances[s.id]) ? appData.finances[s.id] : { submitted: 0 };
+        return {
+            shopId: s.id,
+            location: s.location,
+            sellerName: s.sellerName,
+            submitted: fin.submitted || 0
+        };
+    }).sort((a, b) => b.submitted - a.submitted);
+    
+    const rankIndex = shopRankings.findIndex(r => r.shopId === shop.id);
+    const userRank = rankIndex !== -1 ? rankIndex + 1 : 1;
+    const totalShopsCount = shopRankings.length || 1;
+    const topShop = shopRankings[0] || shop;
+    
+    // Photo logic
+    let photo = staffObj.photo;
+    if (!photo && appData.salaryList) {
+        const emp = appData.salaryList.find(e => e.id === currentId);
+        if (emp && emp.photo) photo = emp.photo;
+    }
+    if (!photo) {
+        photo = 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&auto=format&fit=crop&q=80';
+    }
+    
+    return {
+        shop,
+        staffInfo: {
+            id: currentId,
+            name: staffObj.name || shop.sellerName || 'ISSAYA KAKOA',
+            role: staffObj.role || 'seller',
+            shopLocation: shop.location,
+            photo: photo
+        },
+        totalCargoValue,
+        totalSubmittedCash,
+        remainingDebt,
+        isStockSufficient,
+        storeStatusText,
+        userRank,
+        totalShopsCount,
+        topShopName: topShop.sellerName || topShop.location,
+        receivedDispatches,
+        salesHistory: shopFinance.salesHistory || [],
+        personalExpenses: shopFinance.personalExpenses || []
     };
 };
 

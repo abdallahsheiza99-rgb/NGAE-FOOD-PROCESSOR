@@ -15,8 +15,8 @@
 // ==========================================
 
 const INITIAL_STAFF = {
-    'NGAE001': { name: 'MUSSA AMIRI SHEIZA', role: 'operator' },
-    'NGAE002': { name: 'AMANI STAFF', role: 'operator' },
+    'NGAE001': { name: 'MUSSA AMIRI SHEIZA', role: 'operator', photo: 'https://images.unsplash.com/photo-1560250097-0b93528c311a?w=400&auto=format&fit=crop&q=80' },
+    'NGAE002': { name: 'AMANI STAFF', role: 'operator', photo: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400&auto=format&fit=crop&q=80' },
     'NGAE016': { name: 'ISSAYA KAKOA', role: 'seller', shopId: 'shop_soni' },
     'NGAE017': { name: 'ZAINABU HINYA (ZAISHA)', role: 'seller', shopId: 'shop_lushoto' },
     'NGAE018': { name: 'SONI ISLAMIC', role: 'seller', shopId: 'shop_mwalimu' },
@@ -993,14 +993,78 @@ window.appSaveStaffContract = function(staffId, contractObj) {
 };
 
 window.appSaveStaffPhoto = function(staffId, photoBase64) {
-    if (!appData.salaryList) return false;
-    const emp = appData.salaryList.find(e => e.id === staffId);
-    if (!emp) return false;
+    if (!appData) appData = loadData();
+    
+    // Save to staff object
+    if (!appData.staff) appData.staff = {};
+    if (appData.staff[staffId]) {
+        appData.staff[staffId].photo = photoBase64;
+    } else {
+        appData.staff[staffId] = { name: 'OPERATOR STAFF', role: 'operator', photo: photoBase64 };
+    }
 
-    emp.photo = photoBase64;
+    // Also update salaryList if present
+    if (appData.salaryList) {
+        const emp = appData.salaryList.find(e => e.id === staffId);
+        if (emp) emp.photo = photoBase64;
+    }
+
     saveData(appData);
     window.appData = appData;
     return true;
+};
+
+// ==========================================
+// OPERATOR DASHBOARD HELPER
+// ==========================================
+window.appGetOperatorStats = function(staffId = 'NGAE001') {
+    if (!appData) appData = loadData();
+
+    // 1. Ready Stock Quantity (Bakaa ya bidhaa tayari kusafirishwa)
+    const totalReadyStock = (appData.products || []).reduce((acc, p) => acc + (Number(p.stock) || 0), 0);
+
+    // 2. Total Shops (Idadi ya maduka)
+    const totalShopsCount = (appData.shops || []).length;
+
+    // 3. Dispatched Cargo Value (Thamani ya mizigo iliyosambazwa)
+    let dispatchedValue = 0;
+    (appData.dispatchHistory || []).forEach(h => {
+        const prod = (appData.products || []).find(p => p.id === h.productId || p.name.toLowerCase() === (h.productName || '').toLowerCase());
+        const unitPrice = prod ? (Number(prod.price) || 1000) : 1000;
+        dispatchedValue += (Number(h.quantity) || 0) * unitPrice;
+    });
+
+    // 4. Undispatched Stock Value (Thamani ya mizigo ambayo bado haijasambazwa)
+    const undispatchedValue = (appData.products || []).reduce((acc, p) => acc + ((Number(p.stock) || 0) * (Number(p.price) || 0)), 0);
+
+    // Staff Info (Card 6)
+    const currentId = (localStorage.getItem('ngae_logged_in_id') || staffId).toUpperCase();
+    const staffObj = (appData.staff && appData.staff[currentId]) ? appData.staff[currentId] : { name: 'MUSSA AMIRI SHEIZA', role: 'operator' };
+    
+    let photo = staffObj.photo;
+    if (!photo && appData.salaryList) {
+        const emp = appData.salaryList.find(e => e.id === currentId);
+        if (emp && emp.photo) photo = emp.photo;
+    }
+    
+    if (!photo) {
+        photo = 'https://images.unsplash.com/photo-1560250097-0b93528c311a?w=400&auto=format&fit=crop&q=80';
+    }
+
+    return {
+        totalReadyStock,
+        totalShopsCount,
+        dispatchedValue,
+        undispatchedValue,
+        staffInfo: {
+            id: currentId,
+            name: staffObj.name || localStorage.getItem('ngae_logged_in_name') || 'MUSSA AMIRI SHEIZA',
+            role: staffObj.role || 'operator',
+            department: 'Usafirishaji wa Mizigo',
+            status: 'Active (Kazini)',
+            photo: photo
+        }
+    };
 };
 
 // ==========================================

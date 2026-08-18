@@ -768,29 +768,58 @@
             const pSel1 = document.getElementById('portalProdProduct');
             const pSel2 = document.getElementById('modalProdProduct');
 
-            pSel1.innerHTML = '<option value="">-- Chagua Bidhaa --</option>';
-            pSel2.innerHTML = '<option value="">-- Chagua Bidhaa --</option>';
+            if (pSel1) pSel1.innerHTML = '<option value="">-- Chagua Bidhaa --</option>';
+            if (pSel2) pSel2.innerHTML = '<option value="">-- Chagua Bidhaa --</option>';
 
             window.appData.products.forEach(p => {
-                const opt1 = document.createElement('option');
-                opt1.value = p.id;
-                opt1.textContent = `${p.name} - Tsh ${(p.price || 0).toLocaleString()} (Stoo: ${(p.stock || 0).toLocaleString()} pcs)`;
-                pSel1.appendChild(opt1);
+                if (pSel1) {
+                    const opt1 = document.createElement('option');
+                    opt1.value = p.id;
+                    opt1.textContent = `${p.name} - Tsh ${(p.price || 0).toLocaleString()} (Stoo: ${(p.stock || 0).toLocaleString()} pcs)`;
+                    pSel1.appendChild(opt1);
+                }
 
-                const opt2 = document.createElement('option');
-                opt2.value = p.id;
-                opt2.textContent = `${p.name} - Tsh ${(p.price || 0).toLocaleString()} (Stoo: ${(p.stock || 0).toLocaleString()} pcs)`;
-                pSel2.appendChild(opt2);
+                if (pSel2) {
+                    const opt2 = document.createElement('option');
+                    opt2.value = p.id;
+                    opt2.textContent = `${p.name} - Tsh ${(p.price || 0).toLocaleString()} (Stoo: ${(p.stock || 0).toLocaleString()} pcs)`;
+                    pSel2.appendChild(opt2);
+                }
             });
+
+            if (pSel1) {
+                const optOther1 = document.createElement('option');
+                optOther1.value = 'OTHER';
+                optOther1.textContent = '+ Weka Bidhaa Mpya / Nyingine...';
+                pSel1.appendChild(optOther1);
+            }
+
+            if (pSel2) {
+                const optOther2 = document.createElement('option');
+                optOther2.value = 'OTHER';
+                optOther2.textContent = '+ Weka Bidhaa Mpya / Nyingine...';
+                pSel2.appendChild(optOther2);
+            }
         }
 
         // SUBMIT PRODUCTION LOGIC
         function submitProduction(productId, qty, notes, formId) {
             if (window.appRecordProduction) {
-                const success = window.appRecordProduction(productId, qty, notes);
+                let targetId = productId;
+                if (targetId === 'OTHER' || !targetId) {
+                    targetId = notes ? notes.trim() : '';
+                }
+
+                if (!targetId) {
+                    alert("Tafadhali chagua bidhaa au weka jina la bidhaa mpya kwenye maelezo (Notes).");
+                    return;
+                }
+
+                const success = window.appRecordProduction(targetId, qty, notes);
                 if (success) {
-                    showActionMessage(`Uzalishaji wa pcs ${qty.toLocaleString()} umerekodiwa kikamilifu!`, 'emerald');
-                    document.getElementById(formId).reset();
+                    showActionMessage(`Uzalishaji wa pcs ${qty.toLocaleString()} umerekodiwa kikamilifu na kuingia stoo!`, 'emerald');
+                    const f = document.getElementById(formId);
+                    if (f) f.reset();
                     populateProductDropdowns();
                     renderOverviewCards();
                     renderProductionHistoryTable();

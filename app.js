@@ -94,29 +94,49 @@ function _ensureFields(data) {
     if (!data.manufacturerMaterials) data.manufacturerMaterials = {};
     if (!data.adminExpenses) data.adminExpenses = [];
     if (!data.salaryList) data.salaryList = [];
+
+    // Seed default staff if empty
+    if (Object.keys(data.staff).length === 0) {
+        data.staff = {
+            'NGAE001': { name: 'MUSSA AMIRI SHEIZA', role: 'operator' },
+            'NGAE016': { name: 'ISSAYA KAKOA - SONI', role: 'seller', shopId: 'shop_soni' },
+            'NGAE017': { name: 'ZAINABU HINYA - LUSHOTO', role: 'seller', shopId: 'shop_lushoto' },
+            'NGAE021': { name: 'MR ACADEMIA', role: 'storekeeper' },
+            'NGAE027': { name: 'DULLAH SHEIZA', role: 'manufacturer' }
+        };
+    }
+
+    // Seed default shops if empty
+    if (data.shops.length === 0) {
+        data.shops = [
+            { id: 'shop_soni', location: 'SONI, LUSHOTO', sellerName: 'ISSAYA KAKOA - SONI', sellerId: 'NGAE016' },
+            { id: 'shop_lushoto', location: 'LUSHOTO MJINI', sellerName: 'ZAINABU HINYA - LUSHOTO', sellerId: 'NGAE017' }
+        ];
+    }
+
+    // Seed default products if empty
+    if (data.products.length === 0) {
+        data.products = [
+            { id: 'prod_lishe_500g', name: 'LISHE BORA (500G)', price: 2500, stock: 150, dateAdded: '18 Aug 2026' },
+            { id: 'prod_unga_1kg', name: 'UNGA WA LISHE (1KG)', price: 5000, stock: 100, dateAdded: '18 Aug 2026' },
+            { id: 'prod_tea_masala', name: 'TEA MASALA (100G)', price: 1500, stock: 200, dateAdded: '18 Aug 2026' }
+        ];
+    }
+
+    // Seed default raw materials if empty
+    if (data.rawMaterials.length === 0) {
+        data.rawMaterials = [
+            { id: 'mat_mahindi', name: 'MAHINDI', unit: 'Kilo', stock: 500 },
+            { id: 'mat_muhogo', name: 'MUHOGO', unit: 'Kilo', stock: 300 },
+            { id: 'mat_soya', name: 'SOYA', unit: 'Kilo', stock: 200 }
+        ];
+    }
+
     return data;
 }
 
 function seedData() {
-    const data = {
-        staff: {},
-        products: [],
-        shops: [],
-        rawMaterials: [],
-        dispatchHistory: [],
-        rawMaterialsHistory: [],
-        rawMaterialsDispatchHistory: [],
-        productionLog: [],
-        finances: {},
-        customerOrders: [],
-        cashFlow: { balance: 0, transactions: [] },
-        suggestions: [],
-        notifications: [],
-        manufacturerMaterials: {},
-        adminExpenses: [],
-        salaryList: []
-    };
-    // Hifadhi kwenye localStorage tu wakati wa seed (Firebase bado haiko tayari)
+    const data = _ensureFields({});
     localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
     return data;
 }
@@ -448,11 +468,12 @@ window.appProtectRoute = function(requiredRole) {
 window.appDispatchProduct = function(productId, shopId, qty, unit) {
     const product = appData.products.find(p => p.id === productId);
     const shop = appData.shops.find(s => s.id === shopId);
+    const numQty = Number(qty) || 0;
 
-    if (!product || !shop) return false;
-    if (product.stock < qty) return false;
+    if (!product || !shop || numQty <= 0) return false;
+    if ((Number(product.stock) || 0) < numQty) return false;
 
-    product.stock -= qty;
+    product.stock = (Number(product.stock) || 0) - numQty;
 
     const now = new Date();
     const dateStr = now.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
@@ -464,18 +485,20 @@ window.appDispatchProduct = function(productId, shopId, qty, unit) {
         productName: product.name,
         shopId: shop.id,
         shopLocation: shop.location,
-        quantity: qty,
+        quantity: numQty,
+        unitPrice: Number(product.price) || 0,
+        totalValue: (Number(product.price) || 0) * numQty,
         unit: unit || 'pcs'
     });
 
     if (!appData.finances[shop.id]) {
-        appData.finances[shop.id] = { submitted: 0, reportedDebt: 0 };
+        appData.finances[shop.id] = { submitted: 0, reportedDebt: 0, salesHistory: [], personalExpenses: [] };
     }
 
     saveData(appData);
     window.appData = appData;
 
-    appAddNotification('Usafirishaji Mpya', `Operator amesafirisha ${qty} ${unit || 'pcs'} ya ${product.name} kwenda duka la ${shop.location}.`);
+    appAddNotification('Usafirishaji Mpya', `Operator amesafirisha ${numQty} ${unit || 'pcs'} ya ${product.name} kwenda duka la ${shop.location}.`);
 
     return true;
 };
@@ -485,11 +508,14 @@ window.appDispatchProduct = function(productId, shopId, qty, unit) {
 // ==========================================
 
 window.appSubmitSales = function(amount, notes) {
-    const staffId = localStorage.getItem('ngae_logged_in_id');
+    const staffId = (localStorage.getItem('ngae_logged_in_id') || '').toUpperCase().trim();
     const staffRecord = appData.staff[staffId];
     if (!staffRecord || !staffRecord.shopId) return false;
 
     const shopId = staffRecord.shopId;
+    const numAmount = Number(amount) || 0;
+    if (numAmount <= 0) return false;
+
     if (!appData.finances[shopId]) {
         appData.finances[shopId] = { submitted: 0, reportedDebt: 0, salesHistory: [], personalExpenses: [] };
     }
@@ -497,14 +523,14 @@ window.appSubmitSales = function(amount, notes) {
         appData.finances[shopId].salesHistory = [];
     }
 
-    appData.finances[shopId].submitted += amount;
+    appData.finances[shopId].submitted = (Number(appData.finances[shopId].submitted) || 0) + numAmount;
 
     const now = new Date();
     const dateStr = now.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
     const timeStr = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
 
     appData.finances[shopId].salesHistory.push({
-        amount: amount,
+        amount: numAmount,
         notes: notes || 'Mauzo ya Kawaida',
         date: `${dateStr} ${timeStr}`,
         dateRaw: now.toISOString()
@@ -514,33 +540,36 @@ window.appSubmitSales = function(amount, notes) {
     window.appData = appData;
 
     const shopLoc = appData.shops.find(s => s.id === shopId)?.location || 'dukani';
-    appAddNotification('Mauzo Yaliyowasilishwa', `Muuzaji wa duka la ${shopLoc} amewasilisha mauzo ya Tsh ${amount.toLocaleString()}.`);
+    appAddNotification('Mauzo Yaliyowasilishwa', `Muuzaji wa duka la ${shopLoc} amewasilisha mauzo ya Tsh ${numAmount.toLocaleString()}.`);
 
     return true;
 };
 
 window.appReportDebt = function(amount, reason) {
-    const staffId = localStorage.getItem('ngae_logged_in_id');
+    const staffId = (localStorage.getItem('ngae_logged_in_id') || '').toUpperCase().trim();
     const staffRecord = appData.staff[staffId];
     if (!staffRecord || !staffRecord.shopId) return false;
 
     const shopId = staffRecord.shopId;
+    const numAmount = Number(amount) || 0;
     if (!appData.finances[shopId]) {
         appData.finances[shopId] = { submitted: 0, reportedDebt: 0, salesHistory: [], personalExpenses: [] };
     }
 
-    appData.finances[shopId].reportedDebt += amount;
+    appData.finances[shopId].reportedDebt = (Number(appData.finances[shopId].reportedDebt) || 0) + numAmount;
     saveData(appData);
     window.appData = appData;
     return true;
 };
 
 window.appAddSellerExpense = function(amount, description) {
-    const staffId = localStorage.getItem('ngae_logged_in_id');
+    const staffId = (localStorage.getItem('ngae_logged_in_id') || '').toUpperCase().trim();
     const staffRecord = appData.staff[staffId];
     if (!staffRecord || !staffRecord.shopId) return false;
 
     const shopId = staffRecord.shopId;
+    const numAmount = Number(amount) || 0;
+
     if (!appData.finances[shopId]) {
         appData.finances[shopId] = { submitted: 0, reportedDebt: 0, salesHistory: [], personalExpenses: [] };
     }
@@ -553,7 +582,7 @@ window.appAddSellerExpense = function(amount, description) {
     const timeStr = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
 
     appData.finances[shopId].personalExpenses.push({
-        amount: parseFloat(amount),
+        amount: numAmount,
         description: description,
         date: `${dateStr} ${timeStr}`,
         dateRaw: now.toISOString()
@@ -571,42 +600,47 @@ window.appAddSellerExpense = function(amount, description) {
 window.appReceiveMaterial = function(materialName, unit, qty, pricePerUnit) {
     const now = new Date();
     const dateStr = now.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+    const numQty = Number(qty) || 0;
+    const numPrice = Number(pricePerUnit) || 0;
 
     let mat = appData.rawMaterials.find(m => m.name.toUpperCase() === materialName.toUpperCase());
     if (!mat) {
-        mat = { id: 'mat_' + materialName.toLowerCase().replace(/\s+/g,'_'), name: materialName, unit: unit, stock: 0 };
+        mat = { id: 'mat_' + materialName.toLowerCase().replace(/\s+/g,'_'), name: materialName.toUpperCase(), unit: unit, stock: 0 };
         appData.rawMaterials.push(mat);
     }
 
-    mat.stock += qty;
+    mat.stock = (Number(mat.stock) || 0) + numQty;
 
     appData.rawMaterialsHistory.push({
         date: dateStr,
         dateRaw: now.toISOString().split('T')[0],
-        materialName: materialName,
+        materialName: mat.name,
         materialId: mat.id,
         unit: unit,
-        qty: qty,
-        pricePerUnit: pricePerUnit
+        qty: numQty,
+        pricePerUnit: numPrice
     });
 
     saveData(appData);
     window.appData = appData;
 
-    appAddNotification('Malighafi Zimepokelewa', `Stoo imepokea ${qty} ${unit} za ${materialName} kutoka kwa msambazaji.`);
+    appAddNotification('Malighafi Zimepokelewa', `Stoo imepokea ${numQty} ${unit} za ${mat.name} kutoka kwa msambazaji.`);
 
     return true;
 };
 
 window.appDispatchMaterial = function(materialId, qty, manufacturerId) {
     const mat = appData.rawMaterials.find(m => m.id === materialId);
-    if (!mat || mat.stock < qty) return false;
+    const numQty = Number(qty) || 0;
+    const mIdUpper = (manufacturerId || '').toUpperCase().trim();
 
-    mat.stock -= qty;
+    if (!mat || (Number(mat.stock) || 0) < numQty || numQty <= 0) return false;
+
+    mat.stock = (Number(mat.stock) || 0) - numQty;
 
     const now = new Date();
     const dateStr = now.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
-    const manufacturerName = appData.staff[manufacturerId] ? appData.staff[manufacturerId].name : 'Producer';
+    const manufacturerName = appData.staff[mIdUpper] ? appData.staff[mIdUpper].name : 'Producer';
 
     appData.rawMaterialsDispatchHistory.push({
         date: dateStr,
@@ -614,23 +648,23 @@ window.appDispatchMaterial = function(materialId, qty, manufacturerId) {
         materialName: mat.name,
         materialId: mat.id,
         unit: mat.unit,
-        qty: qty,
-        manufacturerId: manufacturerId,
+        qty: numQty,
+        manufacturerId: mIdUpper,
         manufacturerName: manufacturerName
     });
 
     if (!appData.manufacturerMaterials) {
         appData.manufacturerMaterials = {};
     }
-    if (!appData.manufacturerMaterials[manufacturerId]) {
-        appData.manufacturerMaterials[manufacturerId] = {};
+    if (!appData.manufacturerMaterials[mIdUpper]) {
+        appData.manufacturerMaterials[mIdUpper] = {};
     }
-    appData.manufacturerMaterials[manufacturerId][materialId] = (appData.manufacturerMaterials[manufacturerId][materialId] || 0) + qty;
+    appData.manufacturerMaterials[mIdUpper][mat.id] = (Number(appData.manufacturerMaterials[mIdUpper][mat.id]) || 0) + numQty;
 
     saveData(appData);
     window.appData = appData;
 
-    appAddNotification('Malighafi Zimetolewa', `Stoo imetoa ${qty} ${mat.unit} za ${mat.name} kwenda kwa ${manufacturerName}.`);
+    appAddNotification('Malighafi Zimetolewa', `Stoo imetoa ${numQty} ${mat.unit} za ${mat.name} kwenda kwa ${manufacturerName}.`);
 
     return true;
 };
@@ -640,27 +674,63 @@ window.appDispatchMaterial = function(materialId, qty, manufacturerId) {
 // ==========================================
 
 window.appRecordProduction = function(productId, qty, notes) {
-    const product = appData.products.find(p => p.id === productId);
-    if (!product) return false;
+    if (!appData.products) appData.products = [];
+    const numQty = Number(qty) || 0;
+    if (numQty <= 0) return false;
 
-    product.stock += qty;
+    const searchKey = (productId || '').toString().trim().toUpperCase();
+    const notesKey = (notes || '').toString().trim().toUpperCase();
+
+    // 1. Tafuta bidhaa kwa ID au Jina
+    let product = appData.products.find(p => 
+        p.id === productId || 
+        p.name.toUpperCase() === searchKey ||
+        (notesKey && p.name.toUpperCase() === notesKey)
+    );
+
+    // 2. Ikiwa bidhaa haipo kwenye katalogi bado, isajili moja kwa moja kwenye appData.products!
+    if (!product) {
+        let newName = searchKey;
+        if (!newName || newName.includes('PROD_') || newName === 'OTHER') {
+            newName = (notesKey && !notesKey.includes('UZALISHAJI')) ? notesKey : 'BIDHAA MPYA';
+        }
+        const newId = 'prod_' + Date.now() + '_' + Math.random().toString(36).substring(2, 6);
+        const dateStr = new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+
+        product = {
+            id: newId,
+            name: newName,
+            price: 2500, // Thamani ya mwanzo ya msingi (Tsh)
+            stock: 0,
+            dateAdded: dateStr
+        };
+        appData.products.push(product);
+        console.log(`[NGAE] 🆕 Bidhaa mpya "${newName}" imesajiliwa kiwandani papo hapo.`);
+    }
+
+    // 3. Weka hesabu sahihi za Namba (sio String concatenation)
+    product.stock = (Number(product.stock) || 0) + numQty;
+    product.price = Number(product.price) || 0;
 
     const now = new Date();
     const dateStr = now.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
 
+    if (!appData.productionLog) appData.productionLog = [];
     appData.productionLog.push({
         date: dateStr,
         dateRaw: now.toISOString().split('T')[0],
         productId: product.id,
         productName: product.name,
-        quantity: qty,
-        notes: notes || ''
+        quantity: numQty,
+        notes: notes || 'Uzalishaji wa Kiwandani'
     });
 
     saveData(appData);
     window.appData = appData;
 
-    appAddNotification('Uzalishaji Mpya', `Kiwanda kimesajili uzalishaji wa ${qty} pcs za ${product.name}.`);
+    if (window.appAddNotification) {
+        appAddNotification('Uzalishaji Mpya', `Kiwanda kimesajili uzalishaji wa ${numQty} pcs za ${product.name}. Bakaa mpya stoo: ${product.stock} pcs.`);
+    }
 
     return true;
 };
@@ -1027,19 +1097,24 @@ window.appGetOverallStatistics = function() {
 };
 
 window.appGetManufacturerMaterials = function(manufacturerId) {
-    if (!appData.manufacturerMaterials || !appData.manufacturerMaterials[manufacturerId]) {
-        return [];
-    }
-    const mats = appData.manufacturerMaterials[manufacturerId];
+    if (!appData.manufacturerMaterials) return [];
+    const mIdUpper = (manufacturerId || '').toUpperCase().trim();
+
+    const allKeys = Object.keys(appData.manufacturerMaterials);
+    const matchedKey = allKeys.find(k => k.toUpperCase().trim() === mIdUpper);
+
+    if (!matchedKey) return [];
+
+    const mats = appData.manufacturerMaterials[matchedKey] || {};
     const list = [];
     Object.keys(mats).forEach(materialId => {
-        const qty = mats[materialId];
-        const rawMat = appData.rawMaterials.find(m => m.id === materialId);
-        if (rawMat && qty > 0) {
+        const qty = Number(mats[materialId]) || 0;
+        const rawMat = (appData.rawMaterials || []).find(m => m.id === materialId || m.name.toUpperCase() === materialId.toUpperCase());
+        if (qty > 0) {
             list.push({
                 materialId: materialId,
-                name: rawMat.name,
-                unit: rawMat.unit,
+                name: rawMat ? rawMat.name : materialId.toUpperCase(),
+                unit: rawMat ? rawMat.unit : 'Kilo',
                 qty: qty
             });
         }

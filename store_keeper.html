@@ -914,7 +914,7 @@
                     e.preventDefault();
                     const matId = document.getElementById('dispatchSelectPortal').value;
                     const qty = parseFloat(document.getElementById('dispatchQtyPortal').value);
-                    const manufacturerId = document.getElementById('dispatchManufacturerPortal').value;
+                    const manufacturerId = (document.getElementById('dispatchManufacturerPortal').value || '').toUpperCase().trim();
 
                     if (window.appDispatchMaterial) {
                         const success = window.appDispatchMaterial(matId, qty, manufacturerId);

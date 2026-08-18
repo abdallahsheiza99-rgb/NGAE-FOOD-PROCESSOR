@@ -2103,10 +2103,15 @@ Saini ya Mwajiriwa (${emp.name}): ____________________      Tarehe: ____________
         }
 
         function openProductModal(id, name, price, stock) {
-            document.getElementById('editProductId').value = id;
-            document.getElementById('editProductName').value = name;
-            document.getElementById('editProductPrice').value = price;
-            document.getElementById('editProductStock').value = stock;
+            const elId = document.getElementById('editProductId') || document.getElementById('editProdId');
+            const elName = document.getElementById('editProductName') || document.getElementById('editProdName');
+            const elPrice = document.getElementById('editProductPrice') || document.getElementById('editProdPrice');
+            const elStock = document.getElementById('editProductStock') || document.getElementById('editProdStock');
+
+            if (elId) elId.value = id;
+            if (elName) elName.value = name;
+            if (elPrice) elPrice.value = price;
+            if (elStock) elStock.value = stock;
 
             const modal = document.getElementById('editProductModal');
             if (modal) {
@@ -2334,22 +2339,6 @@ Saini ya Mwajiriwa (${emp.name}): ____________________      Tarehe: ____________
             });
         }
 
-        function openProductModal(id, name, price, stock) {
-            document.getElementById('editProdId').value = id;
-            document.getElementById('editProdName').value = name;
-            document.getElementById('editProdPrice').value = price;
-            document.getElementById('editProdStock').value = stock;
-
-            const modal = document.getElementById('editProductModal');
-            modal.classList.remove('hidden');
-            modal.classList.add('flex');
-        }
-
-        function closeProductModal() {
-            const modal = document.getElementById('editProductModal');
-            modal.classList.add('hidden');
-            modal.classList.remove('flex');
-        }
 
         // --- CASH FLOW RENDER & PRINT ---
 

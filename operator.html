@@ -738,19 +738,33 @@
         function renderStockGrid() {
             if (!window.appData) return;
             const container = document.getElementById('stockGridContainer');
+            if (!container) return;
             container.innerHTML = '';
 
-            window.appData.products.forEach(p => {
-                const totalVal = (p.stock * p.price).toLocaleString();
+            const products = window.appData.products || [];
+            if (products.length === 0) {
+                container.innerHTML = `
+                    <div class="col-span-full text-center py-10 text-slate-400 font-bold">
+                        <i class="bi bi-box text-3xl text-slate-300"></i>
+                        <p class="mt-2 text-xs">Hakuna bidhaa yoyote kwenye bakaa kwa sasa.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            products.forEach(p => {
+                const stockVal = Number(p.stock) || 0;
+                const priceVal = Number(p.price) || 0;
+                const totalVal = (stockVal * priceVal).toLocaleString();
                 const card = document.createElement('div');
                 card.className = "bg-white p-5 rounded-3xl shadow-sm border border-slate-100 flex flex-col justify-between hover:shadow-md transition-all group";
                 card.innerHTML = `
                     <div>
                         <div class="flex justify-between items-start mb-2">
                             <h4 class="font-extrabold text-slate-800 text-sm group-hover:text-orange-600 transition-colors">${p.name}</h4>
-                            <span class="bg-orange-100 text-orange-800 text-[10px] font-black px-2 py-0.5 rounded-full uppercase">Tsh ${p.price.toLocaleString()}</span>
+                            <span class="bg-orange-100 text-orange-800 text-[10px] font-black px-2 py-0.5 rounded-full uppercase">Tsh ${priceVal.toLocaleString()}</span>
                         </div>
-                        <p class="text-2xl font-black text-slate-900 mt-2">${p.stock.toLocaleString()} <span class="text-xs font-bold text-slate-400 uppercase">pcs</span></p>
+                        <p class="text-2xl font-black text-slate-900 mt-2">${stockVal.toLocaleString()} <span class="text-xs font-bold text-slate-400 uppercase">pcs</span></p>
                         <p class="text-[11px] text-slate-400 font-semibold mt-1">Thamani Stoo: <span class="text-slate-700 font-extrabold">Tsh ${totalVal}</span></p>
                     </div>
                     <button onclick="quickDispatchProduct('${p.id}')" class="mt-4 w-full bg-slate-100 hover:bg-orange-600 hover:text-white text-slate-700 text-xs font-bold py-2.5 rounded-xl transition-all flex items-center justify-center gap-1">

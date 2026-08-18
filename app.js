@@ -158,7 +158,8 @@ function _mergeAppData(local, remote) {
                 id: existing.id || p.id,
                 name: existing.name || p.name,
                 price: Number(p.price) || Number(existing.price) || 0,
-                stock: Math.max(Number(existing.stock) || 0, Number(p.stock) || 0),
+                initialStock: (existing.initialStock !== undefined ? existing.initialStock : p.initialStock),
+                baseStock: (existing.baseStock !== undefined ? existing.baseStock : p.baseStock),
                 dateAdded: existing.dateAdded || p.dateAdded
             });
         }
@@ -181,7 +182,8 @@ function _mergeAppData(local, remote) {
                 id: existing.id || m.id,
                 name: existing.name || m.name,
                 unit: existing.unit || m.unit,
-                stock: Math.max(Number(existing.stock) || 0, Number(m.stock) || 0)
+                initialStock: (existing.initialStock !== undefined ? existing.initialStock : m.initialStock),
+                baseStock: (existing.baseStock !== undefined ? existing.baseStock : m.baseStock)
             });
         }
     });
@@ -229,7 +231,7 @@ function _mergeAppData(local, remote) {
     });
     const cashFlow = { balance: cfBal, transactions: mergedTransactions };
 
-    return _ensureFields({
+    const mergedData = _ensureFields({
         staff,
         products,
         shops,
@@ -247,6 +249,89 @@ function _mergeAppData(local, remote) {
         adminExpenses,
         salaryList
     });
+
+    return _recalculateAllStocks(mergedData);
+}
+
+/**
+ * Mathematical Stock Reconciliation Engine
+ * Calculates True Stock = (Initial Base Stock + Total Produced/Received) - Total Dispatched.
+ * Ensures stock balance ALWAYS decreases when dispatched and increases when produced.
+ */
+function _recalculateAllStocks(data) {
+    if (!data) return data;
+
+    // 1. Recalculate Finished Goods (Products) Stock
+    const prodLog = data.productionLog || [];
+    const dispHist = data.dispatchHistory || [];
+
+    if (data.products && Array.isArray(data.products)) {
+        data.products.forEach(p => {
+            if (!p) return;
+            const pId = (p.id || '').toUpperCase();
+            const pName = (p.name || '').toUpperCase().trim();
+
+            let totalProduced = 0;
+            prodLog.forEach(l => {
+                if (!l) return;
+                const lId = (l.productId || '').toUpperCase();
+                const lName = (l.productName || '').toUpperCase().trim();
+                if ((pId && lId === pId) || (pName && lName === pName)) {
+                    totalProduced += (Number(l.quantity) || 0);
+                }
+            });
+
+            let totalDispatched = 0;
+            dispHist.forEach(d => {
+                if (!d) return;
+                const dId = (d.productId || '').toUpperCase();
+                const dName = (d.productName || '').toUpperCase().trim();
+                if ((pId && dId === pId) || (pName && dName === pName)) {
+                    totalDispatched += (Number(d.quantity) || 0);
+                }
+            });
+
+            const baseStock = Number(p.initialStock !== undefined ? p.initialStock : (p.baseStock || 0));
+            p.stock = Math.max(0, baseStock + totalProduced - totalDispatched);
+        });
+    }
+
+    // 2. Recalculate Storekeeper Raw Materials Stock
+    const matRecHist = data.rawMaterialsHistory || [];
+    const matDispHist = data.rawMaterialsDispatchHistory || [];
+
+    if (data.rawMaterials && Array.isArray(data.rawMaterials)) {
+        data.rawMaterials.forEach(m => {
+            if (!m) return;
+            const mId = (m.id || '').toUpperCase();
+            const mName = (m.name || '').toUpperCase().trim();
+
+            let totalReceived = 0;
+            matRecHist.forEach(r => {
+                if (!r) return;
+                const rId = (r.materialId || '').toUpperCase();
+                const rName = (r.materialName || '').toUpperCase().trim();
+                if ((mId && rId === mId) || (mName && rName === mName)) {
+                    totalReceived += (Number(r.qty) || 0);
+                }
+            });
+
+            let totalDispatched = 0;
+            matDispHist.forEach(d => {
+                if (!d) return;
+                const dId = (d.materialId || '').toUpperCase();
+                const dName = (d.materialName || '').toUpperCase().trim();
+                if ((mId && dId === mId) || (mName && dName === mName)) {
+                    totalDispatched += (Number(d.qty) || 0);
+                }
+            });
+
+            const baseMatStock = Number(m.initialStock !== undefined ? m.initialStock : (m.baseStock || 0));
+            m.stock = Math.max(0, baseMatStock + totalReceived - totalDispatched);
+        });
+    }
+
+    return data;
 }
 
 function seedData() {
@@ -415,7 +500,7 @@ function appAddNotification(title, message) {
 // ==========================================
 // APP STATE - Loaded Once
 // ==========================================
-let appData = loadData();
+let appData = _recalculateAllStocks(loadData());
 window.appData = appData;
 
 // Anzisha Firebase (async - background)

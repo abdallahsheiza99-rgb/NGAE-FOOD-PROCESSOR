@@ -676,6 +676,7 @@ window.appAddSellerExpense = function(amount, description) {
     const timeStr = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
 
     appData.finances[shopId].personalExpenses.push({
+        id: 'seller_exp_' + Date.now() + '_' + Math.random().toString(36).substr(2, 6),
         amount: numAmount,
         description: description,
         date: `${dateStr} ${timeStr}`,
@@ -706,8 +707,9 @@ window.appReceiveMaterial = function(materialName, unit, qty, pricePerUnit) {
     mat.stock = (Number(mat.stock) || 0) + numQty;
 
     appData.rawMaterialsHistory.push({
+        id: 'mat_rec_' + Date.now() + '_' + Math.random().toString(36).substr(2, 6),
         date: dateStr,
-        dateRaw: now.toISOString().split('T')[0],
+        dateRaw: now.toISOString(),
         materialName: mat.name,
         materialId: mat.id,
         unit: unit,
@@ -737,8 +739,9 @@ window.appDispatchMaterial = function(materialId, qty, manufacturerId) {
     const manufacturerName = appData.staff[mIdUpper] ? appData.staff[mIdUpper].name : 'Producer';
 
     appData.rawMaterialsDispatchHistory.push({
+        id: 'mat_disp_' + Date.now() + '_' + Math.random().toString(36).substr(2, 6),
         date: dateStr,
-        dateRaw: now.toISOString().split('T')[0],
+        dateRaw: now.toISOString(),
         materialName: mat.name,
         materialId: mat.id,
         unit: mat.unit,
@@ -934,6 +937,7 @@ window.appAddPersonalCash = function(amount, description) {
     const timeStr = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
 
     appData.cashFlow.transactions.push({
+        id: 'cf_in_' + Date.now() + '_' + Math.random().toString(36).substr(2, 6),
         type: 'IN',
         amount: amt,
         description: description,
@@ -959,6 +963,7 @@ window.appAddPersonalExpense = function(amount, description) {
     const timeStr = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
 
     appData.cashFlow.transactions.push({
+        id: 'cf_out_' + Date.now() + '_' + Math.random().toString(36).substr(2, 6),
         type: 'OUT',
         amount: amt,
         description: description,

@@ -42,14 +42,6 @@ window.appResetSystem = function() {
 };
 
 function loadData() {
-    const version = localStorage.getItem('ngae_app_version');
-    if (version !== CURRENT_APP_VERSION) {
-        console.log("Upgrading/Resetting to fresh production version. Clearing old test data...");
-        localStorage.clear();
-        sessionStorage.clear();
-        localStorage.setItem('ngae_app_version', CURRENT_APP_VERSION);
-        return seedData();
-    }
     const raw = localStorage.getItem(STORAGE_KEY);
     if (raw) {
         try {

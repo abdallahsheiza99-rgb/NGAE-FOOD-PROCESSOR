@@ -203,6 +203,10 @@
                     class="nav-tab w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left font-bold transition-all hover:bg-gray-800">
                     <i class="bi bi-box-seam-fill"></i> Usimamizi wa Bidhaa
                 </button>
+                <button onclick="switchTab('tab-store')" id="btn-tab-store"
+                    class="nav-tab w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left font-bold transition-all hover:bg-gray-800 text-emerald-400 hover:text-emerald-300">
+                    <i class="bi bi-archive-fill"></i> Stoo ya Malighafi (Store)
+                </button>
                 <button onclick="switchTab('tab-cashflow')" id="btn-tab-cashflow"
                     class="nav-tab w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left font-bold transition-all hover:bg-gray-800 text-red-400 hover:text-red-300">
                     <i class="bi bi-wallet2 text-red-500 animate-pulse"></i> Cash Flowing
@@ -642,6 +646,175 @@
                             </form>
                         </div>
 
+                    </div>
+                </section>
+
+                <!-- 2C-STORE. TAB: STOO YA MALIGHAFI (STORE PORTAL FOR ADMIN) -->
+                <section id="tab-store" class="tab-content hidden space-y-6">
+                    <!-- Status Cards -->
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div class="bg-white p-6 rounded-2xl shadow-sm border border-emerald-100 flex items-center justify-between">
+                            <div>
+                                <p class="text-emerald-500 text-xs font-extrabold uppercase tracking-wider">Aina za Malighafi</p>
+                                <h3 class="text-3xl font-black text-gray-800 mt-1.5" id="adminStatRawTypes">0</h3>
+                                <p class="text-[10px] text-gray-400 font-bold mt-1 uppercase">Zilizosajiliwa Stoo</p>
+                            </div>
+                            <div class="w-14 h-14 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center text-2xl">
+                                <i class="bi bi-archive-fill"></i>
+                            </div>
+                        </div>
+
+                        <div class="bg-white p-6 rounded-2xl shadow-sm border border-blue-100 flex items-center justify-between">
+                            <div>
+                                <p class="text-blue-500 text-xs font-extrabold uppercase tracking-wider">Bakaa ya Malighafi Zote</p>
+                                <h3 class="text-3xl font-black text-gray-800 mt-1.5" id="adminStatRawStockSum">0 Units</h3>
+                                <p class="text-[10px] text-gray-400 font-bold mt-1 uppercase">Stoo ya Storekeeper</p>
+                            </div>
+                            <div class="w-14 h-14 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center text-2xl">
+                                <i class="bi bi-stack"></i>
+                            </div>
+                        </div>
+
+                        <div class="bg-white p-6 rounded-2xl shadow-sm border border-purple-100 flex items-center justify-between">
+                            <div>
+                                <p class="text-purple-500 text-xs font-extrabold uppercase tracking-wider">Ufikiaji wa Admin</p>
+                                <h3 class="text-lg font-black text-purple-700 mt-1.5">FULL ACCESS</h3>
+                                <p class="text-[10px] text-gray-400 font-bold mt-1 uppercase">Edit / Delete Privilege</p>
+                            </div>
+                            <div class="w-14 h-14 rounded-full bg-purple-50 text-purple-600 flex items-center justify-center text-2xl">
+                                <i class="bi bi-shield-check"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                        <!-- Raw Materials Ledger -->
+                        <div class="lg:col-span-2 bg-white p-6 rounded-2xl shadow-sm border border-gray-100 space-y-4">
+                            <div class="flex items-center justify-between border-b pb-3">
+                                <h2 class="text-lg font-bold text-gray-800 flex items-center gap-2">
+                                    <i class="bi bi-archive text-emerald-600"></i> Stoo ya Malighafi (Raw Materials Inventory)
+                                </h2>
+                                <span class="bg-emerald-100 text-emerald-800 text-[10px] font-extrabold px-3 py-1 rounded-full uppercase">Admin Store Control</span>
+                            </div>
+
+                            <div class="overflow-x-auto rounded-xl border border-gray-100">
+                                <table class="w-full text-left text-xs">
+                                    <thead class="bg-slate-900 text-white font-bold uppercase tracking-wider text-[11px]">
+                                        <tr>
+                                            <th class="p-3">#</th>
+                                            <th class="p-3">Jina la Malighafi</th>
+                                            <th class="p-3">Pimio (Unit)</th>
+                                            <th class="p-3 text-right">Stock Stoo</th>
+                                            <th class="p-3 text-center">Hatua</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="adminRawMaterialsTbody" class="divide-y divide-gray-100">
+                                        <!-- Loaded via JS -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- Add / Edit Material Form -->
+                        <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 space-y-4">
+                            <h3 class="text-base font-bold text-gray-800 border-b pb-2 flex items-center gap-2">
+                                <i class="bi bi-plus-circle-fill text-emerald-600"></i> Sajili Malighafi Mpya
+                            </h3>
+                            <form id="adminAddRawMaterialForm" class="space-y-4">
+                                <div>
+                                    <label class="block text-xs font-bold text-gray-700 mb-1">Jina la Malighafi (k.m. Ngano, Mafuta, Sukari, Chachu)</label>
+                                    <input type="text" id="adminMatName" required placeholder="Mfano: NGANO NAFASI YA KWANZA" class="w-full border border-gray-300 rounded-xl p-3 text-xs outline-none focus:ring-2 focus:ring-emerald-500 uppercase font-bold">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-bold text-gray-700 mb-1">Pimio (Unit)</label>
+                                    <select id="adminMatUnit" required class="w-full border border-gray-300 rounded-xl p-3 text-xs outline-none focus:ring-2 focus:ring-emerald-500 bg-white font-bold">
+                                        <option value="Kilo">Kilo (Kg)</option>
+                                        <option value="Lita">Lita (L)</option>
+                                        <option value="Mifuko">Mifuko (Bags)</option>
+                                        <option value="Pcs">Pcs / Idadi</option>
+                                        <option value="Batri">Batri / Box</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-bold text-gray-700 mb-1">Stock ya Mwanzo (Idadi)</label>
+                                    <input type="number" id="adminMatStock" min="0" value="0" step="any" required class="w-full border border-gray-300 rounded-xl p-3 text-xs outline-none focus:ring-2 focus:ring-emerald-500 font-bold">
+                                </div>
+                                <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-xl shadow-md transition-colors text-xs flex items-center justify-center gap-1.5">
+                                    <i class="bi bi-check-circle-fill"></i> Hifadhi Malighafi
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- Inflow & Outflow Logs -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <!-- Received History -->
+                        <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 space-y-3">
+                            <h3 class="text-sm font-bold text-gray-800 border-b pb-2 flex items-center gap-2">
+                                <i class="bi bi-box-arrow-in-down text-emerald-600"></i> Mapokezi ya Malighafi (Storekeeper Inflow)
+                            </h3>
+                            <div class="overflow-x-auto rounded-xl border border-gray-100">
+                                <table class="w-full text-left text-xs">
+                                    <thead class="bg-gray-100 text-gray-700 font-bold uppercase text-[10px]">
+                                        <tr>
+                                            <th class="p-2.5">Tarehe</th>
+                                            <th class="p-2.5">Malighafi</th>
+                                            <th class="p-2.5">Kiasi</th>
+                                            <th class="p-2.5 text-right">Bei/Unit</th>
+                                            <th class="p-2.5 text-right">Jumla</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="adminRawMaterialsRecTbody" class="divide-y divide-gray-100"></tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- Dispatched History to Producer -->
+                        <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 space-y-3">
+                            <h3 class="text-sm font-bold text-gray-800 border-b pb-2 flex items-center gap-2">
+                                <i class="bi bi-box-arrow-up-right text-amber-600"></i> Utoaji wa Malighafi kwenda kwa Producer
+                            </h3>
+                            <div class="overflow-x-auto rounded-xl border border-gray-100">
+                                <table class="w-full text-left text-xs">
+                                    <thead class="bg-gray-100 text-gray-700 font-bold uppercase text-[10px]">
+                                        <tr>
+                                            <th class="p-2.5">Tarehe</th>
+                                            <th class="p-2.5">Producer</th>
+                                            <th class="p-2.5">Malighafi</th>
+                                            <th class="p-2.5 text-right">Kiasi</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="adminRawMaterialsDispTbody" class="divide-y divide-gray-100"></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Production Log Override Section for Admin -->
+                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 space-y-4">
+                        <div class="flex items-center justify-between border-b pb-3">
+                            <div>
+                                <h3 class="text-base font-bold text-gray-800 flex items-center gap-2">
+                                    <i class="bi bi-gear-fill text-purple-600"></i> Usimamizi wa Logi za Uzalishaji (Production Overrides)
+                                </h3>
+                                <p class="text-xs text-gray-500 mt-0.5">Admin anaweza kuedit au kufuta uzalishaji iwapo Producer alikosea idadi iliyozalishwa.</p>
+                            </div>
+                            <span class="bg-purple-100 text-purple-800 text-[10px] font-extrabold px-3 py-1 rounded-full uppercase">Admin Exclusive</span>
+                        </div>
+                        <div class="overflow-x-auto rounded-xl border border-gray-100">
+                            <table class="w-full text-left text-xs">
+                                <thead class="bg-slate-900 text-white font-bold uppercase tracking-wider text-[11px]">
+                                    <tr>
+                                        <th class="p-3">Tarehe</th>
+                                        <th class="p-3">Bidhaa</th>
+                                        <th class="p-3 text-right">Idadi Iliyozalishwa</th>
+                                        <th class="p-3">Maelezo</th>
+                                        <th class="p-3 text-center">Hatua za Admin</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="adminProductionLogTbody" class="divide-y divide-gray-100"></tbody>
+                            </table>
+                        </div>
                     </div>
                 </section>
 
@@ -1485,6 +1658,29 @@
                 }
             });
 
+            // Add raw material form submit (Admin Store)
+            const addMatForm = document.getElementById('adminAddRawMaterialForm');
+            if (addMatForm) {
+                addMatForm.addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    const name = document.getElementById('adminMatName').value.trim();
+                    const unit = document.getElementById('adminMatUnit').value;
+                    const stock = parseFloat(document.getElementById('adminMatStock').value) || 0;
+
+                    if (!name) {
+                        alert('Tafadhali weka jina la malighafi.');
+                        return;
+                    }
+
+                    if (window.appReceiveMaterial) {
+                        window.appReceiveMaterial(name, unit, stock, 0);
+                        alert(`✅ Malighafi "${name.toUpperCase()}" imesajiliwa kwenye Stoo! Stock: ${stock} ${unit}`);
+                        addMatForm.reset();
+                        renderAdminStore();
+                    }
+                });
+            }
+
             // Add staff form submit
             document.getElementById('addStaffForm').addEventListener('submit', (e) => {
                 e.preventDefault();
@@ -1944,6 +2140,10 @@ Saini ya Mwajiriwa (${emp.name}): ____________________      Tarehe: ____________
                 titleEl.textContent = 'Muhtasari wa Maduka na Mauzo ya Wafanyabiashara';
                 renderShopsSummaryPortal();
             }
+            else if (tabId === 'tab-store') {
+                titleEl.textContent = 'Stoo ya Malighafi (Store Portal)';
+                renderAdminStore();
+            }
         }
 
         // --- RENDER FUNCTIONS ---
@@ -2099,6 +2299,184 @@ Saini ya Mwajiriwa (${emp.name}): ____________________      Tarehe: ____________
                 window.appDeleteStaff(staffId);
                 renderStaff();
                 renderOverview();
+            }
+        }
+
+        function renderAdminStore() {
+            if (!window.appData) return;
+
+            const rawMaterials = window.appData.rawMaterials || [];
+            const rawMaterialsHistory = window.appData.rawMaterialsHistory || [];
+            const rawMaterialsDispatchHistory = window.appData.rawMaterialsDispatchHistory || [];
+            const productionLog = window.appData.productionLog || [];
+
+            // Stat Cards
+            const totalTypesEl = document.getElementById('adminStatRawTypes');
+            const totalStockEl = document.getElementById('adminStatRawStockSum');
+            if (totalTypesEl) totalTypesEl.textContent = rawMaterials.length.toLocaleString();
+
+            let totalStockSum = 0;
+            rawMaterials.forEach(m => totalStockSum += (Number(m.stock) || 0));
+            if (totalStockEl) totalStockEl.textContent = totalStockSum.toLocaleString() + " Units";
+
+            // 1. Raw Materials Table
+            const matTbody = document.getElementById('adminRawMaterialsTbody');
+            if (matTbody) {
+                matTbody.innerHTML = '';
+                if (rawMaterials.length === 0) {
+                    matTbody.innerHTML = `<tr><td colspan="5" class="p-6 text-center text-gray-400 font-medium">Hakuna malighafi iliyosajiliwa stoo bado.</td></tr>`;
+                } else {
+                    rawMaterials.forEach((m, idx) => {
+                        const tr = document.createElement('tr');
+                        tr.className = "hover:bg-emerald-50/50 transition-colors border-b border-gray-100";
+                        const escapedName = m.name.replace(/'/g, "\\'");
+                        tr.innerHTML = `
+                            <td class="p-3 font-bold text-gray-400 text-xs">${idx + 1}.</td>
+                            <td class="p-3 font-extrabold text-gray-900 text-xs uppercase">${m.name}</td>
+                            <td class="p-3 font-bold text-gray-600 text-xs">${m.unit}</td>
+                            <td class="p-3 text-right font-black text-emerald-600 text-xs">${(Number(m.stock) || 0).toLocaleString()} ${m.unit}</td>
+                            <td class="p-3 text-center flex justify-center gap-2">
+                                <button onclick="openAdminEditMaterialModal('${m.id}', '${escapedName}', '${m.unit}', ${m.stock})" class="bg-blue-100 hover:bg-blue-200 text-blue-800 text-[10px] font-bold px-2.5 py-1 rounded-lg">Edit</button>
+                                <button onclick="deleteAdminMaterial('${m.id}')" class="bg-red-100 hover:bg-red-200 text-red-700 text-[10px] font-bold px-2.5 py-1 rounded-lg">Futa</button>
+                            </td>
+                        `;
+                        matTbody.appendChild(tr);
+                    });
+                }
+            }
+
+            // 2. Received History Table
+            const recTbody = document.getElementById('adminRawMaterialsRecTbody');
+            if (recTbody) {
+                recTbody.innerHTML = '';
+                if (rawMaterialsHistory.length === 0) {
+                    recTbody.innerHTML = `<tr><td colspan="5" class="p-6 text-center text-gray-400 font-medium">Hakuna historia ya mapokezi ya malighafi.</td></tr>`;
+                } else {
+                    [...rawMaterialsHistory].reverse().slice(0, 10).forEach(r => {
+                        const tr = document.createElement('tr');
+                        tr.className = "border-b border-gray-100 text-xs";
+                        const totalCost = (Number(r.qty) || 0) * (Number(r.pricePerUnit) || 0);
+                        tr.innerHTML = `
+                            <td class="p-2.5 font-semibold text-gray-500">${r.date || ''}</td>
+                            <td class="p-2.5 font-bold uppercase text-gray-800">${r.materialName || ''}</td>
+                            <td class="p-2.5 font-bold text-emerald-600">${r.qty} ${r.unit || ''}</td>
+                            <td class="p-2.5 text-right font-bold text-gray-700">Tsh ${(Number(r.pricePerUnit) || 0).toLocaleString()}</td>
+                            <td class="p-2.5 text-right font-black text-gray-900">Tsh ${totalCost.toLocaleString()}</td>
+                        `;
+                        recTbody.appendChild(tr);
+                    });
+                }
+            }
+
+            // 3. Dispatched History Table
+            const dispTbody = document.getElementById('adminRawMaterialsDispTbody');
+            if (dispTbody) {
+                dispTbody.innerHTML = '';
+                if (rawMaterialsDispatchHistory.length === 0) {
+                    dispTbody.innerHTML = `<tr><td colspan="4" class="p-6 text-center text-gray-400 font-medium">Hakuna historia ya kutoa malighafi.</td></tr>`;
+                } else {
+                    [...rawMaterialsDispatchHistory].reverse().slice(0, 10).forEach(d => {
+                        const tr = document.createElement('tr');
+                        tr.className = "border-b border-gray-100 text-xs";
+                        tr.innerHTML = `
+                            <td class="p-2.5 font-semibold text-gray-500">${d.date || ''}</td>
+                            <td class="p-2.5 font-bold text-indigo-600 uppercase">${d.manufacturerName || d.manufacturerId || ''}</td>
+                            <td class="p-2.5 font-bold uppercase text-gray-800">${d.materialName || ''}</td>
+                            <td class="p-2.5 text-right font-black text-amber-600">${d.qty} ${d.unit || ''}</td>
+                        `;
+                        dispTbody.appendChild(tr);
+                    });
+                }
+            }
+
+            // 4. Production Log Table for Admin Override
+            const prodLogTbody = document.getElementById('adminProductionLogTbody');
+            if (prodLogTbody) {
+                prodLogTbody.innerHTML = '';
+                if (productionLog.length === 0) {
+                    prodLogTbody.innerHTML = `<tr><td colspan="5" class="p-6 text-center text-gray-400 font-medium">Hakuna logi ya uzalishaji.</td></tr>`;
+                } else {
+                    [...productionLog].reverse().slice(0, 15).forEach(p => {
+                        const tr = document.createElement('tr');
+                        tr.className = "border-b border-gray-100 text-xs hover:bg-purple-50/50 transition-colors";
+                        const escapedNotes = (p.notes || '').replace(/'/g, "\\'");
+                        tr.innerHTML = `
+                            <td class="p-2.5 font-semibold text-gray-500">${p.date || ''}</td>
+                            <td class="p-2.5 font-extrabold uppercase text-gray-900">${p.productName || ''}</td>
+                            <td class="p-2.5 text-right font-black text-purple-600">${(Number(p.quantity) || 0).toLocaleString()} pcs</td>
+                            <td class="p-2.5 font-semibold text-gray-600">${p.notes || ''}</td>
+                            <td class="p-2.5 text-center flex justify-center gap-1.5">
+                                <button onclick="openAdminEditProdLogModal('${p.id}', ${p.quantity}, '${escapedNotes}')" class="bg-blue-100 hover:bg-blue-200 text-blue-800 text-[10px] font-bold px-2.5 py-1 rounded-lg">Edit</button>
+                                <button onclick="deleteAdminProdLog('${p.id}')" class="bg-red-100 hover:bg-red-200 text-red-700 text-[10px] font-bold px-2.5 py-1 rounded-lg">Futa</button>
+                            </td>
+                        `;
+                        prodLogTbody.appendChild(tr);
+                    });
+                }
+            }
+        }
+
+        function openAdminEditMaterialModal(id, name, unit, stock) {
+            const newName = prompt("Badilisha Jina la Malighafi:", name);
+            if (newName === null) return;
+            const newUnit = prompt("Badilisha Pimio (Unit):", unit);
+            if (newUnit === null) return;
+            const newStockStr = prompt("Badilisha Stock ya Malighafi:", stock);
+            if (newStockStr === null) return;
+
+            const newStock = parseFloat(newStockStr);
+            if (isNaN(newStock)) {
+                alert("Stock lazima iwe namba sahihi.");
+                return;
+            }
+
+            if (window.appAdminEditRawMaterial) {
+                window.appAdminEditRawMaterial(id, newName, newUnit, newStock);
+                renderAdminStore();
+                alert("Malighafi imerekebishwa kikamilifu!");
+            }
+        }
+
+        function deleteAdminMaterial(id) {
+            if (confirm("Una uhakika unataka kufuta malighafi hii kutoka kwenye stoo?")) {
+                if (window.appAdminDeleteRawMaterial) {
+                    window.appAdminDeleteRawMaterial(id);
+                    renderAdminStore();
+                    alert("Malighafi imefutwa!");
+                }
+            }
+        }
+
+        function openAdminEditProdLogModal(id, currentQty, currentNotes) {
+            const newQtyStr = prompt("Badilisha Idadi iliyozalishwa (Quantity):", currentQty);
+            if (newQtyStr === null) return;
+            const newQty = parseInt(newQtyStr);
+            if (isNaN(newQty) || newQty <= 0) {
+                alert("Idadi lazima iwe namba zaidi ya 0.");
+                return;
+            }
+
+            const newNotes = prompt("Maelezo ya Uzalishaji:", currentNotes);
+            if (newNotes === null) return;
+
+            if (window.appAdminEditProductionLog) {
+                window.appAdminEditProductionLog(id, newQty, newNotes);
+                renderAdminStore();
+                renderOverview();
+                renderProducts();
+                alert("Logi ya uzalishaji imerekebishwa na Bakaa ya bidhaa imesasishwa!");
+            }
+        }
+
+        function deleteAdminProdLog(id) {
+            if (confirm("Una uhakika unataka kufuta uzalishaji huu? Bakaa ya bidhaa stoo itapunguzwa kiotomatiki.")) {
+                if (window.appAdminDeleteProductionLog) {
+                    window.appAdminDeleteProductionLog(id);
+                    renderAdminStore();
+                    renderOverview();
+                    renderProducts();
+                    alert("Uzalishaji umefutwa na bakaa ya stoo imerekebishwa!");
+                }
             }
         }
 

@@ -834,6 +834,67 @@ window.appRecordProduction = function(productId, qty, notes) {
 };
 
 // ==========================================
+// ADMIN STORE & PRODUCTION OVERRIDE FUNCTIONS
+// ==========================================
+
+window.appAdminEditRawMaterial = function(materialId, name, unit, stock) {
+    const mat = (appData.rawMaterials || []).find(m => m.id === materialId);
+    if (!mat) return false;
+    mat.name = name.toUpperCase().trim();
+    mat.unit = unit;
+    mat.stock = Number(stock) || 0;
+    saveData(appData);
+    window.appData = appData;
+    return true;
+};
+
+window.appAdminDeleteRawMaterial = function(materialId) {
+    if (!appData.rawMaterials) return false;
+    appData.rawMaterials = appData.rawMaterials.filter(m => m.id !== materialId);
+    saveData(appData);
+    window.appData = appData;
+    return true;
+};
+
+window.appAdminEditProductionLog = function(logId, newQty, newNotes) {
+    if (!appData.productionLog) return false;
+    const entry = appData.productionLog.find(l => l.id === logId);
+    if (!entry) return false;
+
+    const oldQty = Number(entry.quantity) || 0;
+    const diff = Number(newQty) - oldQty;
+
+    entry.quantity = Number(newQty);
+    if (newNotes) entry.notes = newNotes;
+
+    const prod = (appData.products || []).find(p => p.id === entry.productId || p.name.toUpperCase() === entry.productName.toUpperCase());
+    if (prod) {
+        prod.stock = Math.max(0, (Number(prod.stock) || 0) + diff);
+    }
+
+    saveData(appData);
+    window.appData = appData;
+    return true;
+};
+
+window.appAdminDeleteProductionLog = function(logId) {
+    if (!appData.productionLog) return false;
+    const entry = appData.productionLog.find(l => l.id === logId);
+    if (!entry) return false;
+
+    const qty = Number(entry.quantity) || 0;
+    const prod = (appData.products || []).find(p => p.id === entry.productId || p.name.toUpperCase() === entry.productName.toUpperCase());
+    if (prod) {
+        prod.stock = Math.max(0, (Number(prod.stock) || 0) - qty);
+    }
+
+    appData.productionLog = appData.productionLog.filter(l => l.id !== logId);
+    saveData(appData);
+    window.appData = appData;
+    return true;
+};
+
+// ==========================================
 // CUSTOMER ORDER FUNCTIONS
 // ==========================================
 

@@ -109,11 +109,11 @@ const INITIAL_PRODUCTION_LOG = [
 ];
 
 const INITIAL_FINANCES = {
-    'shop_soni': { submitted: 97618474, reportedDebt: 0 },
-    'shop_lushoto': { submitted: 10000000, reportedDebt: 0 },
-    'shop_mwalimu': { submitted: 5000000, reportedDebt: 0 },
-    'shop_lwandai': { submitted: 1500000, reportedDebt: 0 },
-    'shop_rosmin': { submitted: 800000, reportedDebt: 0 },
+    'shop_soni': { submitted: 97618474, reportedDebt: 0, salesHistory: [{ amount: 97618474, notes: 'Mauzo ya awali (Soni)', date: '16 Aug 2026 14:00', dateRaw: '2026-08-16T14:00:00.000Z' }], personalExpenses: [] },
+    'shop_lushoto': { submitted: 10000000, reportedDebt: 0, salesHistory: [{ amount: 10000000, notes: 'Mauzo ya awali (Lushoto)', date: '16 Aug 2026 15:30', dateRaw: '2026-08-16T15:30:00.000Z' }], personalExpenses: [] },
+    'shop_mwalimu': { submitted: 5000000, reportedDebt: 0, salesHistory: [{ amount: 5000000, notes: 'Mauzo ya awali (Mwalimu)', date: '15 Aug 2026 11:00', dateRaw: '2026-08-15T11:00:00.000Z' }], personalExpenses: [] },
+    'shop_lwandai': { submitted: 1500000, reportedDebt: 0, salesHistory: [{ amount: 1500000, notes: 'Mauzo ya awali (Lwandai)', date: '17 Aug 2026 09:15', dateRaw: '2026-08-17T09:15:00.000Z' }], personalExpenses: [] },
+    'shop_rosmin': { submitted: 800000, reportedDebt: 0, salesHistory: [{ amount: 800000, notes: 'Mauzo ya awali (Rosmin)', date: '14 Aug 2026 16:45', dateRaw: '2026-08-14T16:45:00.000Z' }], personalExpenses: [] },
 };
 
 const INITIAL_CUSTOMER_ORDERS = [];

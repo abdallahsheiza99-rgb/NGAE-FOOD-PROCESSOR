@@ -748,12 +748,12 @@
             window.appData.products.forEach(p => {
                 const opt1 = document.createElement('option');
                 opt1.value = p.id;
-                opt1.textContent = `${p.name} (Stoo: ${p.stock.toLocaleString()} pcs)`;
+                opt1.textContent = `${p.name} - Tsh ${(p.price || 0).toLocaleString()} (Stoo: ${(p.stock || 0).toLocaleString()} pcs)`;
                 pSel1.appendChild(opt1);
 
                 const opt2 = document.createElement('option');
                 opt2.value = p.id;
-                opt2.textContent = `${p.name} (Stoo: ${p.stock.toLocaleString()} pcs)`;
+                opt2.textContent = `${p.name} - Tsh ${(p.price || 0).toLocaleString()} (Stoo: ${(p.stock || 0).toLocaleString()} pcs)`;
                 pSel2.appendChild(opt2);
             });
         }

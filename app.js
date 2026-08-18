@@ -55,22 +55,6 @@ function loadData() {
         try {
             const data = JSON.parse(raw);
 
-            // Auto-wipe if any test data remnants exist
-            const hasStaff = data.staff && Object.keys(data.staff).length > 0;
-            const hasProducts = data.products && data.products.length > 0;
-            const hasShops = data.shops && data.shops.length > 0;
-            const hasDispatches = data.dispatchHistory && data.dispatchHistory.length > 0;
-            const hasProduction = data.productionLog && data.productionLog.length > 0;
-            const hasRawHistory = data.rawMaterialsHistory && data.rawMaterialsHistory.length > 0;
-
-            if (hasStaff || hasProducts || hasShops || hasDispatches || hasProduction || hasRawHistory) {
-                console.log("Legacy test data detected. Clearing all stored test records...");
-                localStorage.clear();
-                sessionStorage.clear();
-                localStorage.setItem('ngae_app_version', CURRENT_APP_VERSION);
-                return seedData();
-            }
-
             if (!data.staff) data.staff = {};
             if (!data.products) data.products = [];
             if (!data.shops) data.shops = [];
@@ -148,6 +132,73 @@ function appAddNotification(title, message) {
 // ==========================================
 let appData = loadData();
 window.appData = appData;
+
+// ==========================================
+// PRODUCT MANAGEMENT API
+// ==========================================
+
+window.appGetProducts = function() {
+    return appData.products || [];
+};
+
+window.appAddProduct = function(name, price, stock = 0) {
+    if (!appData.products) appData.products = [];
+    const formattedName = name.toUpperCase().trim();
+    const exists = appData.products.some(p => p.name.toUpperCase() === formattedName);
+    if (exists) {
+        return { success: false, message: 'Bidhaa hii tayari imesajiliwa kwenye mfumo!' };
+    }
+    const newId = 'prod_' + Date.now() + '_' + Math.random().toString(36).substring(2, 6);
+    const dateStr = new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+    const product = {
+        id: newId,
+        name: formattedName,
+        price: parseFloat(price) || 0,
+        stock: parseInt(stock) || 0,
+        dateAdded: dateStr
+    };
+    appData.products.push(product);
+    saveData(appData);
+    window.appData = appData;
+
+    if (window.appAddNotification) {
+        appAddNotification('Bidhaa Mpya Imesajiliwa', `Bidhaa "${formattedName}" yenye bei ya Tsh ${(parseFloat(price)||0).toLocaleString()} imesajiliwa kikamilifu.`);
+    }
+    return { success: true, product };
+};
+
+window.appUpdateProduct = function(id, name, price, stock) {
+    if (!appData.products) return false;
+    const product = appData.products.find(p => p.id === id);
+    if (!product) return false;
+    
+    const oldName = product.name;
+    product.name = name.toUpperCase().trim();
+    product.price = parseFloat(price) || 0;
+    if (stock !== undefined && stock !== null && stock !== '') {
+        product.stock = parseInt(stock) || 0;
+    }
+    saveData(appData);
+    window.appData = appData;
+
+    if (window.appAddNotification) {
+        appAddNotification('Bidhaa Imerekebishwa', `Taarifa za bidhaa "${product.name}" (zamani: ${oldName}) zimesasishwa.`);
+    }
+    return true;
+};
+
+window.appDeleteProduct = function(id) {
+    if (!appData.products) return false;
+    const prod = appData.products.find(p => p.id === id);
+    appData.products = appData.products.filter(p => p.id !== id);
+    saveData(appData);
+    window.appData = appData;
+
+    if (window.appAddNotification && prod) {
+        appAddNotification('Bidhaa Imefutwa', `Bidhaa "${prod.name}" imefutwa kwenye mfumo.`);
+    }
+    return true;
+};
 
 // ==========================================
 // AUTH FUNCTIONS

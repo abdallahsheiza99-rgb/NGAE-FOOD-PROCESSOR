@@ -592,7 +592,7 @@
             (window.appData.products || []).forEach(p => {
                 const opt = document.createElement('option');
                 opt.value = p.id;
-                opt.textContent = `${p.name} (Zilizopo: ${p.stock.toLocaleString()} pcs)`;
+                opt.textContent = `${p.name} - Tsh ${(p.price || 0).toLocaleString()} (Zilizopo: ${(p.stock || 0).toLocaleString()} pcs)`;
                 productSelect.appendChild(opt);
             });
 

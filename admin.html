@@ -489,27 +489,94 @@
                     </div>
                 </section>
 
-                <!-- 2C. TAB: PRODUCT MANAGEMENT -->
+                <!-- 2C. TAB: PRODUCT MANAGEMENT (Usimamizi wa Bidhaa & Ledger) -->
                 <section id="tab-products" class="tab-content hidden space-y-6">
+
+                    <!-- Stat Cards Header for Product Management -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                        <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 flex items-center justify-between">
+                            <div>
+                                <p class="text-xs font-bold text-gray-400 uppercase tracking-wider">Jumla ya Bidhaa</p>
+                                <h3 class="text-2xl font-black text-gray-800 mt-1" id="statTotalProducts">0</h3>
+                                <p class="text-[11px] text-gray-500 font-semibold mt-0.5">Zilizosajiliwa Mfumoni</p>
+                            </div>
+                            <div class="w-12 h-12 rounded-xl bg-orange-50 text-orange-600 flex items-center justify-center font-bold text-xl">
+                                <i class="bi bi-box-seam-fill"></i>
+                            </div>
+                        </div>
+
+                        <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 flex items-center justify-between">
+                            <div>
+                                <p class="text-xs font-bold text-gray-400 uppercase tracking-wider">Thamani ya Stock Stoo</p>
+                                <h3 class="text-2xl font-black text-orange-600 mt-1" id="statTotalStockValue">Tsh 0</h3>
+                                <p class="text-[11px] text-gray-500 font-semibold mt-0.5">Hesabu za Bei & Stock</p>
+                            </div>
+                            <div class="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold text-xl">
+                                <i class="bi bi-cash-stack"></i>
+                            </div>
+                        </div>
+
+                        <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 flex items-center justify-between">
+                            <div>
+                                <p class="text-xs font-bold text-gray-400 uppercase tracking-wider">Stock Nyingi Zaidi</p>
+                                <h3 class="text-base font-black text-blue-600 mt-1 truncate max-w-[140px]" id="statTopStockProduct">--</h3>
+                                <p class="text-[11px] text-gray-500 font-semibold mt-0.5">Bidhaa yenye mzigo mwingi</p>
+                            </div>
+                            <div class="w-12 h-12 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center font-bold text-xl">
+                                <i class="bi bi-graph-up-arrow"></i>
+                            </div>
+                        </div>
+
+                        <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 flex items-center justify-between">
+                            <div>
+                                <p class="text-xs font-bold text-gray-400 uppercase tracking-wider">Hali ya Kipengele</p>
+                                <div class="mt-2">
+                                    <span class="bg-emerald-100 text-emerald-800 text-xs font-black px-3 py-1 rounded-full uppercase flex items-center gap-1.5 w-fit">
+                                        <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> ACTIVE & LIVE
+                                    </span>
+                                </div>
+                                <p class="text-[11px] text-gray-500 font-semibold mt-1">Imesawazishwa Portals Zote</p>
+                            </div>
+                            <div class="w-12 h-12 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center font-bold text-xl">
+                                <i class="bi bi-check-circle-fill"></i>
+                            </div>
+                        </div>
+                    </div>
+
                     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
-                        <!-- Product List -->
-                        <div class="lg:col-span-2 bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
-                            <div class="flex justify-between items-center border-b pb-3 mb-4">
-                                <h2 class="text-lg font-bold text-gray-800">
-                                    <i class="bi bi-box-seam text-orange-500 mr-2"></i> Orodha ya Bidhaa na Bei Zake
-                                </h2>
-                                <span class="text-xs text-gray-500 font-bold uppercase">* Admin pekee ndie anayeruhusiwa
-                                    kuedit hapa</span>
+                        <!-- Registered Product Ledger Table -->
+                        <div class="lg:col-span-2 bg-white p-6 rounded-2xl shadow-sm border border-gray-100 space-y-4">
+                            <div class="flex flex-col sm:flex-row sm:items-center justify-between border-b pb-4 gap-3">
+                                <div>
+                                    <h2 class="text-lg font-bold text-gray-800 flex items-center gap-2">
+                                        <i class="bi bi-journal-check text-orange-500"></i> Daftari la Ledger ya Bidhaa Zilizosajiliwa
+                                    </h2>
+                                    <p class="text-xs text-gray-500 mt-0.5">Orodha rasmi ya bidhaa, bei ya kuuzia, stock, na thamani ya mzigo kwenye mfumo.</p>
+                                </div>
+                                <span class="text-[10px] text-gray-500 font-bold uppercase bg-gray-100 px-3 py-1 rounded-full w-fit">
+                                    <i class="bi bi-shield-lock-fill text-orange-500 mr-1"></i> Admin Privilege
+                                </span>
                             </div>
-                            <div class="overflow-x-auto">
-                                <table class="w-full text-left text-sm">
-                                    <thead class="bg-gray-50 text-gray-600 border-b border-gray-200">
+
+                            <!-- Search Filter Bar -->
+                            <div class="relative">
+                                <i class="bi bi-search absolute left-3.5 top-3.5 text-gray-400"></i>
+                                <input type="text" id="searchProductsInput" oninput="renderProducts()" placeholder="Tafuta bidhaa kwa jina au ID..."
+                                    class="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-xs font-bold focus:bg-white focus:ring-2 focus:ring-orange-500 outline-none">
+                            </div>
+
+                            <div class="overflow-x-auto rounded-xl border border-gray-100">
+                                <table class="w-full text-left text-xs">
+                                    <thead class="bg-slate-900 text-white font-bold uppercase tracking-wider text-[11px]">
                                         <tr>
-                                            <th class="p-3 font-bold">Jina la Bidhaa</th>
-                                            <th class="p-3 font-bold text-right">Bei (Tsh)</th>
-                                            <th class="p-3 font-bold text-right">Mizigo Iliyopo (Stock)</th>
-                                            <th class="p-3 font-bold text-center">Hatua</th>
+                                            <th class="p-3">#</th>
+                                            <th class="p-3">Jina la Bidhaa</th>
+                                            <th class="p-3 text-right">Bei (Tsh)</th>
+                                            <th class="p-3 text-right">Stock Stoo</th>
+                                            <th class="p-3 text-right">Thamani Stoo</th>
+                                            <th class="p-3 text-center">Hali</th>
+                                            <th class="p-3 text-center">Hatua</th>
                                         </tr>
                                     </thead>
                                     <tbody id="productsTableBody" class="divide-y divide-gray-100">
@@ -520,25 +587,32 @@
                         </div>
 
                         <!-- Sajili Bidhaa Mpya Form -->
-                        <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 h-fit">
-                            <h2 class="text-lg font-bold text-gray-800 mb-4 border-b pb-2">
-                                <i class="bi bi-plus-square text-orange-500 mr-2"></i> Sajili Bidhaa Mpya
-                            </h2>
+                        <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 h-fit space-y-4">
+                            <div class="border-b pb-3">
+                                <h2 class="text-lg font-bold text-gray-800 flex items-center gap-2">
+                                    <i class="bi bi-plus-square-fill text-orange-500"></i> Sajili Bidhaa Mpya
+                                </h2>
+                                <p class="text-xs text-gray-500 mt-0.5">Weka jina, bei, na kiasi cha kuanzia stoo.</p>
+                            </div>
                             <form id="registerProductForm" class="space-y-4">
                                 <div>
-                                    <label class="block text-sm font-bold text-gray-700 mb-1">Jina la Bidhaa</label>
-                                    <input type="text" id="newProductName" required placeholder="Mfano: DONUTS"
-                                        class="w-full border border-gray-300 rounded-xl p-3 focus:ring-2 focus:ring-orange-500 outline-none uppercase font-bold">
+                                    <label class="block text-xs font-bold text-gray-700 uppercase mb-1">Jina la Bidhaa <span class="text-red-500">*</span></label>
+                                    <input type="text" id="newProductName" required placeholder="Mfano: DONUTS, BREAD, CAKE"
+                                        class="w-full border border-gray-300 rounded-xl p-3 focus:ring-2 focus:ring-orange-500 outline-none uppercase font-bold text-gray-800 text-xs">
                                 </div>
                                 <div>
-                                    <label class="block text-sm font-bold text-gray-700 mb-1">Bei ya Bidhaa
-                                        (Tsh)</label>
-                                    <input type="number" id="newProductPrice" required placeholder="Mfano: 800"
-                                        class="w-full border border-gray-300 rounded-xl p-3 focus:ring-2 focus:ring-orange-500 outline-none font-bold text-orange-600">
+                                    <label class="block text-xs font-bold text-gray-700 uppercase mb-1">Bei ya Kuuzia (Tsh) <span class="text-red-500">*</span></label>
+                                    <input type="number" id="newProductPrice" required min="1" placeholder="Mfano: 800"
+                                        class="w-full border border-gray-300 rounded-xl p-3 focus:ring-2 focus:ring-orange-500 outline-none font-bold text-orange-600 text-xs">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-bold text-gray-700 uppercase mb-1">Kiasi cha Mwanzo Stoo (pcs) <span class="text-gray-400 font-normal">(Hiari)</span></label>
+                                    <input type="number" id="newProductStock" min="0" placeholder="Mfano: 100" value="0"
+                                        class="w-full border border-gray-300 rounded-xl p-3 focus:ring-2 focus:ring-orange-500 outline-none font-bold text-blue-600 text-xs">
                                 </div>
                                 <button type="submit"
-                                    class="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold py-3 rounded-xl shadow-md transition-transform hover:-translate-y-0.5">
-                                    Sajili Bidhaa
+                                    class="w-full bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-700 hover:to-amber-700 text-white font-extrabold py-3.5 rounded-xl shadow-md transition-all text-xs flex items-center justify-center gap-2 transform hover:-translate-y-0.5">
+                                    <i class="bi bi-check-circle-fill text-sm"></i> Sajili Bidhaa Sasa
                                 </button>
                             </form>
                         </div>
@@ -1410,10 +1484,10 @@
             // Edit product form submit
             document.getElementById('editProductForm').addEventListener('submit', (e) => {
                 e.preventDefault();
-                const id = document.getElementById('editProdId').value;
-                const name = document.getElementById('editProdName').value;
-                const price = parseFloat(document.getElementById('editProdPrice').value);
-                const stock = parseInt(document.getElementById('editProdStock').value);
+                const id = document.getElementById('editProductId').value;
+                const name = document.getElementById('editProductName').value;
+                const price = parseFloat(document.getElementById('editProductPrice').value);
+                const stock = parseInt(document.getElementById('editProductStock').value);
 
                 if (window.appUpdateProduct) {
                     const success = window.appUpdateProduct(id, name, price, stock);
@@ -1421,8 +1495,20 @@
                         closeProductModal();
                         renderProducts();
                         renderOverview();
-                        alert("Mabadiliko ya bidhaa yamehifadhiwa.");
+                        alert("Taarifa za bidhaa zimehifadhiwa kikamilifu!");
                     }
+                } else if (window.appData && window.appData.products) {
+                    const prod = window.appData.products.find(p => p.id === id);
+                    if (prod) {
+                        prod.name = name.toUpperCase().trim();
+                        prod.price = price;
+                        prod.stock = stock;
+                        localStorage.setItem('ngae_app_data', JSON.stringify(window.appData));
+                    }
+                    closeProductModal();
+                    renderProducts();
+                    renderOverview();
+                    alert("Taarifa za bidhaa zimehifadhiwa kikamilifu!");
                 }
             });
 
@@ -1472,20 +1558,32 @@
                 e.preventDefault();
                 const name = document.getElementById('newProductName').value.toUpperCase().trim();
                 const price = parseFloat(document.getElementById('newProductPrice').value);
+                const stockInput = document.getElementById('newProductStock');
+                const initialStock = stockInput ? parseInt(stockInput.value) || 0 : 0;
 
-                if (window.appData && window.appData.products) {
+                if (window.appAddProduct) {
+                    const res = window.appAddProduct(name, price, initialStock);
+                    if (!res.success) {
+                        alert(res.message);
+                        return;
+                    }
+                    alert(`Bidhaa "${name}" imesajiliwa kikamilifu na bei ya Tsh ${price.toLocaleString()} imeingizwa kwenye mfumo!`);
+                    document.getElementById('registerProductForm').reset();
+                    renderProducts();
+                    renderOverview();
+                } else if (window.appData && window.appData.products) {
                     const exists = window.appData.products.some(p => p.name.toUpperCase() === name);
                     if (exists) {
                         alert("Bidhaa hii tayari imesajiliwa!");
                         return;
                     }
 
-                    const newId = 'prod_' + name.toLowerCase().replace(/\s+/g, '_');
+                    const newId = 'prod_' + Date.now() + '_' + Math.random().toString(36).substring(2, 6);
                     window.appData.products.push({
                         id: newId,
                         name: name,
                         price: price,
-                        stock: 0
+                        stock: initialStock
                     });
 
                     localStorage.setItem('ngae_app_data', JSON.stringify(window.appData));
@@ -1940,33 +2038,106 @@ Saini ya Mwajiriwa (${emp.name}): ____________________      Tarehe: ____________
             }
         }
 
+        function openProductModal(id, name, price, stock) {
+            document.getElementById('editProductId').value = id;
+            document.getElementById('editProductName').value = name;
+            document.getElementById('editProductPrice').value = price;
+            document.getElementById('editProductStock').value = stock;
+
+            const modal = document.getElementById('editProductModal');
+            if (modal) {
+                modal.classList.remove('hidden');
+                modal.classList.add('flex');
+            }
+        }
+
+        function closeProductModal() {
+            const modal = document.getElementById('editProductModal');
+            if (modal) {
+                modal.classList.add('hidden');
+                modal.classList.remove('flex');
+            }
+        }
+
         function renderProducts() {
             if (!window.appData) return;
 
             const tbody = document.getElementById('productsTableBody');
-            tbody.innerHTML = '';
+            if (tbody) tbody.innerHTML = '';
 
             const products = window.appData.products || [];
+            const searchInput = document.getElementById('searchProductsInput');
+            const searchQuery = searchInput ? searchInput.value.toLowerCase().trim() : '';
 
-            if (products.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="4" class="p-6 text-center text-gray-500 font-medium"><i class="bi bi-box-seam text-2xl block mb-1"></i>Hakuna bidhaa zilizosajiliwa bado. Tumia fomu ya hapo juu kusajili bidhaa mpya.</td></tr>';
+            // Calculate Stat Cards
+            let totalStockVal = 0;
+            let topStockProd = null;
+
+            products.forEach(p => {
+                const val = (p.price || 0) * (p.stock || 0);
+                totalStockVal += val;
+                if (!topStockProd || p.stock > topStockProd.stock) {
+                    topStockProd = p;
+                }
+            });
+
+            const statTotalProdEl = document.getElementById('statTotalProducts');
+            const statTotalValEl = document.getElementById('statTotalStockValue');
+            const statTopProdEl = document.getElementById('statTopStockProduct');
+
+            if (statTotalProdEl) statTotalProdEl.textContent = products.length.toLocaleString();
+            if (statTotalValEl) statTotalValEl.textContent = "Tsh " + totalStockVal.toLocaleString();
+            if (statTopProdEl) statTopProdEl.textContent = topStockProd ? `${topStockProd.name} (${topStockProd.stock.toLocaleString()} pcs)` : "--";
+
+            if (!tbody) return;
+
+            // Filter products based on search
+            const filteredProducts = products.filter(p => 
+                p.name.toLowerCase().includes(searchQuery) || (p.id && p.id.toLowerCase().includes(searchQuery))
+            );
+
+            if (filteredProducts.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="7" class="p-8 text-center text-gray-400 font-medium"><i class="bi bi-box-seam text-3xl block mb-2 text-gray-300"></i>${searchQuery ? 'Hakuna bidhaa inayolingana na utafutaji wako.' : 'Hakuna bidhaa zilizosajiliwa bado kwenye ledger. Tumia fomu ya kulia kusajili bidhaa mpya.'}</td></tr>`;
                 return;
             }
 
-            products.forEach(p => {
+            filteredProducts.forEach((p, index) => {
                 const tr = document.createElement('tr');
-                tr.className = "hover:bg-gray-50 transition-colors";
+                tr.className = "hover:bg-orange-50/50 transition-colors border-b border-gray-100";
+                const totalVal = ((p.price || 0) * (p.stock || 0)).toLocaleString();
+
+                const statusBadge = (p.stock || 0) > 0 
+                    ? `<span class="bg-emerald-100 text-emerald-800 text-[10px] font-extrabold px-2.5 py-1 rounded-full uppercase flex items-center justify-center gap-1"><i class="bi bi-check-circle-fill"></i> In-Stock</span>`
+                    : `<span class="bg-amber-100 text-amber-800 text-[10px] font-extrabold px-2.5 py-1 rounded-full uppercase flex items-center justify-center gap-1"><i class="bi bi-exclamation-triangle-fill"></i> Stock Chini</span>`;
+
+                const escapedName = p.name.replace(/'/g, "\\'");
+
                 tr.innerHTML = `
-                    <td class="p-3 font-bold text-gray-800">${p.name}</td>
-                    <td class="p-3 text-right font-bold text-orange-600">Tsh ${p.price.toLocaleString()}</td>
-                    <td class="p-3 text-right font-bold text-blue-600">${p.stock.toLocaleString()} pcs</td>
-                    <td class="p-3 text-center flex justify-center gap-2">
-                        <button onclick="openProductModal('${p.id}', '${p.name}', ${p.price}, ${p.stock})" class="text-orange-600 hover:text-orange-800 font-bold text-xs bg-orange-50 hover:bg-orange-100 px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1">
-                            <i class="bi bi-pencil-square"></i> Rekebisha
-                        </button>
-                        <button onclick="deleteProduct('${p.id}')" class="text-red-600 hover:text-red-800 font-bold text-xs bg-red-50 hover:bg-red-100 px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1">
-                            <i class="bi bi-trash"></i> Futa
-                        </button>
+                    <td class="p-3 font-bold text-gray-400 text-xs">${index + 1}.</td>
+                    <td class="p-3">
+                        <div class="flex items-center gap-2.5">
+                            <div class="w-8 h-8 rounded-lg bg-orange-100 text-orange-600 flex items-center justify-center font-black text-xs shrink-0">
+                                <i class="bi bi-box-seam"></i>
+                            </div>
+                            <div>
+                                <p class="font-extrabold text-gray-900 text-xs uppercase">${p.name}</p>
+                                <p class="text-[10px] text-gray-400 font-mono font-semibold">${p.id || 'N/A'}</p>
+                            </div>
+                        </div>
+                    </td>
+                    <td class="p-3 text-right font-black text-orange-600 text-xs">Tsh ${(p.price || 0).toLocaleString()}</td>
+                    <td class="p-3 text-right font-black text-blue-600 text-xs">${(p.stock || 0).toLocaleString()} pcs</td>
+                    <td class="p-3 text-right font-black text-gray-800 text-xs">Tsh ${totalVal}</td>
+                    <td class="p-3 text-center">${statusBadge}</td>
+                    <td class="p-3 text-center">
+                        <div class="flex justify-center gap-2">
+                            <button onclick="openProductModal('${p.id}', '${escapedName}', ${p.price || 0}, ${p.stock || 0})" class="text-orange-600 hover:text-orange-800 font-bold text-xs bg-orange-50 hover:bg-orange-100 px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1">
+                                <i class="bi bi-pencil-square"></i> Rekebisha
+                            </button>
+                            <button onclick="deleteProduct('${p.id}')" class="text-red-600 hover:text-red-800 font-bold text-xs bg-red-50 hover:bg-red-100 px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1">
+                                <i class="bi bi-trash"></i> Futa
+                            </button>
+                        </div>
                     </td>
                 `;
                 tbody.appendChild(tr);
@@ -1975,18 +2146,18 @@ Saini ya Mwajiriwa (${emp.name}): ____________________      Tarehe: ____________
 
         function deleteProduct(prodId) {
             if (!confirm("Je, una uhakika unataka kufuta kabisa bidhaa hii kwenye mfumo?")) return;
-            if (window.appData && window.appData.products) {
+
+            if (window.appDeleteProduct) {
+                window.appDeleteProduct(prodId);
+            } else if (window.appData && window.appData.products) {
                 window.appData.products = window.appData.products.filter(p => p.id !== prodId);
                 localStorage.setItem('ngae_app_data', JSON.stringify(window.appData));
-
-                if (window.appAddNotification) {
-                    window.appAddNotification('Bidhaa Imefutwa', `Admin amefuta bidhaa yenye ID "${prodId}" kwenye mfumo.`);
-                }
-
-                renderProducts();
-                renderOverview();
-                renderOverallStats();
             }
+
+            alert("Bidhaa imefutwa kikamilifu kwenye mfumo.");
+            renderProducts();
+            renderOverview();
+            if (window.renderOverallStats) renderOverallStats();
         }
 
         function renderOverallStats() {
@@ -3566,6 +3737,39 @@ Saini ya Mwajiriwa (${emp.name}): ____________________      Tarehe: ____________
             `;
         }
     </script>
+    <!-- MODAL: REKEBISHA TAARIFA ZA BIDHA NA BEI -->
+    <div id="editProductModal" class="hidden fixed inset-0 z-50 items-center justify-center bg-gray-900/60 backdrop-blur-sm p-4">
+        <div class="bg-white rounded-2xl w-full max-w-md overflow-hidden shadow-2xl border border-gray-100 transform transition-all">
+            <div class="bg-orange-600 text-white p-5 flex justify-between items-center">
+                <h3 class="font-extrabold text-base flex items-center gap-2">
+                    <i class="bi bi-pencil-square"></i> Rekebisha Taarifa za Bidhaa
+                </h3>
+                <button onclick="closeProductModal()" class="text-white hover:text-orange-200 text-2xl font-bold transition-colors">&times;</button>
+            </div>
+            <form id="editProductForm" class="p-6 space-y-4">
+                <input type="hidden" id="editProductId">
+                <div>
+                    <label class="block text-xs font-bold text-gray-700 uppercase mb-1">Jina la Bidhaa <span class="text-red-500">*</span></label>
+                    <input type="text" id="editProductName" required class="w-full border border-gray-300 rounded-xl p-3 focus:ring-2 focus:ring-orange-500 outline-none uppercase font-bold text-gray-800 text-xs">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-gray-700 uppercase mb-1">Bei ya Kuuzia (Tsh) <span class="text-red-500">*</span></label>
+                    <input type="number" id="editProductPrice" required min="0" class="w-full border border-gray-300 rounded-xl p-3 focus:ring-2 focus:ring-orange-500 outline-none font-bold text-orange-600 text-xs">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-gray-700 uppercase mb-1">Mizigo Iliyopo Stoo (pcs) <span class="text-red-500">*</span></label>
+                    <input type="number" id="editProductStock" required min="0" class="w-full border border-gray-300 rounded-xl p-3 focus:ring-2 focus:ring-orange-500 outline-none font-bold text-blue-600 text-xs">
+                </div>
+                <div class="pt-4 border-t border-gray-100 flex justify-end gap-3">
+                    <button type="button" onclick="closeProductModal()" class="px-4 py-2.5 text-xs font-bold text-gray-600 hover:bg-gray-100 rounded-xl">Ghairi</button>
+                    <button type="submit" class="px-5 py-2.5 text-xs font-extrabold text-white bg-orange-600 hover:bg-orange-700 rounded-xl shadow-md transition-all flex items-center gap-1.5">
+                        <i class="bi bi-check-circle-fill"></i> Hifadhi Mabadiliko
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
 </body>
 
 </html>

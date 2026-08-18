@@ -275,7 +275,7 @@
             // Populate select options from window.appProducts if available
             const select = clone.querySelector('.product-select');
             
-            const products = (window.appData && window.appData.products) ? window.appData.products : [];
+            const products = window.appGetProducts ? window.appGetProducts() : ((window.appData && window.appData.products) ? window.appData.products : []);
             
             if (products.length === 0) {
                 const opt = document.createElement('option');

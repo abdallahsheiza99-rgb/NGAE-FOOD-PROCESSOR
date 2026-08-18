@@ -610,6 +610,32 @@
             renderOverviewCards();
             renderStockGrid();
             renderDispatchHistory();
+
+            const productSelect = document.getElementById('product_id');
+            if (productSelect && window.appData) {
+                const currentVal = productSelect.value;
+                productSelect.innerHTML = '<option value="">-- Chagua Bidhaa --</option>';
+                (window.appData.products || []).forEach(p => {
+                    const opt = document.createElement('option');
+                    opt.value = p.id;
+                    opt.textContent = `${p.name} - Tsh ${(p.price || 0).toLocaleString()} (Zilizopo: ${(p.stock || 0).toLocaleString()} pcs)`;
+                    productSelect.appendChild(opt);
+                });
+                if (currentVal) productSelect.value = currentVal;
+            }
+
+            const shopSelect = document.getElementById('shop_id');
+            if (shopSelect && window.appData) {
+                const currentVal = shopSelect.value;
+                shopSelect.innerHTML = '<option value="">-- Chagua Duka --</option>';
+                (window.appData.shops || []).forEach(s => {
+                    const opt = document.createElement('option');
+                    opt.value = s.id;
+                    opt.textContent = `${s.location} (Muuzaji: ${s.sellerName})`;
+                    shopSelect.appendChild(opt);
+                });
+                if (currentVal) shopSelect.value = currentVal;
+            }
         };
 
         // Live Clock Ticker

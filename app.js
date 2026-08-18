@@ -98,6 +98,157 @@ function _ensureFields(data) {
     return data;
 }
 
+/**
+ * Merges local appData and remote Firestore data intelligently so that no
+ * production logs, dispatches, receipts, or financial records are EVER lost.
+ */
+function _mergeAppData(local, remote) {
+    local = _ensureFields(local || {});
+    remote = _ensureFields(remote || {});
+
+    // Helper: merge array of objects using unique identifier signature
+    function mergeArrays(arr1, arr2, keyFn) {
+        const map = new Map();
+        (arr1 || []).forEach(item => {
+            if (!item) return;
+            const k = keyFn(item);
+            map.set(k, item);
+        });
+        (arr2 || []).forEach(item => {
+            if (!item) return;
+            const k = keyFn(item);
+            if (!map.has(k)) {
+                map.set(k, item);
+            } else {
+                map.set(k, Object.assign({}, map.get(k), item));
+            }
+        });
+        return Array.from(map.values());
+    }
+
+    // Key signatures for historical logs
+    const logSig = item => item.id || `${item.dateRaw || item.date}_${item.productId || item.materialId || item.productName || item.materialName}_${item.quantity || item.qty || item.amount}`;
+    const shopSig = item => (item.id || item.location || '').toString().toUpperCase().trim();
+    const prodSig = item => (item.id || item.name || '').toString().toUpperCase().trim();
+
+    // 1. Merge Logs & Histories (UNION - Never Delete)
+    const productionLog = mergeArrays(local.productionLog, remote.productionLog, logSig);
+    const dispatchHistory = mergeArrays(local.dispatchHistory, remote.dispatchHistory, logSig);
+    const rawMaterialsHistory = mergeArrays(local.rawMaterialsHistory, remote.rawMaterialsHistory, logSig);
+    const rawMaterialsDispatchHistory = mergeArrays(local.rawMaterialsDispatchHistory, remote.rawMaterialsDispatchHistory, logSig);
+    const customerOrders = mergeArrays(local.customerOrders, remote.customerOrders, o => o.id || `${o.customer_name}_${o.dateRaw}`);
+    const adminExpenses = mergeArrays(local.adminExpenses, remote.adminExpenses, e => e.id || `${e.description}_${e.amount}`);
+    const suggestions = mergeArrays(local.suggestions, remote.suggestions, s => s.id || `${s.senderId}_${s.dateRaw}`);
+    const notifications = mergeArrays(local.notifications, remote.notifications, n => n.id || `${n.title}_${n.dateRaw}`);
+    const salaryList = mergeArrays(local.salaryList, remote.salaryList, emp => (emp.id || '').toUpperCase());
+
+    // 2. Merge Staff Accounts
+    const staff = Object.assign({}, remote.staff || {}, local.staff || {});
+
+    // 3. Merge Products & Catalog
+    const productsMap = new Map();
+    (remote.products || []).concat(local.products || []).forEach(p => {
+        if (!p) return;
+        const sig = prodSig(p);
+        if (!productsMap.has(sig)) {
+            productsMap.set(sig, Object.assign({}, p));
+        } else {
+            const existing = productsMap.get(sig);
+            productsMap.set(sig, {
+                id: existing.id || p.id,
+                name: existing.name || p.name,
+                price: Number(p.price) || Number(existing.price) || 0,
+                stock: Math.max(Number(existing.stock) || 0, Number(p.stock) || 0),
+                dateAdded: existing.dateAdded || p.dateAdded
+            });
+        }
+    });
+    const products = Array.from(productsMap.values());
+
+    // 4. Merge Shops
+    const shops = mergeArrays(local.shops, remote.shops, shopSig);
+
+    // 5. Merge Raw Materials
+    const rawMatsMap = new Map();
+    (remote.rawMaterials || []).concat(local.rawMaterials || []).forEach(m => {
+        if (!m) return;
+        const sig = (m.id || m.name || '').toUpperCase().trim();
+        if (!rawMatsMap.has(sig)) {
+            rawMatsMap.set(sig, Object.assign({}, m));
+        } else {
+            const existing = rawMatsMap.get(sig);
+            rawMatsMap.set(sig, {
+                id: existing.id || m.id,
+                name: existing.name || m.name,
+                unit: existing.unit || m.unit,
+                stock: Math.max(Number(existing.stock) || 0, Number(m.stock) || 0)
+            });
+        }
+    });
+    const rawMaterials = Array.from(rawMatsMap.values());
+
+    // 6. Merge Manufacturer Materials
+    const manufacturerMaterials = Object.assign({}, remote.manufacturerMaterials || {}, local.manufacturerMaterials || {});
+    Object.keys(local.manufacturerMaterials || {}).forEach(mId => {
+        const upper = mId.toUpperCase().trim();
+        if (!manufacturerMaterials[upper]) manufacturerMaterials[upper] = {};
+        Object.assign(manufacturerMaterials[upper], local.manufacturerMaterials[mId]);
+    });
+
+    // 7. Merge Finances by shopId
+    const finances = Object.assign({}, remote.finances || {}, local.finances || {});
+    Object.keys(local.finances || {}).forEach(shopId => {
+        if (!finances[shopId]) {
+            finances[shopId] = local.finances[shopId];
+        } else {
+            const locFin = local.finances[shopId];
+            const remFin = finances[shopId];
+            const mergedSales = mergeArrays(locFin.salesHistory, remFin.salesHistory, s => s.id || `${s.dateRaw}_${s.amount}`);
+            const mergedExp = mergeArrays(locFin.personalExpenses, remFin.personalExpenses, e => e.id || `${e.dateRaw}_${e.amount}`);
+            
+            let sumSubmitted = 0;
+            mergedSales.forEach(s => sumSubmitted += (Number(s.amount) || 0));
+
+            finances[shopId] = {
+                submitted: Math.max(sumSubmitted, Number(remFin.submitted) || 0, Number(locFin.submitted) || 0),
+                reportedDebt: Number(remFin.reportedDebt) || Number(locFin.reportedDebt) || 0,
+                salesHistory: mergedSales,
+                personalExpenses: mergedExp
+            };
+        }
+    });
+
+    // 8. Merge Cash Flow
+    const localCF = local.cashFlow || { balance: 0, transactions: [] };
+    const remoteCF = remote.cashFlow || { balance: 0, transactions: [] };
+    const mergedTransactions = mergeArrays(localCF.transactions, remoteCF.transactions, t => t.id || `${t.dateRaw}_${t.amount}_${t.type}`);
+    let cfBal = 0;
+    mergedTransactions.forEach(t => {
+        if (t.type === 'IN') cfBal += (Number(t.amount) || 0);
+        else if (t.type === 'OUT') cfBal -= (Number(t.amount) || 0);
+    });
+    const cashFlow = { balance: cfBal, transactions: mergedTransactions };
+
+    return _ensureFields({
+        staff,
+        products,
+        shops,
+        rawMaterials,
+        dispatchHistory,
+        rawMaterialsHistory,
+        rawMaterialsDispatchHistory,
+        productionLog,
+        finances,
+        customerOrders,
+        cashFlow,
+        suggestions,
+        notifications,
+        manufacturerMaterials,
+        adminExpenses,
+        salaryList
+    });
+}
+
 function seedData() {
     const data = _ensureFields({});
     localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
@@ -106,26 +257,31 @@ function seedData() {
 
 /**
  * Hifadhi data:
- * 1. localStorage (mara moja - offline support)
+ * 1. Smart merge na localStorage (mara moja - offline support)
  * 2. Firestore (real-time sync kwa vifaa vyote)
  */
 function saveData(data) {
-    // 1. Hifadhi kwenye localStorage haraka
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+    const localCurrent = loadData();
+    const dataToSave = _mergeAppData(localCurrent, data);
 
-    // 2. Rekodi muda wa save ili kuzuia loop ya snapshot
+    appData = dataToSave;
+    window.appData = appData;
+
+    // 1. Hifadhi kwenye localStorage haraka
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(appData));
+
+    // 2. Rekodi muda wa save
     _lastSaveTimestamp = Date.now();
 
-    // 3. Hifadhi kwenye Firestore (async - background)
+    // 3. Hifadhi kwenye Firestore na merge option (async - background)
     if (_firebaseReady && _db) {
         _db.collection(FIRESTORE_COLLECTION).doc(FIRESTORE_DOC)
-            .set(data)
+            .set(appData, { merge: true })
             .catch(err => {
                 console.error('[NGAE] Firestore save error:', err.message);
             });
     }
 }
-
 
 /**
  * Anzisha real-time listener ya Firestore.
@@ -139,7 +295,6 @@ function startRealtimeSync() {
 
     _db.collection(FIRESTORE_COLLECTION).doc(FIRESTORE_DOC)
         .onSnapshot({ includeMetadataChanges: true }, doc => {
-            // Ikiwa snapshot ina mabadiliko ya hapa hapa ambayo hayajatumwa server bado, puuza
             if (doc.metadata && doc.metadata.hasPendingWrites) {
                 console.log('[NGAE] ⏳ Local write pending - snapshot inapuuzwa.');
                 return;
@@ -147,29 +302,22 @@ function startRealtimeSync() {
 
             if (doc.exists) {
                 const remoteData = doc.data();
-                const localRaw = localStorage.getItem(STORAGE_KEY);
-                const localData = localRaw ? JSON.parse(localRaw) : {};
+                const mergedData = _mergeAppData(appData, remoteData);
 
-                // Angalia kama data ya mbali ni tofauti na ya hapa
-                const remoteStr = JSON.stringify(remoteData);
-                const localStr = JSON.stringify(localData);
+                const currentStr = JSON.stringify(appData);
+                const mergedStr = JSON.stringify(mergedData);
 
-                if (remoteStr !== localStr) {
-                    console.log('[NGAE] 📥 Data mpya kutoka kifaa kingine — inasasisha...');
+                if (currentStr !== mergedStr) {
+                    console.log('[NGAE] 📥 Data mpya kutoka kifaa kingine — inasasisha kikamilifu...');
 
-                    // Sasisha appData na localStorage
-                    appData = _ensureFields(remoteData);
+                    appData = mergedData;
                     window.appData = appData;
                     localStorage.setItem(STORAGE_KEY, JSON.stringify(appData));
 
-                    // Taarisha ukurasa ili usasishwe (bila kurefresh ukurasa wote)
                     window.dispatchEvent(new CustomEvent('ngae-data-updated', { detail: appData }));
-
-                    // Sasisha UI ikiwa ipo
                     _refreshUIIfPossible();
                 }
             } else {
-                // Document haipo Firestore bado - pakia na uhifadhi
                 console.log('[NGAE] 📤 Inapakia data ya sasa kwenye Firestore kwa mara ya kwanza...');
                 saveData(appData);
             }
@@ -179,12 +327,41 @@ function startRealtimeSync() {
 }
 
 /**
+ * Pakia data kutoka Firestore mara moja ukurasa unapoanza.
+ */
+async function loadFromFirestore() {
+    if (!_firebaseReady || !_db) return;
+
+    try {
+        console.log('[NGAE] 📡 Inapakia data kutoka Firestore...');
+        const doc = await _db.collection(FIRESTORE_COLLECTION).doc(FIRESTORE_DOC).get();
+        if (doc.exists) {
+            const remoteData = doc.data();
+            const mergedData = _mergeAppData(appData, remoteData);
+
+            appData = mergedData;
+            window.appData = appData;
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(appData));
+
+            console.log('[NGAE] ✅ Data imepakiwa na ku-merge kutoka Firestore.');
+
+            window.dispatchEvent(new CustomEvent('ngae-data-updated', { detail: appData }));
+            _refreshUIIfPossible();
+        } else {
+            console.log('[NGAE] 📤 Hakuna data Firestore. Inahamisha localStorage → Firestore...');
+            _lastSaveTimestamp = 0;
+            saveData(appData);
+        }
+    } catch (e) {
+        console.warn('[NGAE] ⚠️ Haikuweza kupakia Firestore (labda offline):', e.message);
+    }
+}
+
+/**
  * Jaribu kusasisha UI baada ya data kubadilika kutoka nje.
- * Kila dashboard ina function yake ya kurefresh.
  */
 function _refreshUIIfPossible() {
     try {
-        // Admin dashboard - kama iko wazi
         if (typeof renderOverview === 'function') renderOverview();
         if (typeof renderStaff === 'function') renderStaff();
         if (typeof renderProducts === 'function') renderProducts();
@@ -195,23 +372,13 @@ function _refreshUIIfPossible() {
         if (typeof renderExpenses === 'function') renderExpenses();
         if (typeof renderSalaryLedger === 'function') renderSalaryLedger();
 
-        // Operator stats
         if (typeof window._refreshOperatorStats === 'function') window._refreshOperatorStats();
-
-        // Seller stats
         if (typeof window._refreshSellerStats === 'function') window._refreshSellerStats();
-
-        // Manufacturer stats
         if (typeof window._refreshManufacturerStats === 'function') window._refreshManufacturerStats();
-
-        // Storekeeper stats
         if (typeof window._refreshStorekeeperStats === 'function') window._refreshStorekeeperStats();
 
-        // Notification badge
         _updateNotificationBadge();
-    } catch (e) {
-        // UI function haipo kwenye ukurasa huu - sawa tu
-    }
+    } catch (e) {}
 }
 
 function _updateNotificationBadge() {
@@ -223,44 +390,6 @@ function _updateNotificationBadge() {
             badge.style.display = unread > 0 ? 'block' : 'none';
         }
     } catch (e) {}
-}
-
-// ==========================================
-// PAKIA KUTOKA FIRESTORE (mara ya kwanza)
-// ==========================================
-
-/**
- * Pakia data kutoka Firestore mara moja ukurasa unapoanza.
- * Baada ya hii, real-time listener itashughulikia mabadiliko yote.
- */
-async function loadFromFirestore() {
-    if (!_firebaseReady || !_db) return;
-
-    try {
-        console.log('[NGAE] 📡 Inapakia data kutoka Firestore...');
-        const doc = await _db.collection(FIRESTORE_COLLECTION).doc(FIRESTORE_DOC).get();
-        if (doc.exists) {
-            const remoteData = _ensureFields(doc.data());
-
-            // Firestore ndiyo chanzo cha kweli - override localStorage na appData
-            appData = remoteData;
-            window.appData = appData;
-            // Hifadhi kwenye localStorage kama backup (bila kusababisha Firestore write)
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(appData));
-            console.log('[NGAE] ✅ Data imepakiwa kutoka Firestore. Wafanyakazi:', Object.keys(appData.staff || {}).length);
-
-            // Taarisha UI isasishwe
-            window.dispatchEvent(new CustomEvent('ngae-data-updated', { detail: appData }));
-            _refreshUIIfPossible();
-        } else {
-            // Hakuna data Firestore bado - hamisha localStorage → Firestore
-            console.log('[NGAE] 📤 Hakuna data Firestore. Inahamisha localStorage → Firestore...');
-            _lastSaveTimestamp = 0; // Ruhusu save hii
-            saveData(appData);
-        }
-    } catch (e) {
-        console.warn('[NGAE] ⚠️ Haikuweza kupakia Firestore (labda offline):', e.message);
-    }
 }
 
 function appAddNotification(title, message) {
@@ -442,8 +571,9 @@ window.appDispatchProduct = function(productId, shopId, qty, unit) {
     const dateStr = now.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
 
     appData.dispatchHistory.push({
+        id: 'disp_log_' + Date.now() + '_' + Math.random().toString(36).substr(2, 6),
         date: dateStr,
-        dateRaw: now.toISOString().split('T')[0],
+        dateRaw: now.toISOString(),
         productId: product.id,
         productName: product.name,
         shopId: shop.id,
@@ -493,6 +623,7 @@ window.appSubmitSales = function(amount, notes) {
     const timeStr = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
 
     appData.finances[shopId].salesHistory.push({
+        id: 'sale_' + Date.now() + '_' + Math.random().toString(36).substr(2, 6),
         amount: numAmount,
         notes: notes || 'Mauzo ya Kawaida',
         date: `${dateStr} ${timeStr}`,
@@ -680,8 +811,9 @@ window.appRecordProduction = function(productId, qty, notes) {
 
     if (!appData.productionLog) appData.productionLog = [];
     appData.productionLog.push({
+        id: 'prod_log_' + Date.now() + '_' + Math.random().toString(36).substr(2, 6),
         date: dateStr,
-        dateRaw: now.toISOString().split('T')[0],
+        dateRaw: now.toISOString(),
         productId: product.id,
         productName: product.name,
         quantity: numQty,

@@ -966,7 +966,9 @@
         // ✅ Hook inayotumiwa na app.js _refreshUIIfPossible()
         window._refreshStorekeeperStats = function() {
             renderOverviewDashboard();
+            if (typeof renderReceivePortal === 'function') renderReceivePortal();
             if (typeof renderStockPortal === 'function') renderStockPortal();
+            if (typeof renderDispatchPortal === 'function') renderDispatchPortal();
         };
 
         // =====================================================================

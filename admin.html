@@ -275,11 +275,6 @@
                         </div>
                     </div>
 
-                    <button onclick="window.confirmResetSystem()" title="Futa Taarifa Zote Kuanza Upya"
-                        class="bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 text-xs font-bold px-3 py-1.5 rounded-xl transition-all flex items-center gap-1.5 shadow-sm">
-                        <i class="bi bi-arrow-counterclockwise text-sm"></i> Safisha Mfumo Upya
-                    </button>
-
                     <span
                         class="bg-orange-100 text-orange-700 text-sm font-bold px-3 py-1 rounded-full flex items-center gap-1">
                         <i class="bi bi-person-badge"></i> Mkurugenzi Kuu
@@ -1826,6 +1821,16 @@ Saini ya Mwajiriwa (${emp.name}): ____________________      Tarehe: ____________
             document.getElementById('flamesBg').classList.add('hidden');
             document.getElementById('adminDashboard').classList.remove('hidden');
 
+            // Force refresh window.appData from persistent localStorage
+            const raw = localStorage.getItem('ngae_app_data');
+            if (raw) {
+                try {
+                    window.appData = JSON.parse(raw);
+                } catch (e) {
+                    console.error("Failed to reload persistent appData:", e);
+                }
+            }
+
             renderOverview();
             renderStaff();
             renderProducts();
@@ -2007,20 +2012,6 @@ Saini ya Mwajiriwa (${emp.name}): ____________________      Tarehe: ____________
             });
         }
 
-        window.confirmResetSystem = function () {
-            if (confirm("ONYO KUU: Je, una uhakika unataka kufuta taarifa ZOTE zilizopo kwenye mfumo ili kuanza mfumo upya kabisa (Fresh System)?\n\nKitendo hiki kitafuta:\n- Wafanyakazi wote waliosajiliwa\n- Maduka yote\n- Bidhaa na Akiba yote\n- Mauzo na Malipo yote")) {
-                if (window.appResetSystem) {
-                    window.appResetSystem();
-                    alert("Mfumo umefutwa taarifa zote na sasa ni FRESH SYSTEM! Unaweza kuanza kusajili wafanyakazi na maduka upya.");
-                    window.location.reload();
-                } else {
-                    localStorage.clear();
-                    sessionStorage.clear();
-                    alert("Mfumo umefutwa taarifa zote!");
-                    window.location.reload();
-                }
-            }
-        };
 
         function renderStaff() {
             if (!window.appData) return;

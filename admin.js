@@ -167,13 +167,5 @@ tabButtons.forEach(btn => {
     });
 });
 
-resetSalesBtn.addEventListener('click', () => {
-    if (confirm("CRITICAL WARNING: Are you sure you want to delete the entire sales transaction database? This action is permanent!")) {
-        wipeSalesHistory();
-        renderAdminStats();
-        alert("Sales database wiped clean.");
-    }
-});
-
 // Initial startup check
 checkAuthentication();

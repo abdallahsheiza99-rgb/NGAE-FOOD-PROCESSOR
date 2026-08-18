@@ -30,16 +30,6 @@ const INITIAL_CUSTOMER_ORDERS = [];
 // ==========================================
 
 const STORAGE_KEY = 'ngae_app_data';
-const CURRENT_APP_VERSION = 'v3_force_fresh_start_20260818';
-
-window.appResetSystem = function() {
-    localStorage.clear();
-    sessionStorage.clear();
-    localStorage.setItem('ngae_app_version', CURRENT_APP_VERSION);
-    const freshData = seedData();
-    window.appData = freshData;
-    return true;
-};
 
 function loadData() {
     const raw = localStorage.getItem(STORAGE_KEY);

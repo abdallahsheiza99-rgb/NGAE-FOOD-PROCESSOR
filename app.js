@@ -30,7 +30,7 @@ const INITIAL_CUSTOMER_ORDERS = [];
 // ==========================================
 
 const STORAGE_KEY = 'ngae_app_data';
-const CURRENT_APP_VERSION = 'v2_fresh_clean_2026_08_18_v2';
+const CURRENT_APP_VERSION = 'v3_force_fresh_start_20260818';
 
 window.appResetSystem = function() {
     localStorage.clear();
@@ -54,6 +54,23 @@ function loadData() {
     if (raw) {
         try {
             const data = JSON.parse(raw);
+
+            // Auto-wipe if any test data remnants exist
+            const hasStaff = data.staff && Object.keys(data.staff).length > 0;
+            const hasProducts = data.products && data.products.length > 0;
+            const hasShops = data.shops && data.shops.length > 0;
+            const hasDispatches = data.dispatchHistory && data.dispatchHistory.length > 0;
+            const hasProduction = data.productionLog && data.productionLog.length > 0;
+            const hasRawHistory = data.rawMaterialsHistory && data.rawMaterialsHistory.length > 0;
+
+            if (hasStaff || hasProducts || hasShops || hasDispatches || hasProduction || hasRawHistory) {
+                console.log("Legacy test data detected. Clearing all stored test records...");
+                localStorage.clear();
+                sessionStorage.clear();
+                localStorage.setItem('ngae_app_version', CURRENT_APP_VERSION);
+                return seedData();
+            }
+
             if (!data.staff) data.staff = {};
             if (!data.products) data.products = [];
             if (!data.shops) data.shops = [];

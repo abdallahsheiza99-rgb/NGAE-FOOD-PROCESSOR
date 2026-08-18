@@ -572,7 +572,45 @@
             // Setup Form Submissions
             document.getElementById('dispatchForm').addEventListener('submit', handleDispatchSubmit);
             document.getElementById('suggestionPortalSubmitForm').addEventListener('submit', handleSuggestionSubmit);
+
+            // ✅ REAL-TIME UPDATE: Sikiliza mabadiliko kutoka vifaa vingine (Firebase)
+            window.addEventListener('ngae-data-updated', function() {
+                renderOverviewCards();
+                renderStockGrid();
+                renderDispatchHistory();
+                // Sasisha dropdowns na data mpya
+                const productSelect = document.getElementById('product_id');
+                if (productSelect) {
+                    productSelect.innerHTML = '<option value="">-- Chagua Bidhaa --</option>';
+                    (window.appData.products || []).forEach(p => {
+                        const opt = document.createElement('option');
+                        opt.value = p.id;
+                        opt.textContent = `${p.name} - Tsh ${(p.price || 0).toLocaleString()} (Zilizopo: ${(p.stock || 0).toLocaleString()} pcs)`;
+                        productSelect.appendChild(opt);
+                    });
+                }
+                const shopSelect = document.getElementById('shop_id');
+                if (shopSelect) {
+                    shopSelect.innerHTML = '<option value="">-- Chagua Duka --</option>';
+                    (window.appData.shops || []).forEach(s => {
+                        const opt = document.createElement('option');
+                        opt.value = s.id;
+                        opt.textContent = `${s.location} (Muuzaji: ${s.sellerName})`;
+                        shopSelect.appendChild(opt);
+                    });
+                }
+            });
+
+            // ✅ Pakia tena data baada ya sekunde 1.5 (Firebase inapakia)
+            setTimeout(initializeOperatorPortal, 1500);
         });
+
+        // ✅ Hook inayotumiwa na app.js _refreshUIIfPossible()
+        window._refreshOperatorStats = function() {
+            renderOverviewCards();
+            renderStockGrid();
+            renderDispatchHistory();
+        };
 
         // Live Clock Ticker
         function updateClock() {

@@ -738,7 +738,29 @@
             });
 
             renderOverviewCards();
+
+            // ✅ REAL-TIME UPDATE: Sikiliza mabadiliko kutoka vifaa vingine (Firebase)
+            window.addEventListener('ngae-data-updated', function() {
+                renderOverviewCards();
+                populateProductDropdowns();
+                if (typeof renderProductionHistoryTable === 'function') renderProductionHistoryTable();
+                if (typeof renderMaterialsCard === 'function') renderMaterialsCard();
+            });
+
+            // ✅ Pakia tena data baada ya sekunde 1.5 (Firebase inapakia)
+            setTimeout(() => {
+                populateProductDropdowns();
+                renderOverviewCards();
+                if (typeof renderProductionHistoryTable === 'function') renderProductionHistoryTable();
+            }, 1500);
         });
+
+        // ✅ Hook inayotumiwa na app.js _refreshUIIfPossible()
+        window._refreshManufacturerStats = function() {
+            renderOverviewCards();
+            populateProductDropdowns();
+            if (typeof renderProductionHistoryTable === 'function') renderProductionHistoryTable();
+        };
 
         // POPULATE PRODUCT DROPDOWNS
         function populateProductDropdowns() {

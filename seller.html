@@ -704,7 +704,21 @@
                     renderSuggestionsChat();
                 }
             });
+
+            // ✅ REAL-TIME UPDATE: Sikiliza mabadiliko kutoka vifaa vingine (Firebase)
+            window.addEventListener('ngae-data-updated', function() {
+                renderSellerDashboard();
+                renderSuggestionsChat();
+            });
+
+            // ✅ Pakia tena data ya hivi karibuni baada ya sekunde 1.5 (Firebase inapakia)
+            setTimeout(renderSellerDashboard, 1500);
         });
+
+        // ✅ Hook inayotumiwa na app.js _refreshUIIfPossible()
+        window._refreshSellerStats = function() {
+            renderSellerDashboard();
+        };
 
         function renderSellerDashboard() {
             if (!window.appGetSellerStats) return;

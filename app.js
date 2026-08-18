@@ -116,7 +116,8 @@ function seedData() {
         adminExpenses: [],
         salaryList: []
     };
-    saveData(data);
+    // Hifadhi kwenye localStorage tu wakati wa seed (Firebase bado haiko tayari)
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
     return data;
 }
 

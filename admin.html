@@ -1488,29 +1488,47 @@
             // Add staff form submit
             document.getElementById('addStaffForm').addEventListener('submit', (e) => {
                 e.preventDefault();
-                const name = document.getElementById('staffName').value;
+                const name = document.getElementById('staffName').value.trim();
                 const roleSelect = document.getElementById('staffRole').value;
-                const customId = document.getElementById('staffCustomId').value;
+                const customId = document.getElementById('staffCustomId').value.trim();
                 const photoUrl = document.getElementById('staffPhotoUrl')?.value?.trim();
+
+                if (!name) {
+                    alert('Tafadhali weka jina la mfanyakazi.');
+                    return;
+                }
 
                 let role = roleSelect;
                 if (roleSelect === 'other') {
                     role = document.getElementById('staffCustomRole').value.trim();
+                    if (!role) {
+                        alert('Tafadhali weka jukumu la mfanyakazi.');
+                        return;
+                    }
+                }
+
+                // Hakikisha window.appData ina taarifa za sasa
+                if (!window.appData || !window.appData.staff) {
+                    alert('Mfumo bado unajaribu kupakia taarifa. Tafadhali subiri sekunde chache kisha jaribu tena.');
+                    return;
                 }
 
                 if (window.appAddStaff) {
-                    const newId = window.appAddStaff(name, role, customId, photoUrl);
+                    const newId = window.appAddStaff(name, role, customId, photoUrl || null);
                     if (newId) {
-                        alert(`Akaunti mpya imetengenezwa!\nMajina: ${name}\nStaff ID: ${newId}\nJukumu: ${role}`);
+                        alert(`✅ Akaunti mpya imetengenezwa!\nJina: ${name}\nStaff ID: ${newId}\nJukumu: ${role}`);
                         document.getElementById('addStaffForm').reset();
 
-                        // Hide custom role input and clear it
+                        // Ficha custom role input
                         document.getElementById('customRoleContainer').classList.add('hidden');
                         document.getElementById('staffCustomRole').removeAttribute('required');
                         document.getElementById('staffCustomRole').value = '';
 
+                        // Sasisha views zote
                         renderStaff();
                         renderOverview();
+                        renderSalaryLedger(); // Sasisha ledger pia
+                        populateSalaryStaffDropdown(); // Sasisha dropdown ya mshahara
                     }
                 }
             });
@@ -1825,26 +1843,42 @@ Saini ya Mwajiriwa (${emp.name}): ____________________      Tarehe: ____________
             document.getElementById('flamesBg').classList.add('hidden');
             document.getElementById('adminDashboard').classList.remove('hidden');
 
-            // Force refresh window.appData from persistent localStorage
-            const raw = localStorage.getItem('ngae_app_data');
-            if (raw) {
-                try {
-                    window.appData = JSON.parse(raw);
-                } catch (e) {
-                    console.error("Failed to reload persistent appData:", e);
-                }
+            // Tumia window.appData iliyoandaliwa na app.js (Firebase + localStorage)
+            // USIIBADILISHE hapa — app.js ndiyo inayoshughulikia data sync
+            // Kama appData bado haijapakia (Firebase inaendelea), subiri kidogo kisha render
+            function _doRender() {
+                renderOverview();
+                renderStaff();
+                renderProducts();
+                renderCashFlow();
+                renderSuggestions();
+                renderNotifications();
+                renderOverallStats();
+                renderExpenses();
+                renderSalaryLedger();
             }
 
-            renderOverview();
-            renderStaff();
-            renderProducts();
-            renderCashFlow();
-            renderSuggestions();
-            renderNotifications();
-            renderOverallStats();
-            renderExpenses();
-            renderSalaryLedger();
+            _doRender();
+
+            // Ikiwa Firebase bado inapakia, render tena baada ya sekunde 1.5
+            setTimeout(_doRender, 1500);
         }
+
+        // Sikiliza mabadiliko ya data kutoka vifaa vingine (Firebase real-time)
+        window.addEventListener('ngae-data-updated', function() {
+            if (document.getElementById('adminDashboard') &&
+                !document.getElementById('adminDashboard').classList.contains('hidden')) {
+                renderOverview();
+                renderStaff();
+                renderProducts();
+                renderCashFlow();
+                renderSuggestions();
+                renderNotifications();
+                renderOverallStats();
+                renderExpenses();
+                renderSalaryLedger();
+            }
+        });
 
         function logoutAdmin() {
             sessionStorage.removeItem('ngae_admin_auth');

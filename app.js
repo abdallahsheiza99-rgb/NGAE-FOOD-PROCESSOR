@@ -25,6 +25,10 @@ let _syncListenerActive = false;
 const FIRESTORE_DOC = 'main'; // Jina la document kwenye Firestore
 const FIRESTORE_COLLECTION = 'ngae_data'; // Jina la collection kwenye Firestore
 
+// Kuzuia race condition: snapshot listener isifute data tuliyoandika sisi wenyewe
+let _lastSaveTimestamp = 0;
+const SAVE_GRACE_PERIOD_MS = 3000; // Subiri sekunde 3 kabla ya kukubali data kutoka nje
+
 /**
  * Anzisha Firebase na Firestore
  * Hii inaitwa mara moja ukurasa ukianza
@@ -125,7 +129,10 @@ function saveData(data) {
     // 1. Hifadhi kwenye localStorage haraka
     localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
 
-    // 2. Hifadhi kwenye Firestore (async - background)
+    // 2. Rekodi muda wa save ili kuzuia loop ya snapshot
+    _lastSaveTimestamp = Date.now();
+
+    // 3. Hifadhi kwenye Firestore (async - background)
     if (_firebaseReady && _db) {
         _db.collection(FIRESTORE_COLLECTION).doc(FIRESTORE_DOC)
             .set(data)
@@ -134,6 +141,7 @@ function saveData(data) {
             });
     }
 }
+
 
 /**
  * Anzisha real-time listener ya Firestore.
@@ -145,17 +153,22 @@ function startRealtimeSync() {
     _syncListenerActive = true;
     console.log('[NGAE] 🔄 Real-time sync imeanzishwa...');
 
-    const myTabId = sessionStorage.getItem('ngae_tab_id') || ('tab_' + Math.random().toString(36).substr(2, 6));
-    sessionStorage.setItem('ngae_tab_id', myTabId);
-
     _db.collection(FIRESTORE_COLLECTION).doc(FIRESTORE_DOC)
         .onSnapshot(doc => {
+            // Kama tuliandika hivi karibuni (sekunde 3), puuza snapshot hii
+            // Hii inazuia loop: sisi tunaandika → snapshot inakuja → inafuta data yetu
+            const timeSinceLastSave = Date.now() - _lastSaveTimestamp;
+            if (timeSinceLastSave < SAVE_GRACE_PERIOD_MS) {
+                console.log('[NGAE] ⏳ Snapshot imefika baada ya save letu - inapuuzwa.');
+                return;
+            }
+
             if (doc.exists) {
                 const remoteData = doc.data();
                 const localRaw = localStorage.getItem(STORAGE_KEY);
                 const localData = localRaw ? JSON.parse(localRaw) : {};
 
-                // Angalia kama data ya mbali ni mpya zaidi kabla ya kusasisha
+                // Angalia kama data ya mbali ni tofauti na ya hapa
                 const remoteStr = JSON.stringify(remoteData);
                 const localStr = JSON.stringify(localData);
 
@@ -189,8 +202,16 @@ function startRealtimeSync() {
  */
 function _refreshUIIfPossible() {
     try {
-        // Admin dashboard
-        if (typeof renderAdminStats === 'function') renderAdminStats();
+        // Admin dashboard - kama iko wazi
+        if (typeof renderOverview === 'function') renderOverview();
+        if (typeof renderStaff === 'function') renderStaff();
+        if (typeof renderProducts === 'function') renderProducts();
+        if (typeof renderCashFlow === 'function') renderCashFlow();
+        if (typeof renderSuggestions === 'function') renderSuggestions();
+        if (typeof renderNotifications === 'function') renderNotifications();
+        if (typeof renderOverallStats === 'function') renderOverallStats();
+        if (typeof renderExpenses === 'function') renderExpenses();
+        if (typeof renderSalaryLedger === 'function') renderSalaryLedger();
 
         // Operator stats
         if (typeof window._refreshOperatorStats === 'function') window._refreshOperatorStats();
@@ -234,31 +255,29 @@ async function loadFromFirestore() {
     if (!_firebaseReady || !_db) return;
 
     try {
+        console.log('[NGAE] 📡 Inapakia data kutoka Firestore...');
         const doc = await _db.collection(FIRESTORE_COLLECTION).doc(FIRESTORE_DOC).get();
         if (doc.exists) {
             const remoteData = _ensureFields(doc.data());
-            const localRaw = localStorage.getItem(STORAGE_KEY);
 
-            if (localRaw) {
-                // Ikiwa kuna data yote mawili, tumia ile iliyosasishwa zaidi
-                // (Firestore ndiyo chanzo cha kweli - override localStorage)
-                appData = remoteData;
-            } else {
-                // localStorage iko tupu - tumia Firestore data
-                appData = remoteData;
-            }
-
+            // Firestore ndiyo chanzo cha kweli - override localStorage na appData
+            appData = remoteData;
             window.appData = appData;
+            // Hifadhi kwenye localStorage kama backup (bila kusababisha Firestore write)
             localStorage.setItem(STORAGE_KEY, JSON.stringify(appData));
-            console.log('[NGAE] ✅ Data imepakiwa kutoka Firestore.');
+            console.log('[NGAE] ✅ Data imepakiwa kutoka Firestore. Wafanyakazi:', Object.keys(appData.staff || {}).length);
+
+            // Taarisha UI isasishwe
+            window.dispatchEvent(new CustomEvent('ngae-data-updated', { detail: appData }));
             _refreshUIIfPossible();
         } else {
-            // Hakuna data Firestore - pakia localStorage na uhifadhi Firestore
-            console.log('[NGAE] Hakuna data Firestore bado. Inahamisha localStorage → Firestore...');
+            // Hakuna data Firestore bado - hamisha localStorage → Firestore
+            console.log('[NGAE] 📤 Hakuna data Firestore. Inahamisha localStorage → Firestore...');
+            _lastSaveTimestamp = 0; // Ruhusu save hii
             saveData(appData);
         }
     } catch (e) {
-        console.warn('[NGAE] Haikuweza kupakia Firestore (labda offline):', e.message);
+        console.warn('[NGAE] ⚠️ Haikuweza kupakia Firestore (labda offline):', e.message);
     }
 }
 

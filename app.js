@@ -30,29 +30,30 @@ const INITIAL_CUSTOMER_ORDERS = [];
 // ==========================================
 
 const STORAGE_KEY = 'ngae_app_data';
+const CURRENT_APP_VERSION = 'v2_fresh_clean_2026_08_18_v2';
 
 window.appResetSystem = function() {
-    localStorage.removeItem(STORAGE_KEY);
-    localStorage.removeItem('ngae_logged_in_role');
-    localStorage.removeItem('ngae_logged_in_id');
-    localStorage.removeItem('ngae_logged_in_name');
-    sessionStorage.removeItem('ngae_admin_auth');
-    sessionStorage.removeItem('boss_authenticated');
+    localStorage.clear();
+    sessionStorage.clear();
+    localStorage.setItem('ngae_app_version', CURRENT_APP_VERSION);
     const freshData = seedData();
     window.appData = freshData;
     return true;
 };
 
 function loadData() {
+    const version = localStorage.getItem('ngae_app_version');
+    if (version !== CURRENT_APP_VERSION) {
+        console.log("Upgrading/Resetting to fresh production version. Clearing old test data...");
+        localStorage.clear();
+        sessionStorage.clear();
+        localStorage.setItem('ngae_app_version', CURRENT_APP_VERSION);
+        return seedData();
+    }
     const raw = localStorage.getItem(STORAGE_KEY);
     if (raw) {
         try {
             const data = JSON.parse(raw);
-            // Auto-clear legacy test/demo data if detected
-            if (data.staff && (data.staff['NGAE001'] || data.staff['NGAE016'] || (data.shops && data.shops.some(s => s.id === 'shop_soni')))) {
-                console.log("Legacy test data detected. Resetting to fresh production state...");
-                return seedData();
-            }
             if (!data.staff) data.staff = {};
             if (!data.products) data.products = [];
             if (!data.shops) data.shops = [];
@@ -139,7 +140,7 @@ window.appLogin = function(role, staffId) {
     const staffRecord = appData.staff[staffId.toUpperCase()];
     
     if (!staffRecord) {
-        alert("Namba ya ID haikupatikana. Tafadhali jaribu tena.\n\nMfano wa vitambulisho:\n- Operator: NGAE001\n- Seller: NGAE016\n- Store Keeper: NGAE021\n- Manufacturer: NGAE027");
+        alert("Namba ya ID haikupatikana. Tafadhali hakikisha umepewa Staff ID rasmi iliyosajiliwa na Admin.");
         return false;
     }
     

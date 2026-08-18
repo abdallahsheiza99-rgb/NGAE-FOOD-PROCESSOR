@@ -95,43 +95,6 @@ function _ensureFields(data) {
     if (!data.adminExpenses) data.adminExpenses = [];
     if (!data.salaryList) data.salaryList = [];
 
-    // Seed default staff if empty
-    if (Object.keys(data.staff).length === 0) {
-        data.staff = {
-            'NGAE001': { name: 'MUSSA AMIRI SHEIZA', role: 'operator' },
-            'NGAE016': { name: 'ISSAYA KAKOA - SONI', role: 'seller', shopId: 'shop_soni' },
-            'NGAE017': { name: 'ZAINABU HINYA - LUSHOTO', role: 'seller', shopId: 'shop_lushoto' },
-            'NGAE021': { name: 'MR ACADEMIA', role: 'storekeeper' },
-            'NGAE027': { name: 'DULLAH SHEIZA', role: 'manufacturer' }
-        };
-    }
-
-    // Seed default shops if empty
-    if (data.shops.length === 0) {
-        data.shops = [
-            { id: 'shop_soni', location: 'SONI, LUSHOTO', sellerName: 'ISSAYA KAKOA - SONI', sellerId: 'NGAE016' },
-            { id: 'shop_lushoto', location: 'LUSHOTO MJINI', sellerName: 'ZAINABU HINYA - LUSHOTO', sellerId: 'NGAE017' }
-        ];
-    }
-
-    // Seed default products if empty
-    if (data.products.length === 0) {
-        data.products = [
-            { id: 'prod_lishe_500g', name: 'LISHE BORA (500G)', price: 2500, stock: 150, dateAdded: '18 Aug 2026' },
-            { id: 'prod_unga_1kg', name: 'UNGA WA LISHE (1KG)', price: 5000, stock: 100, dateAdded: '18 Aug 2026' },
-            { id: 'prod_tea_masala', name: 'TEA MASALA (100G)', price: 1500, stock: 200, dateAdded: '18 Aug 2026' }
-        ];
-    }
-
-    // Seed default raw materials if empty
-    if (data.rawMaterials.length === 0) {
-        data.rawMaterials = [
-            { id: 'mat_mahindi', name: 'MAHINDI', unit: 'Kilo', stock: 500 },
-            { id: 'mat_muhogo', name: 'MUHOGO', unit: 'Kilo', stock: 300 },
-            { id: 'mat_soya', name: 'SOYA', unit: 'Kilo', stock: 200 }
-        ];
-    }
-
     return data;
 }
 
@@ -1216,7 +1179,7 @@ window.appSaveStaffPhoto = function(staffId, photoBase64) {
 // ==========================================
 // OPERATOR DASHBOARD HELPER
 // ==========================================
-window.appGetOperatorStats = function(staffId = 'NGAE001') {
+window.appGetOperatorStats = function(staffId = '') {
     if (!appData) appData = loadData();
 
     const totalReadyStock = (appData.products || []).reduce((acc, p) => acc + (Number(p.stock) || 0), 0);
@@ -1225,14 +1188,14 @@ window.appGetOperatorStats = function(staffId = 'NGAE001') {
     let dispatchedValue = 0;
     (appData.dispatchHistory || []).forEach(h => {
         const prod = (appData.products || []).find(p => p.id === h.productId || p.name.toLowerCase() === (h.productName || '').toLowerCase());
-        const unitPrice = prod ? (Number(prod.price) || 1000) : 1000;
+        const unitPrice = prod ? (Number(prod.price) || 0) : (Number(h.unitPrice) || 0);
         dispatchedValue += (Number(h.quantity) || 0) * unitPrice;
     });
 
     const undispatchedValue = (appData.products || []).reduce((acc, p) => acc + ((Number(p.stock) || 0) * (Number(p.price) || 0)), 0);
 
     const currentId = (localStorage.getItem('ngae_logged_in_id') || staffId || '').toUpperCase();
-    const staffObj = (appData.staff && appData.staff[currentId]) ? appData.staff[currentId] : { name: 'Mfanyakazi', role: 'operator' };
+    const staffObj = (appData.staff && appData.staff[currentId]) ? appData.staff[currentId] : { name: localStorage.getItem('ngae_logged_in_name') || 'Mfanyakazi', role: 'operator' };
 
     let photo = staffObj.photo;
     if (!photo && appData.salaryList) {
@@ -1301,7 +1264,7 @@ window.appGetStorekeeperStats = function(staffId = '') {
     });
 
     const currentId = (localStorage.getItem('ngae_logged_in_id') || staffId || '').toUpperCase();
-    const staffObj = (appData.staff && appData.staff[currentId]) ? appData.staff[currentId] : { name: 'Mfanyakazi', role: 'storekeeper' };
+    const staffObj = (appData.staff && appData.staff[currentId]) ? appData.staff[currentId] : { name: localStorage.getItem('ngae_logged_in_name') || 'Mfanyakazi', role: 'storekeeper' };
 
     let photo = staffObj.photo;
     if (!photo && appData.salaryList) {
@@ -1336,16 +1299,16 @@ window.appGetStorekeeperStats = function(staffId = '') {
 window.appGetSellerStats = function(sellerId) {
     if (!appData) appData = loadData();
     const currentId = (sellerId || localStorage.getItem('ngae_logged_in_id') || '').toUpperCase();
-    const staffObj = (appData.staff && appData.staff[currentId]) ? appData.staff[currentId] : { name: 'Mfanyakazi', role: 'seller', shopId: '' };
+    const staffObj = (appData.staff && appData.staff[currentId]) ? appData.staff[currentId] : { name: localStorage.getItem('ngae_logged_in_name') || 'Mfanyakazi', role: 'seller', shopId: '' };
 
-    const shop = (appData.shops || []).find(s => s.sellerId === currentId) || (appData.shops || [])[0] || { id: '', location: 'Duka Bado Halijasajiliwa', sellerName: 'Mfanyakazi' };
+    const shop = (appData.shops || []).find(s => s.sellerId === currentId) || (appData.shops || [])[0] || { id: '', location: 'Duka Bado Halijasajiliwa', sellerName: staffObj.name || 'Mfanyakazi' };
 
     const receivedDispatches = (appData.dispatchHistory || []).filter(h => h.shopId === shop.id);
     let totalCargoValue = 0;
     receivedDispatches.forEach(item => {
-        const prod = (appData.products || []).find(p => p.id === item.productId);
-        const price = prod ? prod.price : 1000;
-        totalCargoValue += (price * (item.quantity || 0));
+        const prod = (appData.products || []).find(p => p.id === item.productId || p.name.toLowerCase() === (item.productName || '').toLowerCase());
+        const price = prod ? (Number(prod.price) || 0) : (Number(item.unitPrice) || 0);
+        totalCargoValue += (price * (Number(item.quantity) || 0));
     });
 
     const shopFinance = (appData.finances && appData.finances[shop.id]) ? appData.finances[shop.id] : { submitted: 0, salesHistory: [], personalExpenses: [] };

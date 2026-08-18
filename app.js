@@ -551,7 +551,7 @@ window.appTrackOrder = function(orderId) {
 // ADMIN FUNCTIONS
 // ==========================================
 
-window.appAddStaff = function(name, role, customId) {
+window.appAddStaff = function(name, role, customId, photo) {
     let newId = customId ? customId.toUpperCase().trim() : null;
     if (!newId) {
         let maxNum = 0;
@@ -572,6 +572,8 @@ window.appAddStaff = function(name, role, customId) {
     }
 
     const newStaff = { name, role };
+    if (photo) newStaff.photo = photo;
+
     if (role === 'seller') {
         const shopId = 'shop_' + name.toLowerCase().replace(/\s+/g,'_');
         newStaff.shopId = shopId;
@@ -1061,6 +1063,81 @@ window.appGetOperatorStats = function(staffId = 'NGAE001') {
             name: staffObj.name || localStorage.getItem('ngae_logged_in_name') || 'MUSSA AMIRI SHEIZA',
             role: staffObj.role || 'operator',
             department: 'Usafirishaji wa Mizigo',
+            status: 'Active (Kazini)',
+            photo: photo
+        }
+    };
+};
+
+// ==========================================
+// STOREKEEPER DASHBOARD HELPER
+// ==========================================
+window.appGetStorekeeperStats = function(staffId = 'NGAE021') {
+    if (!appData) appData = loadData();
+
+    const receipts = appData.rawMaterialsHistory || [];
+    const now = new Date();
+    const todayStr = now.toDateString();
+
+    let spendToday = 0;
+    let spendWeek = 0;
+    let spendMonth = 0;
+    let spendYear = 0;
+
+    receipts.forEach(r => {
+        const rDate = new Date(r.dateRaw || r.date);
+        const amount = (Number(r.qty) || 0) * (Number(r.pricePerUnit) || 0);
+
+        if (!isNaN(rDate.getTime())) {
+            // Spend Today
+            if (rDate.toDateString() === todayStr) {
+                spendToday += amount;
+            }
+            // Spend Week (Within last 7 days)
+            const diffTime = now.getTime() - rDate.getTime();
+            const diffDays = diffTime / (1000 * 3600 * 24);
+            if (diffDays >= 0 && diffDays <= 7) {
+                spendWeek += amount;
+            }
+            // Spend Month
+            if (rDate.getMonth() === now.getMonth() && rDate.getFullYear() === now.getFullYear()) {
+                spendMonth += amount;
+            }
+            // Spend Year
+            if (rDate.getFullYear() === now.getFullYear()) {
+                spendYear += amount;
+            }
+        } else {
+            spendMonth += amount;
+            spendYear += amount;
+        }
+    });
+
+    // Current Staff Info
+    const currentId = (localStorage.getItem('ngae_logged_in_id') || staffId).toUpperCase();
+    const staffObj = (appData.staff && appData.staff[currentId]) ? appData.staff[currentId] : { name: 'MR ACADEMIA', role: 'storekeeper' };
+    
+    let photo = staffObj.photo;
+    if (!photo && appData.salaryList) {
+        const emp = appData.salaryList.find(e => e.id === currentId);
+        if (emp && emp.photo) photo = emp.photo;
+    }
+    
+    if (!photo) {
+        photo = 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&auto=format&fit=crop&q=80';
+    }
+
+    return {
+        spendToday,
+        spendWeek,
+        spendMonth,
+        spendYear,
+        rawMaterialsCount: (appData.rawMaterials || []).length,
+        staffInfo: {
+            id: currentId,
+            name: staffObj.name || localStorage.getItem('ngae_logged_in_name') || 'MR ACADEMIA',
+            role: staffObj.role || 'storekeeper',
+            department: 'Stoo ya Malighafi (Raw Materials)',
             status: 'Active (Kazini)',
             photo: photo
         }

@@ -2466,23 +2466,23 @@ Saini ya Mwajiriwa (${emp.name}): ____________________      Tarehe: ____________
             let shopRowsHtml = '';
             reportSales.forEach(s => {
                 shopRowsHtml += `
-            < tr style = "border-bottom: 1px solid #e2e8f0;" >
+                    <tr style="border-bottom: 1px solid #e2e8f0;">
                         <td style="padding: 12px; font-weight: bold; color: #1e293b;">${s.location}</td>
                         <td style="padding: 12px; color: #64748b;">${s.sellerName} (ID: ${s.sellerId})</td>
                         <td style="padding: 12px; text-align: right; font-weight: bold; color: #10b981;">Tsh ${s.totalSales.toLocaleString()}</td>
-                    </tr >
+                    </tr>
                 `;
             });
 
             // Expenses table rows HTML
             let expenseRowsHtml = '';
             if (reportExpenses.length === 0) {
-                expenseRowsHtml = `< tr > <td colspan="4" style="padding: 20px; text-align: center; color: #94a3b8;">Hakuna matumizi katika kipindi hiki.</td></tr > `;
+                expenseRowsHtml = `<tr><td colspan="4" style="padding: 20px; text-align: center; color: #94a3b8;">Hakuna matumizi katika kipindi hiki.</td></tr>`;
             } else {
                 reportExpenses.forEach(e => {
                     let sourceColor = e.type === 'Stoo' ? '#3b82f6' : (e.type === 'Mshahara' ? '#6366f1' : '#f59e0b');
                     expenseRowsHtml += `
-            < tr style = "border-bottom: 1px solid #e2e8f0;" >
+                        <tr style="border-bottom: 1px solid #e2e8f0;">
                             <td style="padding: 10px; font-size: 12px; color: #64748b;">${e.date}</td>
                             <td style="padding: 10px; font-weight: 600; color: #1e293b;">${e.description}</td>
                             <td style="padding: 10px; text-align: center;">
@@ -2491,7 +2491,7 @@ Saini ya Mwajiriwa (${emp.name}): ____________________      Tarehe: ____________
                                 </span>
                             </td>
                             <td style="padding: 10px; text-align: right; font-weight: bold; color: #ef4444;">Tsh ${e.amount.toLocaleString()}</td>
-                        </tr >
+                        </tr>
                 `;
                 });
             }
@@ -2500,17 +2500,17 @@ Saini ya Mwajiriwa (${emp.name}): ____________________      Tarehe: ____________
             let healthStatusHtml = '';
             if (isLoss) {
                 healthStatusHtml = `
-                < div style = "background-color: #fef2f2; border: 1px solid #fecaca; color: #991b1b; padding: 20px; border-radius: 12px; margin-bottom: 30px; text-align: center;" >
+                <div style="background-color: #fef2f2; border: 1px solid #fecaca; color: #991b1b; padding: 20px; border-radius: 12px; margin-bottom: 30px; text-align: center;">
                         <h3 style="margin: 0 0 5px; font-size: 18px; font-weight: bold;">TATHMINI: BIASHARA INAPOTEZA FEDHA (NET LOSS)</h3>
                         <p style="margin: 0; font-size: 14px;">Gharama za uendeshaji (Matumizi) zinazidi mapato ya mauzo katika kipindi hiki. Hatua za kupunguza gharama au kuongeza uzalishaji na mauzo zinahitajika haraka.</p>
-                    </div >
+                    </div>
                 `;
             } else {
                 healthStatusHtml = `
-                < div style = "background-color: #f0fdf4; border: 1px solid #bbf7d0; color: #166534; padding: 20px; border-radius: 12px; margin-bottom: 30px; text-align: center;" >
+                <div style="background-color: #f0fdf4; border: 1px solid #bbf7d0; color: #166534; padding: 20px; border-radius: 12px; margin-bottom: 30px; text-align: center;">
                         <h3 style="margin: 0 0 5px; font-size: 18px; font-weight: bold;">TATHMINI: BIASHARA INAINGIZA FAIDA (NET PROFIT)</h3>
                         <p style="margin: 0; font-size: 14px;">Usimamizi wa kifedha uko vizuri. Mauzo yanazidi gharama zote za matumizi katika kipindi hiki. Endelea kudumisha hali hii.</p>
-                    </div >
+                    </div>
                 `;
             }
 
@@ -2789,10 +2789,10 @@ Saini ya Mwajiriwa (${emp.name}): ____________________      Tarehe: ____________
 
             // Build conversation HTML
             let chatHtml = `
-                < div style = "border: 1px solid #dbeafe; border-radius: 12px; background-color: #eff6ff; padding: 15px; margin-bottom: 20px;" >
+                <div style="border: 1px solid #dbeafe; border-radius: 12px; background-color: #eff6ff; padding: 15px; margin-bottom: 20px;">
                     <strong style="color: #2563eb; font-size: 14px;">[Ujumbe wa Kwanza] ${sugg.senderName} (${swRole}) - ${sugg.date}</strong>
                     <p style="margin: 8px 0 0; font-size: 13px; font-weight: 600; color: #1e293b; white-space: pre-line;">${sugg.message}</p>
-                </div >
+                </div>
                 `;
 
             if (sugg.replies && sugg.replies.length > 0) {
@@ -2804,10 +2804,10 @@ Saini ya Mwajiriwa (${emp.name}): ____________________      Tarehe: ____________
                     const borderHex = isAdmin ? '#cbd5e1' : '#dbeafe';
                     
                     chatHtml += `
-                < div style = "border: 1px solid ${borderHex}; border-radius: 12px; background-color: ${bgHex}; padding: 15px; margin-bottom: 20px;" >
+                <div style="border: 1px solid ${borderHex}; border-radius: 12px; background-color: ${bgHex}; padding: 15px; margin-bottom: 20px;">
                             <strong style="color: ${colorHex}; font-size: 14px;">[Mchango] ${contributorName} - ${r.date}</strong>
                             <p style="margin: 8px 0 0; font-size: 13px; color: #1e293b; white-space: pre-line;">${r.message}</p>
-                        </div >
+                        </div>
                 `;
                 });
             }
@@ -2981,7 +2981,7 @@ Saini ya Mwajiriwa (${emp.name}): ____________________      Tarehe: ____________
             
             const salaryList = window.appData.salaryList || [];
             if (salaryList.length === 0) {
-                tbody.innerHTML = `< tr > <td colspan="6" class="p-8 text-center text-gray-400">Hakuna wafanyakazi waliosajiliwa kwenye ledger ya malipo bado.</td></tr > `;
+                tbody.innerHTML = `<tr><td colspan="6" class="p-8 text-center text-gray-400">Hakuna wafanyakazi waliosajiliwa kwenye ledger ya malipo bado.</td></tr>`;
                 return;
             }
             
@@ -2998,15 +2998,15 @@ Saini ya Mwajiriwa (${emp.name}): ____________________      Tarehe: ____________
                 const swRole = roleLabels[e.role] || e.role;
                 
                 tr.innerHTML = `
-            < td class="p-3 font-bold text-indigo-700 hover:underline flex items-center gap-2" >
-                <i class="bi bi-person-badge"></i> ${ e.name } (${ e.id })
-                    </td >
+                    <td class="p-3 font-bold text-indigo-700 hover:underline flex items-center gap-2">
+                        <i class="bi bi-person-badge"></i> ${e.name} (${e.id})
+                    </td>
                     <td class="p-3 text-gray-600 font-semibold uppercase text-[10px]">${swRole}</td>
                     <td class="p-3 text-right font-bold text-gray-800">Tsh ${e.monthlySalary.toLocaleString()}</td>
                     <td class="p-3 text-right font-bold text-green-600">Tsh ${paid.toLocaleString()}</td>
                     <td class="p-3 text-right font-bold text-red-600">Tsh ${remaining.toLocaleString()}</td>
                     <td class="p-3 text-center text-gray-500 font-bold">${e.paymentMethod}</td>
-        `;
+                `;
                 tbody.appendChild(tr);
             });
         }
@@ -3127,7 +3127,7 @@ Saini ya Mwajiriwa (${emp.name}): ____________________      Tarehe: ____________
                 const swRole = roleLabels[e.role] || e.role;
 
                 rows += `
-            < tr style = "border-bottom: 1px solid #ddd;" >
+                    <tr style="border-bottom: 1px solid #ddd;">
                         <td style="padding: 10px; font-weight: bold;">${e.name} (${e.id})</td>
                         <td style="padding: 10px; text-transform: uppercase;">${swRole}</td>
                         <td style="padding: 10px;">${e.nida || '-'}</td>
@@ -3135,12 +3135,12 @@ Saini ya Mwajiriwa (${emp.name}): ____________________      Tarehe: ____________
                         <td style="padding: 10px; text-align: right; font-weight: bold; color: green;">Tsh ${paid.toLocaleString()}</td>
                         <td style="padding: 10px; text-align: right; font-weight: bold; color: red;">Tsh ${remaining.toLocaleString()}</td>
                         <td style="padding: 10px; text-align: center;">${e.paymentMethod}</td>
-                    </tr >
+                    </tr>
             `;
             });
 
             printWindow.document.write(`
-            < html >
+            <html>
                 <head>
                     <title>Jalada la Mishahara - NGAE Food</title>
                     <style>
@@ -3187,7 +3187,7 @@ Saini ya Mwajiriwa (${emp.name}): ____________________      Tarehe: ____________
                         <button onclick="window.print()" style="background-color: #4f46e5; color: white; border: none; padding: 12px 30px; border-radius: 8px; font-weight: bold; cursor: pointer;">Print Ripoti Hii</button>
                     </div>
                 </body>
-                </html >
+                </html>
             `);
             printWindow.document.close();
         }
@@ -3205,7 +3205,7 @@ Saini ya Mwajiriwa (${emp.name}): ____________________      Tarehe: ____________
             }
 
             printWindow.document.write(`
-            < html >
+            <html>
                 <head>
                     <title>Mkataba wa Ajira - ${emp.name}</title>
                     <style>
@@ -3228,7 +3228,7 @@ Saini ya Mwajiriwa (${emp.name}): ____________________      Tarehe: ____________
                         <button onclick="window.print()" style="background-color: #000; color: white; border: none; padding: 12px 30px; font-family: sans-serif; font-weight: bold; cursor: pointer; font-size: 14px;">Print Mkataba Huu</button>
                     </div>
                 </body>
-                </html >
+                </html>
             `);
             printWindow.document.close();
         }
@@ -3243,7 +3243,7 @@ Saini ya Mwajiriwa (${emp.name}): ____________________      Tarehe: ____________
             const shops = window.appData.shops || [];
             
             if (shops.length === 0) {
-                listContainer.innerHTML = `< div class="text-center text-gray-400 text-xs py-10" > Hakuna maduka yaliyosajiliwa.</div > `;
+                listContainer.innerHTML = `<div class="text-center text-gray-400 text-xs py-10">Hakuna maduka yaliyosajiliwa.</div>`;
                 return;
             }
             
@@ -3283,8 +3283,8 @@ Saini ya Mwajiriwa (${emp.name}): ____________________      Tarehe: ____________
             const shop = window.appData.shops.find(s => s.id === shopId);
             if (!shop) return;
             
-            document.getElementById('portalShopTitle').textContent = `Duka la ${ shop.location } `;
-            document.getElementById('portalShopMeta').textContent = `Muuzaji: ${ shop.sellerName } (ID: ${ shop.sellerId })`;
+            document.getElementById('portalShopTitle').textContent = `Duka la ${shop.location}`;
+            document.getElementById('portalShopMeta').textContent = `Muuzaji: ${shop.sellerName} (ID: ${shop.sellerId})`;
             
             const finances = window.appData.finances || {};
             const shopFinance = finances[shop.id] || { submitted: 0, personalExpenses: [] };
@@ -3312,28 +3312,28 @@ Saini ya Mwajiriwa (${emp.name}): ____________________      Tarehe: ____________
             let expensesRowsHtml = '';
             if (expensesList.length === 0) {
                 expensesRowsHtml = `
-            < tr >
-            <td colspan="3" class="p-6 text-center text-gray-400 text-xs font-semibold">
-                <i class="bi bi-info-circle text-lg mb-1 block text-gray-300"></i>
-                Hakuna matumizi ya kila siku yaliyorekodiwa na muuzaji.
-            </td>
-                    </tr >
-            `;
+                    <tr>
+                        <td colspan="3" class="p-6 text-center text-gray-400 text-xs font-semibold">
+                            <i class="bi bi-info-circle text-lg mb-1 block text-gray-300"></i>
+                            Hakuna matumizi ya kila siku yaliyorekodiwa na muuzaji.
+                        </td>
+                    </tr>
+                `;
             } else {
                 expensesList.forEach(e => {
                     expensesRowsHtml += `
-            < tr class="hover:bg-gray-50 border-b border-gray-100 transition-colors" >
+                        <tr class="hover:bg-gray-50 border-b border-gray-100 transition-colors">
                             <td class="p-3 text-xs text-gray-500 font-bold">${e.date}</td>
                             <td class="p-3 text-sm text-gray-700 font-semibold">${e.description}</td>
                             <td class="p-3 text-right text-sm font-bold text-red-600">Tsh ${e.amount.toLocaleString()}</td>
-                        </tr >
-            `;
+                        </tr>
+                    `;
                 });
             }
             
             detailsContainer.innerHTML = `
             <!-- Financial Cards Grid -->
-            < div class="grid grid-cols-1 md:grid-cols-3 gap-4 flex-none" >
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 flex-none">
                     <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm hover:scale-105 transition-transform duration-300">
                         <p class="text-gray-400 font-bold uppercase text-[9px] tracking-wider">Thamani ya Mizigo Yote</p>
                         <h4 class="font-black text-gray-800 text-lg mt-0.5">Tsh ${totalCargoValue.toLocaleString()}</h4>
@@ -3346,7 +3346,7 @@ Saini ya Mwajiriwa (${emp.name}): ____________________      Tarehe: ____________
                         <p class="text-gray-400 font-bold uppercase text-[9px] tracking-wider">Baki Anayodaiwa</p>
                         <h4 class="font-black text-red-600 text-lg mt-0.5">Tsh ${remainingDebt.toLocaleString()}</h4>
                     </div>
-                </div >
+                </div>
                 
                 <!-- Daily Expenses Section -->
             <div class="bg-white rounded-xl border border-gray-200 shadow-sm flex flex-col flex-1 min-h-[220px] overflow-hidden">

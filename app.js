@@ -14,108 +14,15 @@
 // STATIC DATA (Seed Data)
 // ==========================================
 
-const INITIAL_STAFF = {
-    'NGAE001': { name: 'MUSSA AMIRI SHEIZA', role: 'operator', photo: 'https://images.unsplash.com/photo-1560250097-0b93528c311a?w=400&auto=format&fit=crop&q=80' },
-    'NGAE002': { name: 'AMANI STAFF', role: 'operator', photo: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400&auto=format&fit=crop&q=80' },
-    'NGAE016': { name: 'ISSAYA KAKOA', role: 'seller', shopId: 'shop_soni', photo: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&auto=format&fit=crop&q=80' },
-    'NGAE017': { name: 'ZAINABU HINYA (ZAISHA)', role: 'seller', shopId: 'shop_lushoto', photo: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=400&auto=format&fit=crop&q=80' },
-    'NGAE018': { name: 'SONI ISLAMIC', role: 'seller', shopId: 'shop_mwalimu', photo: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400&auto=format&fit=crop&q=80' },
-    'NGAE019': { name: 'LWANDAI SECONDARY', role: 'seller', shopId: 'shop_lwandai', photo: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400&auto=format&fit=crop&q=80' },
-    'NGAE020': { name: 'ROSMIN', role: 'seller', shopId: 'shop_rosmin', photo: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400&auto=format&fit=crop&q=80' },
-    'NGAE021': { name: 'MR ACADEMIA', role: 'storekeeper' },
-    'NGAE022': { name: 'STORE ASSIST', role: 'storekeeper' },
-    'NGAE027': { name: 'DULLAH SHEIZA', role: 'manufacturer' },
-    'NGAE028': { name: 'FACTORY WORKER', role: 'manufacturer' },
-};
-
-const INITIAL_PRODUCTS = [
-    { id: 'p_andazi', name: 'ANDAZI', price: 1000, stock: 21112 },
-    { id: 'p_andazi_kavu', name: 'ANDAZI KAVU', price: 1000, stock: 32 },
-    { id: 'p_bend_rose', name: 'BEND ROSE', price: 1000, stock: 26477 },
-    { id: 'p_big_sadoline', name: 'BIG SIZE SADOLINE', price: 8000, stock: 9759 },
-    { id: 'p_bingo', name: 'BINGO', price: 500, stock: 15756 },
-    { id: 'p_biscuit_300', name: 'BISCUIT YA MIA TATU', price: 300, stock: 4641 },
-    { id: 'p_cake_kubwa', name: 'CAKE KUBWA', price: 7000, stock: 2709 },
-    { id: 'p_cake_vpnd', name: 'CAKE VPND', price: 1000, stock: 28408 },
-    { id: 'p_cinamon', name: 'CINAMON', price: 500, stock: 18029 },
-    { id: 'p_cup_cake', name: 'CUP CAKE', price: 5000, stock: 943 },
-    { id: 'p_donat', name: 'DONAT', price: 1000, stock: 13632 },
-    { id: 'p_islamic_kubwa', name: 'ISLAMIC (scones kubwa)', price: 200, stock: 88520 },
-    { id: 'p_islamic_ndogo', name: 'ISLAMIC (scones ndogo)', price: 100, stock: 75135 },
-    { id: 'p_kfp', name: 'K.F.P', price: 1000, stock: 36786 },
-    { id: 'p_ndizi', name: 'NDIZI', price: 1000, stock: 9457 },
-    { id: 'p_r_sless', name: 'R.SLESS', price: 1500, stock: 18418 },
-    { id: 'p_round', name: 'ROUND', price: 800, stock: 15554 },
-    { id: 'p_round_kubwa', name: 'ROUND KUBWA', price: 1000, stock: 113 },
-    { id: 'p_scones', name: 'SCONES', price: 1000, stock: 4890 },
-    { id: 'p_scones_lwandai', name: 'SCONES LWANDAI SECONDARY', price: 1000, stock: 3010 },
-    { id: 'p_small_biscuits', name: 'SMALL SIZE BISCUITS', price: 4000, stock: 1983 },
-    { id: 'p_super', name: 'SUPER', price: 2000, stock: 29104 },
-    { id: 'p_zain', name: 'ZAIN', price: 1000, stock: 18161 },
-];
-
-const INITIAL_SHOPS = [
-    { id: 'shop_soni', location: 'TANGA, SONI', sellerName: 'ISSAYA KAKOA', sellerId: 'NGAE016' },
-    { id: 'shop_lushoto', location: 'TANGA, LUSHOTO', sellerName: 'ZAINABU HINYA (ZAISHA)', sellerId: 'NGAE017' },
-    { id: 'shop_mwalimu', location: 'TANGA, mwalimu wa zamu', sellerName: 'SONI ISLAMIC', sellerId: 'NGAE018' },
-    { id: 'shop_lwandai', location: 'TANGA, LUSHTO LWANDAI', sellerName: 'LWANDAI SECONDARY', sellerId: 'NGAE019' },
-    { id: 'shop_rosmin', location: 'TANGA, lushoto', sellerName: 'ROSMIN', sellerId: 'NGAE020' },
-    { id: 'shop_cathy', location: 'TANGA, lushoto CATHY', sellerName: 'CATHY HAMMER SECONDARY', sellerId: 'NGAE025' },
-];
-
-const INITIAL_RAW_MATERIALS = [
-    { id: 'mat_ngano', name: 'Ngano', unit: 'Kilo', stock: 18000 },
-    { id: 'mat_mafuta', name: 'Mafuta ya Kupikia', unit: 'Lita', stock: 40 },
-    { id: 'mat_umeme', name: 'Umeme', unit: 'Lita', stock: 1192 },
-];
-
-const INITIAL_DISPATCH_HISTORY = [
-    { date: '16 Aug 2026', productId: 'p_andazi', productName: 'ANDAZI', shopId: 'shop_soni', shopLocation: 'TANGA (SONI)', quantity: 205, unit: 'pcs' },
-    { date: '16 Aug 2026', productId: 'p_andazi_kavu', productName: 'ANDAZI KAVU', shopId: 'shop_soni', shopLocation: 'TANGA (SONI)', quantity: 18, unit: 'pcs' },
-    { date: '16 Aug 2026', productId: 'p_round', productName: 'ROUND', shopId: 'shop_soni', shopLocation: 'TANGA (SONI)', quantity: 105, unit: 'pcs' },
-    { date: '14 Aug 2026', productId: 'p_andazi', productName: 'ANDAZI', shopId: 'shop_soni', shopLocation: 'TANGA (SONI)', quantity: 452, unit: 'pcs' },
-    { date: '14 Aug 2026', productId: 'p_super', productName: 'SUPER', shopId: 'shop_soni', shopLocation: 'TANGA (SONI)', quantity: 48, unit: 'pcs' },
-    { date: '14 Aug 2026', productId: 'p_kfp', productName: 'K.F.P', shopId: 'shop_soni', shopLocation: 'TANGA (SONI)', quantity: 93, unit: 'pcs' },
-    { date: '14 Aug 2026', productId: 'p_round', productName: 'ROUND', shopId: 'shop_soni', shopLocation: 'TANGA (SONI)', quantity: 387, unit: 'pcs' },
-    { date: '13 Aug 2026', productId: 'p_super', productName: 'SUPER', shopId: 'shop_soni', shopLocation: 'TANGA (SONI)', quantity: 46, unit: 'pcs' },
-    { date: '13 Aug 2026', productId: 'p_andazi_kavu', productName: 'ANDAZI KAVU', shopId: 'shop_soni', shopLocation: 'TANGA (SONI)', quantity: 633, unit: 'pcs' },
-    { date: '16 Aug 2026', productId: 'p_andazi_kavu', productName: 'ANDAZI KAVU', shopId: 'shop_lushoto', shopLocation: 'TANGA (LUSHOTO)', quantity: 140, unit: 'pcs' },
-    { date: '16 Aug 2026', productId: 'p_round', productName: 'ROUND', shopId: 'shop_lushoto', shopLocation: 'TANGA (LUSHOTO)', quantity: 140, unit: 'pcs' },
-    { date: '16 Aug 2026', productId: 'p_kfp', productName: 'K.F.P', shopId: 'shop_lushoto', shopLocation: 'TANGA (LUSHOTO)', quantity: 116, unit: 'pcs' },
-    { date: '17 Aug 2026', productId: 'p_scones_lwandai', productName: 'SCONES LWANDAI SECONDARY', shopId: 'shop_lwandai', shopLocation: 'TANGA (LUSHTO LWANDAI)', quantity: 200, unit: 'pcs' },
-];
-
-const INITIAL_RAW_MATERIALS_HISTORY = [
-    { date: '15 Aug 2026', dateRaw: '2026-08-15', materialName: 'Ngano', unit: 'Kilo', qty: 10000, pricePerUnit: 2800, materialId: 'mat_ngano' },
-    { date: '15 Aug 2026', dateRaw: '2026-08-15', materialName: 'Ngano', unit: 'Kilo', qty: 250, pricePerUnit: 1700, materialId: 'mat_ngano' },
-    { date: '10 Aug 2026', dateRaw: '2026-08-10', materialName: 'Mafuta ya Kupikia', unit: 'Lita', qty: 20, pricePerUnit: 2000, materialId: 'mat_mafuta' },
-    { date: '10 Aug 2026', dateRaw: '2026-08-10', materialName: 'Umeme', unit: 'Lita', qty: 1222, pricePerUnit: 100, materialId: 'mat_umeme' },
-    { date: '10 Aug 2026', dateRaw: '2026-08-10', materialName: 'Ngano', unit: 'Kilo', qty: 10000, pricePerUnit: 1000, materialId: 'mat_ngano' },
-    { date: '09 Aug 2026', dateRaw: '2026-08-09', materialName: 'Mafuta ya Kupikia', unit: 'Lita', qty: 100, pricePerUnit: 2000, materialId: 'mat_mafuta' },
-];
-
-const INITIAL_RAW_MATERIALS_DISPATCH_HISTORY = [
-    { date: '15 Aug 2026', materialName: 'Ngano', unit: 'Kilo', qty: 500, materialId: 'mat_ngano' },
-    { date: '12 Aug 2026', materialName: 'Ngano', unit: 'Kilo', qty: 1000, materialId: 'mat_ngano' },
-    { date: '10 Aug 2026', materialName: 'Mafuta ya Kupikia', unit: 'Lita', qty: 80, materialId: 'mat_mafuta' },
-];
-
-const INITIAL_PRODUCTION_LOG = [
-    { date: '17 Aug 2026', dateRaw: '2026-08-17', productId: 'p_andazi', productName: 'ANDAZI', quantity: 1200, notes: '' },
-    { date: '17 Aug 2026', dateRaw: '2026-08-17', productId: 'p_round', productName: 'ROUND', quantity: 800, notes: '' },
-    { date: '16 Aug 2026', dateRaw: '2026-08-16', productId: 'p_super', productName: 'SUPER', quantity: 600, notes: '' },
-    { date: '15 Aug 2026', dateRaw: '2026-08-15', productId: 'p_cake_kubwa', productName: 'CAKE KUBWA', quantity: 200, notes: '' },
-    { date: '14 Aug 2026', dateRaw: '2026-08-14', productId: 'p_andazi', productName: 'ANDAZI', quantity: 2000, notes: 'Kundi kubwa' },
-];
-
-const INITIAL_FINANCES = {
-    'shop_soni': { submitted: 97618474, reportedDebt: 0, salesHistory: [{ amount: 97618474, notes: 'Mauzo ya awali (Soni)', date: '16 Aug 2026 14:00', dateRaw: '2026-08-16T14:00:00.000Z' }], personalExpenses: [] },
-    'shop_lushoto': { submitted: 10000000, reportedDebt: 0, salesHistory: [{ amount: 10000000, notes: 'Mauzo ya awali (Lushoto)', date: '16 Aug 2026 15:30', dateRaw: '2026-08-16T15:30:00.000Z' }], personalExpenses: [] },
-    'shop_mwalimu': { submitted: 5000000, reportedDebt: 0, salesHistory: [{ amount: 5000000, notes: 'Mauzo ya awali (Mwalimu)', date: '15 Aug 2026 11:00', dateRaw: '2026-08-15T11:00:00.000Z' }], personalExpenses: [] },
-    'shop_lwandai': { submitted: 1500000, reportedDebt: 0, salesHistory: [{ amount: 1500000, notes: 'Mauzo ya awali (Lwandai)', date: '17 Aug 2026 09:15', dateRaw: '2026-08-17T09:15:00.000Z' }], personalExpenses: [] },
-    'shop_rosmin': { submitted: 800000, reportedDebt: 0, salesHistory: [{ amount: 800000, notes: 'Mauzo ya awali (Rosmin)', date: '14 Aug 2026 16:45', dateRaw: '2026-08-14T16:45:00.000Z' }], personalExpenses: [] },
-};
-
+const INITIAL_STAFF = {};
+const INITIAL_PRODUCTS = [];
+const INITIAL_SHOPS = [];
+const INITIAL_RAW_MATERIALS = [];
+const INITIAL_DISPATCH_HISTORY = [];
+const INITIAL_RAW_MATERIALS_HISTORY = [];
+const INITIAL_RAW_MATERIALS_DISPATCH_HISTORY = [];
+const INITIAL_PRODUCTION_LOG = [];
+const INITIAL_FINANCES = {};
 const INITIAL_CUSTOMER_ORDERS = [];
 
 // ==========================================
@@ -124,60 +31,65 @@ const INITIAL_CUSTOMER_ORDERS = [];
 
 const STORAGE_KEY = 'ngae_app_data';
 
+window.appResetSystem = function() {
+    localStorage.removeItem(STORAGE_KEY);
+    localStorage.removeItem('ngae_logged_in_role');
+    localStorage.removeItem('ngae_logged_in_id');
+    localStorage.removeItem('ngae_logged_in_name');
+    sessionStorage.removeItem('ngae_admin_auth');
+    sessionStorage.removeItem('boss_authenticated');
+    const freshData = seedData();
+    window.appData = freshData;
+    return true;
+};
+
 function loadData() {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (raw) {
         try {
             const data = JSON.parse(raw);
-            if (!data.staff) {
-                data.staff = JSON.parse(JSON.stringify(INITIAL_STAFF));
-                saveData(data);
+            // Auto-clear legacy test/demo data if detected
+            if (data.staff && (data.staff['NGAE001'] || data.staff['NGAE016'] || (data.shops && data.shops.some(s => s.id === 'shop_soni')))) {
+                console.log("Legacy test data detected. Resetting to fresh production state...");
+                return seedData();
             }
-            if (!data.cashFlow) {
-                data.cashFlow = { balance: 0, transactions: [] };
-                saveData(data);
-            }
-            if (!data.suggestions) {
-                data.suggestions = [];
-                saveData(data);
-            }
-            if (!data.notifications) {
-                data.notifications = [];
-                saveData(data);
-            }
-            if (!data.manufacturerMaterials) {
-                data.manufacturerMaterials = {};
-                saveData(data);
-            }
-            if (!data.adminExpenses) {
-                data.adminExpenses = [];
-                saveData(data);
-            }
-            if (!data.salaryList) {
-                data.salaryList = [];
-                saveData(data);
-            }
+            if (!data.staff) data.staff = {};
+            if (!data.products) data.products = [];
+            if (!data.shops) data.shops = [];
+            if (!data.rawMaterials) data.rawMaterials = [];
+            if (!data.dispatchHistory) data.dispatchHistory = [];
+            if (!data.rawMaterialsHistory) data.rawMaterialsHistory = [];
+            if (!data.rawMaterialsDispatchHistory) data.rawMaterialsDispatchHistory = [];
+            if (!data.productionLog) data.productionLog = [];
+            if (!data.finances) data.finances = {};
+            if (!data.customerOrders) data.customerOrders = [];
+            if (!data.cashFlow) data.cashFlow = { balance: 0, transactions: [] };
+            if (!data.suggestions) data.suggestions = [];
+            if (!data.notifications) data.notifications = [];
+            if (!data.manufacturerMaterials) data.manufacturerMaterials = {};
+            if (!data.adminExpenses) data.adminExpenses = [];
+            if (!data.salaryList) data.salaryList = [];
             return data;
         } catch(e) {
             console.error("Failed to parse app data, re-seeding...", e);
         }
     }
-    // Seed initial data on first run
+    // Seed initial clean data on first run
     return seedData();
 }
 
 function seedData() {
     const data = {
-        staff: JSON.parse(JSON.stringify(INITIAL_STAFF)),
-        products: JSON.parse(JSON.stringify(INITIAL_PRODUCTS)),
-        shops: JSON.parse(JSON.stringify(INITIAL_SHOPS)),
-        rawMaterials: JSON.parse(JSON.stringify(INITIAL_RAW_MATERIALS)),
-        dispatchHistory: JSON.parse(JSON.stringify(INITIAL_DISPATCH_HISTORY)),
-        rawMaterialsHistory: JSON.parse(JSON.stringify(INITIAL_RAW_MATERIALS_HISTORY)),
-        rawMaterialsDispatchHistory: JSON.parse(JSON.stringify(INITIAL_RAW_MATERIALS_DISPATCH_HISTORY)),
-        productionLog: JSON.parse(JSON.stringify(INITIAL_PRODUCTION_LOG)),
-        finances: JSON.parse(JSON.stringify(INITIAL_FINANCES)),
-        customerOrders: JSON.parse(JSON.stringify(INITIAL_CUSTOMER_ORDERS)),
+        staff: {},
+        products: [],
+        shops: [],
+        rawMaterials: [],
+        dispatchHistory: [],
+        rawMaterialsHistory: [],
+        rawMaterialsDispatchHistory: [],
+        productionLog: [],
+        finances: {},
+        customerOrders: [],
         cashFlow: { balance: 0, transactions: [] },
         suggestions: [],
         notifications: [],
@@ -1040,8 +952,8 @@ window.appGetOperatorStats = function(staffId = 'NGAE001') {
     const undispatchedValue = (appData.products || []).reduce((acc, p) => acc + ((Number(p.stock) || 0) * (Number(p.price) || 0)), 0);
 
     // Staff Info (Card 6)
-    const currentId = (localStorage.getItem('ngae_logged_in_id') || staffId).toUpperCase();
-    const staffObj = (appData.staff && appData.staff[currentId]) ? appData.staff[currentId] : { name: 'MUSSA AMIRI SHEIZA', role: 'operator' };
+    const currentId = (localStorage.getItem('ngae_logged_in_id') || staffId || '').toUpperCase();
+    const staffObj = (appData.staff && appData.staff[currentId]) ? appData.staff[currentId] : { name: 'Mfanyakazi', role: 'operator' };
     
     let photo = staffObj.photo;
     if (!photo && appData.salaryList) {
@@ -1060,7 +972,7 @@ window.appGetOperatorStats = function(staffId = 'NGAE001') {
         undispatchedValue,
         staffInfo: {
             id: currentId,
-            name: staffObj.name || localStorage.getItem('ngae_logged_in_name') || 'MUSSA AMIRI SHEIZA',
+            name: staffObj.name || localStorage.getItem('ngae_logged_in_name') || 'Mfanyakazi',
             role: staffObj.role || 'operator',
             department: 'Usafirishaji wa Mizigo',
             status: 'Active (Kazini)',
@@ -1072,7 +984,7 @@ window.appGetOperatorStats = function(staffId = 'NGAE001') {
 // ==========================================
 // STOREKEEPER DASHBOARD HELPER
 // ==========================================
-window.appGetStorekeeperStats = function(staffId = 'NGAE021') {
+window.appGetStorekeeperStats = function(staffId = '') {
     if (!appData) appData = loadData();
 
     const receipts = appData.rawMaterialsHistory || [];
@@ -1114,8 +1026,8 @@ window.appGetStorekeeperStats = function(staffId = 'NGAE021') {
     });
 
     // Current Staff Info
-    const currentId = (localStorage.getItem('ngae_logged_in_id') || staffId).toUpperCase();
-    const staffObj = (appData.staff && appData.staff[currentId]) ? appData.staff[currentId] : { name: 'MR ACADEMIA', role: 'storekeeper' };
+    const currentId = (localStorage.getItem('ngae_logged_in_id') || staffId || '').toUpperCase();
+    const staffObj = (appData.staff && appData.staff[currentId]) ? appData.staff[currentId] : { name: 'Mfanyakazi', role: 'storekeeper' };
     
     let photo = staffObj.photo;
     if (!photo && appData.salaryList) {
@@ -1135,7 +1047,7 @@ window.appGetStorekeeperStats = function(staffId = 'NGAE021') {
         rawMaterialsCount: (appData.rawMaterials || []).length,
         staffInfo: {
             id: currentId,
-            name: staffObj.name || localStorage.getItem('ngae_logged_in_name') || 'MR ACADEMIA',
+            name: staffObj.name || localStorage.getItem('ngae_logged_in_name') || 'Mfanyakazi',
             role: staffObj.role || 'storekeeper',
             department: 'Stoo ya Malighafi (Raw Materials)',
             status: 'Active (Kazini)',
@@ -1149,11 +1061,11 @@ window.appGetStorekeeperStats = function(staffId = 'NGAE021') {
 // ==========================================
 window.appGetSellerStats = function(sellerId) {
     if (!appData) appData = loadData();
-    const currentId = (sellerId || localStorage.getItem('ngae_logged_in_id') || 'NGAE016').toUpperCase();
-    const staffObj = (appData.staff && appData.staff[currentId]) ? appData.staff[currentId] : { name: 'ISSAYA KAKOA', role: 'seller', shopId: 'shop_soni' };
+    const currentId = (sellerId || localStorage.getItem('ngae_logged_in_id') || '').toUpperCase();
+    const staffObj = (appData.staff && appData.staff[currentId]) ? appData.staff[currentId] : { name: 'Mfanyakazi', role: 'seller', shopId: '' };
     
     // Find matching shop for this seller
-    const shop = (appData.shops || []).find(s => s.sellerId === currentId) || (appData.shops || [])[0] || { id: 'shop_soni', location: 'TANGA, SONI', sellerName: 'ISSAYA KAKOA' };
+    const shop = (appData.shops || []).find(s => s.sellerId === currentId) || (appData.shops || [])[0] || { id: '', location: 'Duka Bado Halijasajiliwa', sellerName: 'Mfanyakazi' };
     
     // Dispatched cargo for this shop
     const receivedDispatches = (appData.dispatchHistory || []).filter(h => h.shopId === shop.id);
@@ -1205,7 +1117,7 @@ window.appGetSellerStats = function(sellerId) {
         shop,
         staffInfo: {
             id: currentId,
-            name: staffObj.name || shop.sellerName || 'ISSAYA KAKOA',
+            name: staffObj.name || shop.sellerName || 'Mfanyakazi',
             role: staffObj.role || 'seller',
             shopLocation: shop.location,
             photo: photo
@@ -1227,7 +1139,7 @@ window.appGetSellerStats = function(sellerId) {
 // ==========================================
 // MANUFACTURER DASHBOARD HELPER
 // ==========================================
-window.appGetManufacturerStats = function(manufacturerId = 'NGAE027') {
+window.appGetManufacturerStats = function(manufacturerId = '') {
     if (!appData) appData = loadData();
 
     const log = appData.productionLog || [];
@@ -1267,8 +1179,8 @@ window.appGetManufacturerStats = function(manufacturerId = 'NGAE027') {
     const totalProductCatalogCount = (appData.products || []).length;
     const uniqueProducedTypesCount = prodTypesSet.size > 0 ? prodTypesSet.size : totalProductCatalogCount;
 
-    const currentId = (localStorage.getItem('ngae_logged_in_id') || manufacturerId).toUpperCase();
-    const staffObj = (appData.staff && appData.staff[currentId]) ? appData.staff[currentId] : { name: 'DULLAH SHEIZA', role: 'manufacturer' };
+    const currentId = (localStorage.getItem('ngae_logged_in_id') || manufacturerId || '').toUpperCase();
+    const staffObj = (appData.staff && appData.staff[currentId]) ? appData.staff[currentId] : { name: 'Mfanyakazi', role: 'manufacturer' };
 
     let photo = staffObj.photo;
     if (!photo && appData.salaryList) {
@@ -1289,7 +1201,7 @@ window.appGetManufacturerStats = function(manufacturerId = 'NGAE027') {
         totalCatalogCount: totalProductCatalogCount,
         staffInfo: {
             id: currentId,
-            name: staffObj.name || localStorage.getItem('ngae_logged_in_name') || 'DULLAH SHEIZA',
+            name: staffObj.name || localStorage.getItem('ngae_logged_in_name') || 'Mfanyakazi',
             role: staffObj.role || 'manufacturer',
             department: 'Uzalishaji (Production)',
             status: 'Active (Kazini)',

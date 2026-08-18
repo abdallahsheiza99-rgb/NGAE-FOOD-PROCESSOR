@@ -112,7 +112,7 @@
                     <div class="flex items-center gap-3 bg-slate-800/80 px-3 py-1.5 rounded-full border border-slate-700">
                         <img id="headerStorekeeperImg" src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80" alt="Storekeeper" class="w-8 h-8 rounded-full object-cover border-2 border-orange-500">
                         <div class="text-left">
-                            <p class="text-xs font-bold text-slate-200" id="headerStorekeeperName">MR ACADEMIA</p>
+                            <p class="text-xs font-bold text-slate-200" id="headerStorekeeperName">---</p>
                             <p class="text-[10px] text-green-400 font-semibold flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-full bg-green-500 animate-ping"></span> Online (Stoo)</p>
                         </div>
                     </div>
@@ -192,7 +192,7 @@
                 <div class="relative z-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                     <div>
                         <span class="bg-orange-500/20 text-orange-400 text-xs font-extrabold px-3 py-1 rounded-full uppercase tracking-wider border border-orange-500/30">STOREKEEPER DASHBOARD HUB</span>
-                        <h2 class="text-2xl md:text-3xl font-black mt-2">Habari, <span id="bannerStorekeeperName" class="text-orange-400">MR ACADEMIA</span>!</h2>
+                        <h2 class="text-2xl md:text-3xl font-black mt-2">Habari, <span id="bannerStorekeeperName" class="text-orange-400">---</span>!</h2>
                         <p class="text-slate-300 text-xs md:text-sm mt-1">Karibu kwenye Mfumo wa Usimamizi wa Stoo ya Malighafi na Usimamizi wa Manunuzi - NGAE Food Processors.</p>
                     </div>
                     <div class="flex items-center gap-3">
@@ -310,8 +310,8 @@
                                 </button>
                             </div>
                             <div>
-                                <h4 class="font-black text-base text-white leading-snug" id="cardStorekeeperName">MR ACADEMIA</h4>
-                                <p class="text-xs text-orange-400 font-bold font-mono" id="cardStorekeeperId">ID: NGAE021</p>
+                                <h4 class="font-black text-base text-white leading-snug" id="cardStorekeeperName">---</h4>
+                                <p class="text-xs text-orange-400 font-bold font-mono" id="cardStorekeeperId">ID: ---</p>
                                 <p class="text-[11px] text-slate-400 mt-0.5" id="cardStorekeeperDept">Stoo ya Malighafi (Raw Materials)</p>
                             </div>
                         </div>
@@ -940,7 +940,7 @@
         function renderOverviewDashboard() {
             if (!window.appData) return;
 
-            const staffId = localStorage.getItem('ngae_logged_in_id') || 'NGAE021';
+            const staffId = localStorage.getItem('ngae_logged_in_id') || '';
             const stats = window.appGetStorekeeperStats ? window.appGetStorekeeperStats(staffId) : null;
 
             if (stats) {
@@ -1282,7 +1282,7 @@
         }
 
         function saveModalProfilePhoto() {
-            const currentStaffId = localStorage.getItem('ngae_logged_in_id') || 'NGAE021';
+            const currentStaffId = localStorage.getItem('ngae_logged_in_id') || '';
             const urlInput = document.getElementById('modalPhotoUrlInput').value.trim();
             const fileInput = document.getElementById('modalPhotoFileInput');
 

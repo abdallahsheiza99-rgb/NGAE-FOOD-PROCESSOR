@@ -275,23 +275,23 @@
             // Populate select options from window.appProducts if available
             const select = clone.querySelector('.product-select');
             
-            // Default products just in case app.js hasn't loaded yet
-            const defaultProducts = [
-                { id: "17", name: "ANDAZI", price: 1000 },
-                { id: "33", name: "CAKE KUBWA", price: 7000 },
-                { id: "16", name: "ROUND", price: 800 },
-                { id: "19", name: "CAKE VPND", price: 1000 }
-            ];
+            const products = (window.appData && window.appData.products) ? window.appData.products : [];
             
-            const products = (window.appData && window.appData.products) ? window.appData.products : defaultProducts;
-            
-            products.forEach(p => {
+            if (products.length === 0) {
                 const opt = document.createElement('option');
-                opt.value = p.id || p.name;
-                opt.setAttribute('data-price', p.price);
-                opt.textContent = `${p.name} (Tsh ${p.price.toLocaleString()} / pcs)`;
+                opt.value = "";
+                opt.setAttribute('data-price', 0);
+                opt.textContent = "-- Hakuna Bidhaa Zilizosajiliwa Bado --";
                 select.appendChild(opt);
-            });
+            } else {
+                products.forEach(p => {
+                    const opt = document.createElement('option');
+                    opt.value = p.id || p.name;
+                    opt.setAttribute('data-price', p.price);
+                    opt.textContent = `${p.name} (Tsh ${p.price.toLocaleString()} / pcs)`;
+                    select.appendChild(opt);
+                });
+            }
 
             container.appendChild(clone);
             updateRemoveButtons();

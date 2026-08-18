@@ -275,6 +275,11 @@
                         </div>
                     </div>
 
+                    <button onclick="confirmResetSystem()" title="Futa Taarifa Zote Kuanza Upya"
+                        class="bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 text-xs font-bold px-3 py-1.5 rounded-xl transition-all flex items-center gap-1.5 shadow-sm">
+                        <i class="bi bi-arrow-counterclockwise text-sm"></i> Safisha Mfumo Upya
+                    </button>
+
                     <span
                         class="bg-orange-100 text-orange-700 text-sm font-bold px-3 py-1 rounded-full flex items-center gap-1">
                         <i class="bi bi-person-badge"></i> Mkurugenzi Kuu
@@ -1869,6 +1874,16 @@ Saini ya Mwajiriwa (${emp.name}): ____________________      Tarehe: ____________
             });
         }
 
+        function confirmResetSystem() {
+            if (confirm("ONYO KUU: Je, una uhakika unataka kufuta taarifa ZOTE zilizopo kwenye mfumo ili kuanza mfumo upya kabisa (Fresh System)?\n\nKitendo hiki kitafuta:\n- Wafanyakazi wote waliosajiliwa\n- Maduka yote\n- Bidhaa na Akiba yote\n- Mauzo na Malipo yote")) {
+                if (window.appResetSystem) {
+                    window.appResetSystem();
+                    alert("Mfumo umefutwa taarifa zote na sasa ni FRESH SYSTEM! Unaweza kuanza kusajili wafanyakazi na maduka upya.");
+                    window.location.reload();
+                }
+            }
+        }
+
         function renderStaff() {
             if (!window.appData) return;
 
@@ -1876,8 +1891,14 @@ Saini ya Mwajiriwa (${emp.name}): ____________________      Tarehe: ____________
             tbody.innerHTML = '';
 
             const staff = window.appData.staff || {};
+            const entries = Object.entries(staff);
 
-            Object.entries(staff).forEach(([id, info]) => {
+            if (entries.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="4" class="p-6 text-center text-gray-500 font-medium"><i class="bi bi-people text-2xl block mb-1"></i>Hakuna wafanyakazi waliosajiliwa bado. Tumia fomu ya hapo juu kusajili mfanyakazi mpya.</td></tr>';
+                return;
+            }
+
+            entries.forEach(([id, info]) => {
                 const tr = document.createElement('tr');
                 tr.className = "hover:bg-gray-50 transition-colors";
 
@@ -1905,12 +1926,7 @@ Saini ya Mwajiriwa (${emp.name}): ____________________      Tarehe: ____________
         }
 
         function deleteStaffMember(staffId) {
-            // Block deleting core demo staff without warning
-            if (['NGAE001', 'NGAE016', 'NGAE021', 'NGAE027'].includes(staffId)) {
-                if (!confirm("Onyo: Huyu ni mfanyakazi mkuu wa mfumo. Una uhakika unataka kumfuta?")) return;
-            } else {
-                if (!confirm(`Una uhakika unataka kufuta akaunti ${staffId}?`)) return;
-            }
+            if (!confirm(`Una uhakika unataka kufuta akaunti ${staffId}?`)) return;
 
             if (window.appDeleteStaff) {
                 window.appDeleteStaff(staffId);
@@ -1926,6 +1942,12 @@ Saini ya Mwajiriwa (${emp.name}): ____________________      Tarehe: ____________
             tbody.innerHTML = '';
 
             const products = window.appData.products || [];
+
+            if (products.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="4" class="p-6 text-center text-gray-500 font-medium"><i class="bi bi-box-seam text-2xl block mb-1"></i>Hakuna bidhaa zilizosajiliwa bado. Tumia fomu ya hapo juu kusajili bidhaa mpya.</td></tr>';
+                return;
+            }
+
             products.forEach(p => {
                 const tr = document.createElement('tr');
                 tr.className = "hover:bg-gray-50 transition-colors";

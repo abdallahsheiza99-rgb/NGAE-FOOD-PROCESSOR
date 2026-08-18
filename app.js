@@ -155,12 +155,10 @@ function startRealtimeSync() {
     console.log('[NGAE] 🔄 Real-time sync imeanzishwa...');
 
     _db.collection(FIRESTORE_COLLECTION).doc(FIRESTORE_DOC)
-        .onSnapshot(doc => {
-            // Kama tuliandika hivi karibuni (sekunde 3), puuza snapshot hii
-            // Hii inazuia loop: sisi tunaandika → snapshot inakuja → inafuta data yetu
-            const timeSinceLastSave = Date.now() - _lastSaveTimestamp;
-            if (timeSinceLastSave < SAVE_GRACE_PERIOD_MS) {
-                console.log('[NGAE] ⏳ Snapshot imefika baada ya save letu - inapuuzwa.');
+        .onSnapshot({ includeMetadataChanges: true }, doc => {
+            // Ikiwa snapshot ina mabadiliko ya hapa hapa ambayo hayajatumwa server bado, puuza
+            if (doc.metadata && doc.metadata.hasPendingWrites) {
+                console.log('[NGAE] ⏳ Local write pending - snapshot inapuuzwa.');
                 return;
             }
 

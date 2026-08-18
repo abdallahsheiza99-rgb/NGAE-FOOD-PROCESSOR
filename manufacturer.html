@@ -2,357 +2,1100 @@
 <html lang="sw">
 <head>
     <meta charset="UTF-8">
-    <title>Manufacturer Dashboard - NGAE Food</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manufacturer Portal - NGAE Food Processors</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
-    <style> .modal-active { display: flex !important; } </style>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        * {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+
+        /* Glassmorphism & Modern Card Styling */
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.6);
+        }
+
+        .gradient-card-1 {
+            background: linear-gradient(135deg, #7c3aed 0%, #6366f1 100%);
+        }
+
+        .gradient-card-2 {
+            background: linear-gradient(135deg, #059669 0%, #10b981 100%);
+        }
+
+        .gradient-card-3 {
+            background: linear-gradient(135deg, #2563eb 0%, #3b82f6 100%);
+        }
+
+        .gradient-card-4 {
+            background: linear-gradient(135deg, #d97706 0%, #f59e0b 100%);
+        }
+
+        .gradient-card-5 {
+            background: linear-gradient(135deg, #db2777 0%, #ec4899 100%);
+        }
+
+        .gradient-fresh {
+            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 50%, #9333ea 100%);
+            box-shadow: 0 10px 30px -10px rgba(124, 58, 237, 0.5);
+        }
+
+        .gradient-profile {
+            background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
+        }
+
+        /* Animations */
+        @keyframes pulseGlow {
+            0%, 100% { transform: scale(1); opacity: 0.9; }
+            50% { transform: scale(1.03); opacity: 1; }
+        }
+
+        .animate-glow {
+            animation: pulseGlow 4s infinite ease-in-out;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #f1f5f9;
+            border-radius: 10px;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 10px;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+
+        .nav-btn.active {
+            background-color: #7c3aed;
+            color: #ffffff;
+            box-shadow: 0 4px 12px rgba(124, 58, 237, 0.35);
+        }
+    </style>
 </head>
-<body class="bg-gray-50 text-gray-800 p-4 md:p-8">
+<body class="bg-slate-100 text-slate-800 min-h-screen flex flex-col">
 
-    <div class="max-w-7xl mx-auto">
+    <!-- HEADER / BAR YA JUU -->
+    <header class="bg-slate-900 text-white sticky top-0 z-40 shadow-lg border-b border-slate-800">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                
+                <!-- Logo & Brand -->
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-purple-600 to-indigo-500 flex items-center justify-center shadow-md">
+                        <i class="bi bi-gear-wide-connected text-white text-xl animate-spin-slow"></i>
+                    </div>
+                    <div>
+                        <h1 class="font-extrabold text-base tracking-wide text-white leading-tight">NGAE <span class="text-purple-400">FOOD</span></h1>
+                        <p class="text-[10px] text-slate-400 font-semibold tracking-wider uppercase">Portal ya Manufacturer (Uzalishaji)</p>
+                    </div>
+                </div>
 
-        <!-- Header -->
-        <div class="flex flex-col md:flex-row justify-between items-center bg-white p-6 rounded-xl shadow-sm mb-6 border-l-4 border-purple-600">
-            <div>
-                <h1 class="text-2xl font-bold text-gray-800">Karibu, <span id="staffNameDisplay">DULLAH SHEIZA</span></h1>
-                <p class="text-sm text-gray-500">Kitambulisho: <span class="font-bold" id="staffIdDisplay">NGAE027</span> | Kitengo: <span class="text-purple-600 font-bold">Uzalishaji (Production)</span></p>
-            </div>
-            <div class="flex gap-3 mt-4 md:mt-0">
-                <button onclick="toggleModal('recordProductionModal')" class="bg-purple-600 hover:bg-purple-700 text-white px-3 py-2 rounded-lg font-bold shadow-sm transition-colors flex items-center text-sm">
-                    <i class="bi bi-plus-circle mr-2"></i> Rekodi Uzalishaji
-                </button>
-                <button onclick="toggleSuggestionsModal()" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded-lg font-bold shadow-sm transition-colors flex items-center text-sm">
-                    <i class="bi bi-chat-left-text mr-2"></i> Mapendekezo
-                </button>
-                <button onclick="window.appLogout()" class="bg-red-50 text-red-600 border border-red-200 px-3 py-2 rounded-lg font-semibold hover:bg-red-100 transition-colors flex items-center text-sm">
-                    <i class="bi bi-box-arrow-right mr-2"></i> Ondoka
-                </button>
-            </div>
-        </div>
+                <!-- Clock & Quick Manufacturer Status -->
+                <div class="hidden md:flex items-center gap-6">
+                    <div class="text-right">
+                        <p class="text-xs text-slate-400 font-medium" id="headerDateDisplay">--/--/----</p>
+                        <p class="text-xs font-bold text-purple-400" id="headerTimeDisplay">00:00:00</p>
+                    </div>
+                    
+                    <div class="h-8 w-[1px] bg-slate-800"></div>
 
-        <!-- Production Stats Cards -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-            <div class="bg-white p-5 rounded-xl shadow-sm border-b-4 border-blue-400">
-                <p class="text-sm text-gray-500 font-bold uppercase mb-1">Uzalishaji wa Leo</p>
-                <h3 class="text-3xl font-black text-gray-800" id="prodToday">0</h3>
-                <p class="text-xs text-gray-400 mt-1">pcs</p>
-            </div>
-            <div class="bg-white p-5 rounded-xl shadow-sm border-b-4 border-green-400">
-                <p class="text-sm text-gray-500 font-bold uppercase mb-1">Mwezi Huu</p>
-                <h3 class="text-3xl font-black text-gray-800" id="prodMonth">0</h3>
-                <p class="text-xs text-gray-400 mt-1">pcs</p>
-            </div>
-            <div class="bg-white p-5 rounded-xl shadow-sm border-b-4 border-purple-400">
-                <p class="text-sm text-gray-500 font-bold uppercase mb-1">Mwaka Huu (2026)</p>
-                <h3 class="text-3xl font-black text-gray-800" id="prodYear">0</h3>
-                <p class="text-xs text-gray-400 mt-1">pcs</p>
-            </div>
-        </div>
+                    <!-- Manufacturer Thumbnail -->
+                    <div class="flex items-center gap-3 bg-slate-800/80 px-3 py-1.5 rounded-full border border-slate-700">
+                        <img id="headerManufacturerImg" src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80" alt="Manufacturer" class="w-8 h-8 rounded-full object-cover border-2 border-purple-500">
+                        <div class="text-left">
+                            <p class="text-xs font-bold text-slate-200" id="headerManufacturerName">DULLAH SHEIZA</p>
+                            <p class="text-[10px] text-green-400 font-semibold flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-full bg-green-500 animate-ping"></span> Online (Kazini)</p>
+                        </div>
+                    </div>
+                </div>
 
-        <!-- Action Message -->
-        <div id="actionMessage" class="hidden mb-4 p-3 rounded-lg font-bold"></div>
-
-        <!-- Bakaa ya Malighafi Ulizopewa Card -->
-        <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 mb-6">
-            <h2 class="text-xs font-bold text-blue-600 mb-3 uppercase tracking-wider flex items-center gap-1.5">
-                <i class="bi bi-box-seam-fill"></i> Bakaa ya Malighafi Ulizopewa (Current Raw Materials Stock)
-            </h2>
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-4" id="manufacturerMaterialsBalance">
-                <!-- Dynamically rendered -->
+                <!-- Logout Action -->
+                <div class="flex items-center gap-2">
+                    <button onclick="window.appLogout()" class="bg-red-600/90 hover:bg-red-600 text-white text-xs font-bold px-3.5 py-2 rounded-xl transition-all shadow-sm flex items-center gap-1.5">
+                        <i class="bi bi-box-arrow-right"></i> <span class="hidden sm:inline">Ondoka</span>
+                    </button>
+                </div>
             </div>
         </div>
+    </header>
 
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+    <!-- NAVIGATION MENU (MENU KUU YA MANUFACTURER) -->
+    <nav class="bg-white border-b border-slate-200 sticky top-16 z-30 shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between overflow-x-auto custom-scrollbar py-2 gap-2">
+                <div class="flex items-center gap-2">
+                    <!-- Tab 1: Overview -->
+                    <button onclick="switchTab('overview')" id="nav-overview" class="nav-btn active px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2 transition-all whitespace-nowrap text-slate-600 hover:bg-slate-100">
+                        <i class="bi bi-grid-1x2-fill text-sm"></i>
+                        <span>Muhtasari (Overview)</span>
+                    </button>
 
-            <!-- Production Log -->
-            <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-                <h2 class="text-xl font-bold text-gray-800 mb-4 border-b pb-2">
-                    <i class="bi bi-clipboard-data text-purple-500 mr-2"></i> Historia ya Uzalishaji
-                </h2>
-                <div class="overflow-y-auto max-h-[450px]">
-                    <table class="w-full text-left text-sm">
-                        <thead class="bg-gray-50 text-gray-700 sticky top-0 z-10 shadow-sm border-b border-gray-200">
+                    <!-- Tab 2: Record Production -->
+                    <button onclick="switchTab('record')" id="nav-record" class="nav-btn px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2 transition-all whitespace-nowrap text-slate-600 hover:bg-slate-100">
+                        <i class="bi bi-plus-circle-fill text-sm"></i>
+                        <span>Rekodi Uzalishaji</span>
+                    </button>
+
+                    <!-- Tab 3: Raw Materials Issued -->
+                    <button onclick="switchTab('materials')" id="nav-materials" class="nav-btn px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2 transition-all whitespace-nowrap text-slate-600 hover:bg-slate-100">
+                        <i class="bi bi-box-seam-fill text-sm"></i>
+                        <span>Malighafi Iliyotolewa Stoo</span>
+                    </button>
+
+                    <!-- Tab 4: Suggestions -->
+                    <button onclick="switchTab('suggestions')" id="nav-suggestions" class="nav-btn px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2 transition-all whitespace-nowrap text-slate-600 hover:bg-slate-100">
+                        <i class="bi bi-chat-left-quote-fill text-sm"></i>
+                        <span>Mapendekezo Yangu</span>
+                    </button>
+
+                    <!-- Tab 5: Production History -->
+                    <button onclick="switchTab('history')" id="nav-history" class="nav-btn px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2 transition-all whitespace-nowrap text-slate-600 hover:bg-slate-100">
+                        <i class="bi bi-clock-history text-sm"></i>
+                        <span>Historia ya Uzalishaji</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- CONTAINER YA MAUDHUI -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-1 w-full space-y-8">
+
+        <!-- Banner la Taarifa (Action Message) -->
+        <div id="actionMessage" class="hidden p-4 rounded-2xl font-bold shadow-md transition-all"></div>
+
+        <!-- =================================================================== -->
+        <!-- VIEW 1: OVERVIEW DASHBOARD (KADI ZA MUHTASARI & TAARIFA KUU)         -->
+        <!-- =================================================================== -->
+        <section id="view-overview" class="space-y-8">
+            
+            <!-- Banner la Karibu Manufacturer -->
+            <div class="bg-gradient-to-r from-slate-900 via-indigo-950 to-purple-950 p-6 md:p-8 rounded-3xl text-white shadow-xl relative overflow-hidden">
+                <div class="absolute -right-10 -bottom-10 w-64 h-64 bg-purple-500/10 rounded-full blur-3xl pointer-events-none"></div>
+                <div class="relative z-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                    <div>
+                        <span class="bg-purple-500/20 text-purple-300 text-xs font-extrabold px-3 py-1 rounded-full uppercase tracking-wider border border-purple-500/30">MANUFACTURER PRODUCTION HUB</span>
+                        <h2 class="text-2xl md:text-3xl font-black mt-2">Habari, <span id="bannerManufacturerName" class="text-purple-400">DULLAH SHEIZA</span>!</h2>
+                        <p class="text-slate-300 text-xs md:text-sm mt-1">Karibu kwenye Mfumo wa Uzalishaji na Usimamizi wa Kiwanda - NGAE Food Processors.</p>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <button onclick="openRecordProductionModal()" class="bg-purple-600 hover:bg-purple-500 text-white text-xs font-extrabold px-5 py-3 rounded-2xl shadow-lg transition-all flex items-center gap-2 transform hover:-translate-y-0.5">
+                            <i class="bi bi-plus-circle-fill text-base"></i> Rekodi Uzalishaji MPYA
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- GRID YA KADI SITA ZA MUHTASARI (OVERVIEW CARDS) -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+
+                <!-- CARD 1: UZALISHAJI WA LEO -->
+                <div class="bg-white rounded-3xl p-6 shadow-md border border-slate-100 hover:shadow-xl transition-all duration-300 relative overflow-hidden group">
+                    <div class="absolute top-0 right-0 w-32 h-32 bg-purple-500/5 rounded-bl-full pointer-events-none group-hover:scale-110 transition-transform"></div>
+                    <div class="flex items-center justify-between mb-4">
+                        <span class="text-xs font-extrabold text-purple-600 bg-purple-50 px-3 py-1 rounded-full uppercase tracking-wider">Kiwanda cha Leo</span>
+                        <div class="w-12 h-12 rounded-2xl gradient-card-1 text-white flex items-center justify-center text-xl shadow-md">
+                            <i class="bi bi-calendar-check-fill"></i>
+                        </div>
+                    </div>
+                    <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Uzalishaji wa Leo</p>
+                    <h3 class="text-3xl font-black text-slate-900 mt-2" id="cardProdToday">0 <span class="text-xs font-bold text-slate-400 uppercase">Pcs</span></h3>
+                    <div class="mt-4 pt-4 border-t border-slate-100 flex justify-between items-center text-xs">
+                        <span class="text-slate-500 font-medium"><i class="bi bi-clock-history text-purple-500 mr-1"></i>Bidhaa zilizozalishwa leo</span>
+                        <button onclick="switchTab('history')" class="text-purple-600 font-bold hover:underline">Historia &rarr;</button>
+                    </div>
+                </div>
+
+                <!-- CARD 2: UZALISHAJI WA MWEZI HUU -->
+                <div class="bg-white rounded-3xl p-6 shadow-md border border-slate-100 hover:shadow-xl transition-all duration-300 relative overflow-hidden group">
+                    <div class="absolute top-0 right-0 w-32 h-32 bg-emerald-500/5 rounded-bl-full pointer-events-none group-hover:scale-110 transition-transform"></div>
+                    <div class="flex items-center justify-between mb-4">
+                        <span class="text-xs font-extrabold text-emerald-600 bg-emerald-50 px-3 py-1 rounded-full uppercase tracking-wider">Mwezi Huu</span>
+                        <div class="w-12 h-12 rounded-2xl gradient-card-2 text-white flex items-center justify-center text-xl shadow-md">
+                            <i class="bi bi-calendar-month-fill"></i>
+                        </div>
+                    </div>
+                    <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Uzalishaji wa Mwezi Huu</p>
+                    <h3 class="text-3xl font-black text-slate-900 mt-2" id="cardProdMonth">0 <span class="text-xs font-bold text-slate-400 uppercase">Pcs</span></h3>
+                    <div class="mt-4 pt-4 border-t border-slate-100 flex justify-between items-center text-xs">
+                        <span class="text-slate-500 font-medium">Jumla ya mwezi wa sasa</span>
+                        <button onclick="switchTab('history')" class="text-emerald-600 font-bold hover:underline">Tazama Log &rarr;</button>
+                    </div>
+                </div>
+
+                <!-- CARD 3: UZALISHAJI WA MWAKA HUU -->
+                <div class="bg-white rounded-3xl p-6 shadow-md border border-slate-100 hover:shadow-xl transition-all duration-300 relative overflow-hidden group">
+                    <div class="absolute top-0 right-0 w-32 h-32 bg-blue-500/5 rounded-bl-full pointer-events-none group-hover:scale-110 transition-transform"></div>
+                    <div class="flex items-center justify-between mb-4">
+                        <span class="text-xs font-extrabold text-blue-600 bg-blue-50 px-3 py-1 rounded-full uppercase tracking-wider">Mwaka Huu</span>
+                        <div class="w-12 h-12 rounded-2xl gradient-card-3 text-white flex items-center justify-center text-xl shadow-md">
+                            <i class="bi bi-bar-chart-fill"></i>
+                        </div>
+                    </div>
+                    <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Uzalishaji wa Mwaka Huu</p>
+                    <h3 class="text-3xl font-black text-slate-900 mt-2" id="cardProdYear">0 <span class="text-xs font-bold text-slate-400 uppercase">Pcs</span></h3>
+                    <div class="mt-4 pt-4 border-t border-slate-100 flex justify-between items-center text-xs">
+                        <span class="text-slate-500 font-medium">Lengo la uzalishaji la mwaka</span>
+                        <button onclick="switchTab('history')" class="text-blue-600 font-bold hover:underline">Ripoti &rarr;</button>
+                    </div>
+                </div>
+
+                <!-- CARD 4: IDADI YA BIDHAA NILIZOZALISHA (JUMLA KUU Pcs) -->
+                <div class="bg-white rounded-3xl p-6 shadow-md border border-slate-100 hover:shadow-xl transition-all duration-300 relative overflow-hidden group">
+                    <div class="absolute top-0 right-0 w-32 h-32 bg-amber-500/5 rounded-bl-full pointer-events-none group-hover:scale-110 transition-transform"></div>
+                    <div class="flex items-center justify-between mb-4">
+                        <span class="text-xs font-extrabold text-amber-600 bg-amber-50 px-3 py-1 rounded-full uppercase tracking-wider">Jumla Kuu</span>
+                        <div class="w-12 h-12 rounded-2xl gradient-card-4 text-white flex items-center justify-center text-xl shadow-md">
+                            <i class="bi bi-box-seam-fill"></i>
+                        </div>
+                    </div>
+                    <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Idadi ya Bidhaa Nilizozalisha</p>
+                    <h3 class="text-3xl font-black text-slate-900 mt-2" id="cardProdTotalItems">0 <span class="text-xs font-bold text-slate-400 uppercase">Pcs Zote</span></h3>
+                    <div class="mt-4 pt-4 border-t border-slate-100 flex justify-between items-center text-xs">
+                        <span class="text-slate-500 font-medium">Sum ya zote zilizozalishwa</span>
+                        <button onclick="openRecordProductionModal()" class="text-amber-600 font-bold hover:underline">Ongeza Mpya &rarr;</button>
+                    </div>
+                </div>
+
+                <!-- CARD 5: AINA YA BIDHAA NILIZOZALISHA (VARIETIES / TYPES) -->
+                <div class="bg-white rounded-3xl p-6 shadow-md border border-slate-100 hover:shadow-xl transition-all duration-300 relative overflow-hidden group">
+                    <div class="absolute top-0 right-0 w-32 h-32 bg-pink-500/5 rounded-bl-full pointer-events-none group-hover:scale-110 transition-transform"></div>
+                    <div class="flex items-center justify-between mb-4">
+                        <span class="text-xs font-extrabold text-pink-600 bg-pink-50 px-3 py-1 rounded-full uppercase tracking-wider">Aina za Bidhaa</span>
+                        <div class="w-12 h-12 rounded-2xl gradient-card-5 text-white flex items-center justify-center text-xl shadow-md">
+                            <i class="bi bi-tags-fill"></i>
+                        </div>
+                    </div>
+                    <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Aina ya Bidhaa Nilizozalisha</p>
+                    <h3 class="text-3xl font-black text-slate-900 mt-2" id="cardProdTypesCount">0 <span class="text-xs font-bold text-slate-400 uppercase">Aina</span></h3>
+                    <div class="mt-4 pt-4 border-t border-slate-100 flex justify-between items-center text-xs">
+                        <span class="text-slate-500 font-medium" id="cardProdTypesSub">Andazi, Cake, Biscuits...</span>
+                        <button onclick="switchTab('record')" class="text-pink-600 font-bold hover:underline">Orodha &rarr;</button>
+                    </div>
+                </div>
+
+                <!-- CARD 6: KADI YA PICHA YA MHUSIKA (PROFILE CARD WITH PHOTO & DETAILS) -->
+                <div class="gradient-profile rounded-3xl p-6 text-white shadow-xl relative overflow-hidden flex flex-col justify-between border border-slate-800">
+                    <div class="flex items-start justify-between">
+                        <div class="flex items-center gap-4">
+                            <div class="relative group">
+                                <img id="cardManufacturerImg" src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400&auto=format&fit=crop&q=80" alt="Manufacturer Photo" class="w-16 h-16 rounded-2xl object-cover border-2 border-purple-500 shadow-md">
+                                <button onclick="openProfilePhotoModal()" title="Badilisha au Weka Picha" class="absolute -bottom-1 -right-1 bg-purple-500 hover:bg-purple-600 text-white w-6 h-6 rounded-full flex items-center justify-center text-xs shadow-md transition-transform hover:scale-110">
+                                    <i class="bi bi-camera-fill"></i>
+                                </button>
+                            </div>
+                            <div>
+                                <h4 class="font-black text-base text-white leading-snug" id="cardManufacturerName">DULLAH SHEIZA</h4>
+                                <p class="text-xs text-purple-400 font-bold font-mono" id="cardManufacturerId">ID: NGAE027</p>
+                                <p class="text-[11px] text-slate-300 mt-0.5" id="cardManufacturerDept">Uzalishaji (Production)</p>
+                            </div>
+                        </div>
+                        <span class="bg-emerald-500/20 text-emerald-400 text-[10px] font-extrabold px-2.5 py-1 rounded-full uppercase tracking-wider border border-emerald-500/30 flex items-center gap-1">
+                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping"></span> Active
+                        </span>
+                    </div>
+
+                    <div class="mt-4 pt-4 border-t border-slate-800/80 flex items-center justify-between text-xs text-slate-300">
+                        <span class="text-[11px] text-slate-400">Picha imedhibitishwa na Admin Portal</span>
+                        <button onclick="openProfilePhotoModal()" class="text-purple-400 font-bold hover:underline text-xs flex items-center gap-1">
+                            <i class="bi bi-pencil-square"></i> Weka Picha
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Bakaa ya Malighafi Ulizopewa Card Preview -->
+            <div class="bg-white rounded-3xl p-6 shadow-md border border-slate-100 space-y-4">
+                <div class="flex items-center justify-between border-b border-slate-100 pb-4">
+                    <div class="flex items-center gap-2">
+                        <div class="w-9 h-9 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center font-bold">
+                            <i class="bi bi-box-seam-fill"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-slate-900 text-sm">Bakaa ya Malighafi Ulizopewa (Active Raw Materials Stock)</h3>
+                            <p class="text-xs text-slate-400">Malighafi ulizopokea kutoka stoo na unazozitumia sasa kwa uzalishaji</p>
+                        </div>
+                    </div>
+                    <button onclick="switchTab('materials')" class="text-xs font-bold text-purple-600 hover:text-purple-800 flex items-center gap-1">
+                        Tazama Zote <i class="bi bi-arrow-right"></i>
+                    </button>
+                </div>
+                <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4" id="overviewMaterialsBalanceGrid">
+                    <!-- Dynamic rendering -->
+                </div>
+            </div>
+
+            <!-- Quick Recent Production Activity Table -->
+            <div class="bg-white rounded-3xl p-6 shadow-md border border-slate-100">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="flex items-center gap-2">
+                        <div class="w-9 h-9 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center font-bold">
+                            <i class="bi bi-clock-history"></i>
+                        </div>
+                        <h3 class="font-bold text-slate-900 text-base">Uzalishaji wa Hivi Karibuni</h3>
+                    </div>
+                    <button onclick="switchTab('history')" class="text-xs font-bold text-purple-600 hover:underline">Historia Kamili &rarr;</button>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-xs">
+                        <thead class="bg-slate-50 text-slate-500 font-extrabold uppercase border-b border-slate-100">
                             <tr>
-                                <th class="p-3 font-bold">Tarehe</th>
-                                <th class="p-3 font-bold">Bidhaa</th>
-                                <th class="p-3 font-bold text-right">Idadi</th>
+                                <th class="p-3">Tarehe</th>
+                                <th class="p-3">Bidhaa Iliyozalishwa</th>
+                                <th class="p-3 text-right">Idadi (Pcs)</th>
+                                <th class="p-3">Maelezo</th>
                             </tr>
                         </thead>
-                        <tbody id="productionLogBody" class="divide-y divide-gray-100">
-                            <!-- Populated by JS -->
+                        <tbody id="overviewRecentProdTable" class="divide-y divide-slate-100 font-medium">
+                            <!-- Dynamic Content -->
                         </tbody>
                     </table>
                 </div>
             </div>
 
-            <!-- Raw Materials Received from Storekeeper -->
-            <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-                <h2 class="text-xl font-bold text-gray-800 mb-4 border-b pb-2">
-                    <i class="bi bi-box-seam text-blue-500 mr-2"></i> Malighafi Iliyopokelewa (Stoo)
-                </h2>
-                <div class="overflow-y-auto max-h-[450px]">
-                    <table class="w-full text-left text-sm">
-                        <thead class="bg-gray-50 text-gray-700 sticky top-0 z-10 shadow-sm border-b border-gray-200">
+        </section>
+
+
+        <!-- =================================================================== -->
+        <!-- VIEW 2: REKODI UZALISHAJI (FORM & PORTAL)                           -->
+        <!-- =================================================================== -->
+        <section id="view-record" class="hidden space-y-6">
+            <div class="bg-white rounded-3xl p-6 md:p-8 shadow-md border border-slate-100 max-w-2xl mx-auto">
+                <div class="flex items-center gap-3 border-b border-slate-100 pb-5 mb-6">
+                    <div class="w-12 h-12 rounded-2xl bg-purple-600 text-white flex items-center justify-center text-xl shadow-md">
+                        <i class="bi bi-plus-circle-fill"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-xl font-extrabold text-slate-900">Rekodi Uzalishaji Mpya Wa Kiwanda</h2>
+                        <p class="text-xs text-slate-500 mt-0.5">Ingiza idadi ya bidhaa mpya ulizozalisha ili kuongeza kwenye Stoo ya Kiwanda.</p>
+                    </div>
+                </div>
+
+                <form id="recordProductionFormPortal" class="space-y-6">
+                    <div>
+                        <label class="block text-xs font-extrabold text-slate-700 uppercase tracking-wider mb-2">Chagua Bidhaa Iliyozalishwa <span class="text-red-500">*</span></label>
+                        <div class="relative">
+                            <select id="portalProdProduct" required class="w-full bg-slate-50 border border-slate-200 rounded-2xl p-4 text-sm font-bold text-slate-800 focus:bg-white focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition-all appearance-none">
+                                <option value="">-- Chagua Bidhaa --</option>
+                                <!-- Populated dynamically -->
+                            </select>
+                            <i class="bi bi-chevron-down absolute right-4 top-4 text-slate-400 pointer-events-none"></i>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-extrabold text-slate-700 uppercase tracking-wider mb-2">Idadi Iliyozalishwa (pcs) <span class="text-red-500">*</span></label>
+                        <input type="number" id="portalProdQuantity" required min="1" placeholder="Mfano: 500" class="w-full bg-slate-50 border border-slate-200 rounded-2xl p-4 text-2xl font-black text-purple-700 focus:bg-white focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition-all">
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-extrabold text-slate-700 uppercase tracking-wider mb-2">Maelezo Mengine (Hiari)</label>
+                        <textarea id="portalProdNotes" rows="3" placeholder="Mfano: Kundi la asubuhi, Batch 1 ya Ngano..." class="w-full bg-slate-50 border border-slate-200 rounded-2xl p-4 text-xs font-medium text-slate-800 focus:bg-white focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition-all"></textarea>
+                    </div>
+
+                    <div class="pt-2 flex items-center gap-3">
+                        <button type="button" onclick="switchTab('overview')" class="flex-1 py-4 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-2xl transition-all text-xs">
+                            Ghairi
+                        </button>
+                        <button type="submit" class="flex-1 py-4 bg-purple-600 hover:bg-purple-700 text-white font-extrabold rounded-2xl shadow-lg transition-all text-xs flex items-center justify-center gap-2 transform hover:-translate-y-0.5">
+                            <i class="bi bi-check-circle-fill text-base"></i> Hifadhi Uzalishaji
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </section>
+
+
+        <!-- =================================================================== -->
+        <!-- VIEW 3: MALIGHAFI ILIYOTOLEWA STOO (RAW MATERIALS PORTAL)           -->
+        <!-- =================================================================== -->
+        <section id="view-materials" class="hidden space-y-8">
+            <!-- Active Stock Balance Card -->
+            <div class="bg-white rounded-3xl p-6 shadow-md border border-slate-100 space-y-4">
+                <div class="flex items-center gap-3 border-b border-slate-100 pb-4">
+                    <div class="w-10 h-10 rounded-2xl bg-blue-100 text-blue-600 flex items-center justify-center text-xl font-bold">
+                        <i class="bi bi-box-seam-fill"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-lg font-extrabold text-slate-900">Bakaa ya Malighafi Ulizokabidhiwa Na Stoo</h2>
+                        <p class="text-xs text-slate-500">Orodha ya malighafi zilizopo mikononi mwako zilizotolewa na Storekeeper</p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4" id="portalMaterialsBalanceGrid">
+                    <!-- Dynamic Content -->
+                </div>
+            </div>
+
+            <!-- Detailed Log Table of Received Raw Materials -->
+            <div class="bg-white rounded-3xl p-6 shadow-md border border-slate-100">
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
+                    <div>
+                        <h3 class="font-extrabold text-slate-900 text-base flex items-center gap-2">
+                            <i class="bi bi-receipt-cutoff text-blue-600"></i> Rekodi ya Malighafi Zilizopokelewa Kutoka Stoo
+                        </h3>
+                        <p class="text-xs text-slate-500 mt-1">Historia yote ya migawanyo ya malighafi uliyopewa na Storekeeper</p>
+                    </div>
+                    <div class="w-full md:w-64">
+                        <div class="relative">
+                            <input type="text" id="searchMaterialInput" oninput="renderMaterialsPortal()" placeholder="Tafuta malighafi..." class="w-full bg-slate-50 border border-slate-200 rounded-xl pl-9 pr-4 py-2 text-xs font-semibold text-slate-800 focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none">
+                            <i class="bi bi-search absolute left-3 top-2.5 text-slate-400"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="overflow-x-auto custom-scrollbar">
+                    <table class="w-full text-left text-xs">
+                        <thead class="bg-slate-50 text-slate-500 font-extrabold uppercase border-b border-slate-200">
                             <tr>
-                                <th class="p-3 font-bold">Tarehe</th>
-                                <th class="p-3 font-bold">Malighafi</th>
-                                <th class="p-3 font-bold text-right">Kiasi</th>
+                                <th class="p-3">Tarehe</th>
+                                <th class="p-3">Malighafi</th>
+                                <th class="p-3 text-right">Kiasi</th>
+                                <th class="p-3">Kipimo (Unit)</th>
+                                <th class="p-3 text-center">Hali</th>
                             </tr>
                         </thead>
-                        <tbody id="rawMaterialsReceivedBody" class="divide-y divide-gray-100">
-                            <!-- Populated by JS -->
+                        <tbody id="portalRawMaterialsTable" class="divide-y divide-slate-100 font-medium">
+                            <!-- Dynamic Content -->
                         </tbody>
                     </table>
                 </div>
             </div>
-        </div>
-    </div>
+        </section>
 
-    <!-- MODAL: Rekodi Uzalishaji -->
-    <div id="recordProductionModal" class="hidden fixed inset-0 bg-gray-900 bg-opacity-60 justify-center items-center z-50 p-4 backdrop-blur-sm">
-        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden">
-            <div class="bg-purple-600 p-5 flex justify-between items-center">
-                <h3 class="text-xl font-bold text-white"><i class="bi bi-plus-circle mr-2"></i> Rekodi Uzalishaji Mpya</h3>
-                <button onclick="toggleModal('recordProductionModal')" class="text-white hover:text-purple-200 text-2xl font-bold">&times;</button>
+
+        <!-- =================================================================== -->
+        <!-- VIEW 4: MAPENDEKEZO YANGU (SUGGESTIONS & FEEDBACK CHAT PORTAL)      -->
+        <!-- =================================================================== -->
+        <section id="view-suggestions" class="hidden space-y-6">
+            <div class="bg-white rounded-3xl shadow-md border border-slate-100 overflow-hidden max-w-4xl mx-auto flex flex-col h-[650px]">
+                
+                <!-- Chat Header -->
+                <div class="bg-slate-900 p-5 text-white flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-2xl bg-purple-600 flex items-center justify-center text-white text-lg">
+                            <i class="bi bi-chat-left-quote-fill"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-extrabold text-sm text-white">Mapendekezo na Maoni Kwa Uongozi</h3>
+                            <p class="text-[11px] text-slate-400">Tuma mawazo, maoni au changamoto zako za uzalishaji moja kwa moja kwa Uongozi</p>
+                        </div>
+                    </div>
+                    <span class="bg-purple-500/20 text-purple-300 text-[10px] font-bold px-3 py-1 rounded-full uppercase border border-purple-500/30">
+                        NGAE Feedback Portal
+                    </span>
+                </div>
+
+                <!-- Chat Body / Conversation List -->
+                <div id="suggestionsChatPortalList" class="flex-1 p-6 overflow-y-auto space-y-4 bg-slate-50 custom-scrollbar">
+                    <!-- Populated dynamically -->
+                </div>
+
+                <!-- Chat Input Form -->
+                <form id="suggestionChatPortalForm" onsubmit="handleSuggestionSubmit(event)" class="p-4 bg-white border-t border-slate-200 flex gap-3">
+                    <input type="text" id="suggestionPortalMessage" required placeholder="Andika pendekezo au maoni yako hapa..." class="flex-1 bg-slate-100 border border-slate-200 rounded-2xl px-4 py-3 text-xs font-semibold text-slate-800 focus:bg-white focus:ring-2 focus:ring-purple-500 outline-none">
+                    <button type="submit" class="bg-purple-600 hover:bg-purple-700 text-white font-extrabold px-6 py-3 rounded-2xl text-xs transition-all shadow-md flex items-center gap-2">
+                        <span>Tuma</span> <i class="bi bi-send-fill"></i>
+                    </button>
+                </form>
+
             </div>
-            <form id="recordProductionForm" class="p-6">
-                <div class="mb-5">
-                    <label class="block text-sm font-bold text-gray-700 mb-2">Bidhaa Iliyozalishwa</label>
-                    <select id="prodProduct" required class="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-purple-500 outline-none">
+        </section>
+
+
+        <!-- =================================================================== -->
+        <!-- VIEW 5: HISTORIA YA UZALISHAJI (PRODUCTION LOG TABLE PORTAL)        -->
+        <!-- =================================================================== -->
+        <section id="view-history" class="hidden space-y-6">
+            <div class="bg-white rounded-3xl p-6 md:p-8 shadow-md border border-slate-100">
+                
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
+                    <div>
+                        <h2 class="text-xl font-black text-slate-900 flex items-center gap-2">
+                            <i class="bi bi-clipboard-data text-purple-600"></i> Historia ya Uzalishaji Wa Kiwanda
+                        </h2>
+                        <p class="text-xs text-slate-500 mt-1">Kumbukumbu kamili za uzalishaji zilizorekodiwa kiwandani</p>
+                    </div>
+                    
+                    <!-- Search Input -->
+                    <div class="w-full md:w-72">
+                        <div class="relative">
+                            <input type="text" id="historySearchInput" oninput="renderProductionHistoryTable()" placeholder="Tafuta kwa jina la bidhaa au tarehe..." class="w-full bg-slate-50 border border-slate-200 rounded-2xl pl-10 pr-4 py-3 text-xs font-semibold text-slate-800 focus:bg-white focus:ring-2 focus:ring-purple-500 outline-none">
+                            <i class="bi bi-search absolute left-3.5 top-3.5 text-slate-400"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="overflow-x-auto custom-scrollbar">
+                    <table class="w-full text-left text-xs">
+                        <thead class="bg-slate-900 text-white font-extrabold uppercase">
+                            <tr>
+                                <th class="p-4 rounded-tl-2xl">Tarehe</th>
+                                <th class="p-4">Bidhaa Iliyozalishwa</th>
+                                <th class="p-4 text-right">Idadi (Pcs)</th>
+                                <th class="p-4">Maelezo (Notes)</th>
+                                <th class="p-4 rounded-tr-2xl text-center">Hali</th>
+                            </tr>
+                        </thead>
+                        <tbody id="productionHistoryTableBody" class="divide-y divide-slate-100 font-medium">
+                            <!-- Populated by JS -->
+                        </tbody>
+                    </table>
+                </div>
+
+            </div>
+        </section>
+
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="bg-slate-900 text-slate-400 text-xs py-6 border-t border-slate-800 mt-auto">
+        <div class="max-w-7xl mx-auto px-4 text-center">
+            <p>&copy; 2026 NGAE Food Processors. Haki zote zimehifadhiwa. Manufacturer Portal.</p>
+        </div>
+    </footer>
+
+
+    <!-- =================================================================== -->
+    <!-- MODAL 1: REKODI UZALISHAJI MPYA (RECORD PRODUCTION MODAL)           -->
+    <!-- =================================================================== -->
+    <div id="recordProductionModal" class="hidden fixed inset-0 bg-slate-900/70 backdrop-blur-sm justify-center items-center z-50 p-4">
+        <div class="bg-white rounded-3xl shadow-2xl w-full max-w-md overflow-hidden transform transition-all">
+            <div class="bg-slate-900 p-6 text-white flex justify-between items-center border-b border-slate-800">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-2xl bg-purple-600 flex items-center justify-center text-white text-lg font-bold">
+                        <i class="bi bi-plus-circle-fill"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-base font-extrabold text-white">Rekodi Uzalishaji Mpya</h3>
+                        <p class="text-[11px] text-slate-400">Ingiza idadi ya bidhaa zilizozalishwa</p>
+                    </div>
+                </div>
+                <button onclick="closeRecordProductionModal()" class="text-slate-400 hover:text-white text-2xl font-bold transition-colors">&times;</button>
+            </div>
+
+            <form id="recordProductionModalForm" class="p-6 space-y-5">
+                <div>
+                    <label class="block text-xs font-extrabold text-slate-700 uppercase tracking-wider mb-2">Bidhaa Iliyozalishwa <span class="text-red-500">*</span></label>
+                    <select id="modalProdProduct" required class="w-full bg-slate-50 border border-slate-200 rounded-2xl p-3.5 text-sm font-bold text-slate-800 focus:bg-white focus:ring-2 focus:ring-purple-500 outline-none">
                         <option value="">-- Chagua Bidhaa --</option>
                         <!-- Populated by JS -->
                     </select>
                 </div>
-                <div class="mb-6">
-                    <label class="block text-sm font-bold text-gray-700 mb-2">Idadi Iliyozalishwa (pcs)</label>
-                    <input type="number" id="prodQuantity" required min="1" class="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-purple-500 outline-none text-xl font-black text-purple-700">
+
+                <div>
+                    <label class="block text-xs font-extrabold text-slate-700 uppercase tracking-wider mb-2">Idadi Iliyozalishwa (pcs) <span class="text-red-500">*</span></label>
+                    <input type="number" id="modalProdQuantity" required min="1" placeholder="Mfano: 200" class="w-full bg-slate-50 border border-slate-200 rounded-2xl p-3.5 text-2xl font-black text-purple-700 focus:bg-white focus:ring-2 focus:ring-purple-500 outline-none">
                 </div>
-                <div class="mb-5">
-                    <label class="block text-sm font-bold text-gray-700 mb-2">Maelezo Mengine (Hiari)</label>
-                    <textarea id="prodNotes" rows="2" class="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-purple-500 outline-none text-sm" placeholder="Mfano: Kundi la asubuhi, Batch 1..."></textarea>
+
+                <div>
+                    <label class="block text-xs font-extrabold text-slate-700 uppercase tracking-wider mb-2">Maelezo Mengine (Hiari)</label>
+                    <textarea id="modalProdNotes" rows="2" placeholder="Mfano: Kundi la jioni..." class="w-full bg-slate-50 border border-slate-200 rounded-2xl p-3 text-xs font-medium text-slate-800 focus:bg-white focus:ring-2 focus:ring-purple-500 outline-none"></textarea>
                 </div>
-                <div class="flex gap-3">
-                    <button type="button" onclick="toggleModal('recordProductionModal')" class="flex-1 py-3 bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold rounded-lg transition-colors">Ghairi</button>
-                    <button type="submit" class="flex-1 py-3 bg-purple-600 hover:bg-purple-700 text-white font-bold rounded-lg shadow-md transition-colors">
-                        <i class="bi bi-save mr-2"></i> Hifadhi
+
+                <div class="pt-2 flex gap-3">
+                    <button type="button" onclick="closeRecordProductionModal()" class="flex-1 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-2xl text-xs transition-colors">
+                        Ghairi
+                    </button>
+                    <button type="submit" class="flex-1 py-3 bg-purple-600 hover:bg-purple-700 text-white font-extrabold rounded-2xl shadow-md text-xs transition-colors flex items-center justify-center gap-1.5">
+                        <i class="bi bi-save-fill"></i> Hifadhi
                     </button>
                 </div>
             </form>
         </div>
     </div>
 
+
+    <!-- =================================================================== -->
+    <!-- MODAL 2: BADILISHA PICHA YA PROFILE (UPDATE PROFILE PHOTO MODAL)    -->
+    <!-- =================================================================== -->
+    <div id="profilePhotoModal" class="hidden fixed inset-0 bg-slate-900/70 backdrop-blur-sm justify-center items-center z-50 p-4">
+        <div class="bg-white rounded-3xl shadow-2xl w-full max-w-md overflow-hidden">
+            <div class="bg-slate-900 p-6 text-white flex justify-between items-center border-b border-slate-800">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-2xl bg-purple-600 flex items-center justify-center text-white text-lg">
+                        <i class="bi bi-camera-fill"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-base font-extrabold text-white">Weka / Badilisha Picha</h3>
+                        <p class="text-[11px] text-slate-400">Picha hii itaonekana kwenye Profile yako</p>
+                    </div>
+                </div>
+                <button onclick="closeProfilePhotoModal()" class="text-slate-400 hover:text-white text-2xl font-bold">&times;</button>
+            </div>
+
+            <div class="p-6 space-y-5">
+                <div>
+                    <label class="block text-xs font-extrabold text-slate-700 uppercase tracking-wider mb-2">Chagua Picha Kutoka Kwenye Kompyuta / Simu</label>
+                    <input type="file" id="modalPhotoFileInput" accept="image/*" class="w-full bg-slate-50 border border-slate-200 rounded-2xl p-3 text-xs font-medium text-slate-800 focus:outline-none">
+                </div>
+
+                <div class="relative flex py-1 items-center">
+                    <div class="flex-grow border-t border-slate-200"></div>
+                    <span class="flex-shrink mx-4 text-[10px] font-extrabold text-slate-400 uppercase">AU Weka Web Link (URL)</span>
+                    <div class="flex-grow border-t border-slate-200"></div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-extrabold text-slate-700 uppercase tracking-wider mb-2">Link ya Picha (Image URL)</label>
+                    <input type="url" id="modalPhotoUrlInput" placeholder="https://example.com/photo.jpg" class="w-full bg-slate-50 border border-slate-200 rounded-2xl p-3.5 text-xs font-medium text-slate-800 focus:bg-white focus:ring-2 focus:ring-purple-500 outline-none">
+                </div>
+
+                <div class="pt-2 flex gap-3">
+                    <button type="button" onclick="closeProfilePhotoModal()" class="flex-1 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-2xl text-xs transition-colors">
+                        Ghairi
+                    </button>
+                    <button type="button" onclick="saveModalProfilePhoto()" class="flex-1 py-3 bg-purple-600 hover:bg-purple-700 text-white font-extrabold rounded-2xl shadow-md text-xs transition-colors flex items-center justify-center gap-1.5">
+                        <i class="bi bi-cloud-arrow-up-fill"></i> Hifadhi Picha
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- SCRIPTS -->
     <script src="app.js"></script>
     <script>
-        function toggleModal(modalId) {
-            const modal = document.getElementById(modalId);
-            modal.classList.toggle('hidden');
-            modal.classList.toggle('modal-active');
+        // Real-time Clock
+        function updateHeaderClock() {
+            const now = new Date();
+            const dateStr = now.toLocaleDateString('sw-TZ', { day: '2-digit', month: 'short', year: 'numeric' });
+            const timeStr = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true });
+
+            const dEl = document.getElementById('headerDateDisplay');
+            const tEl = document.getElementById('headerTimeDisplay');
+            if (dEl) dEl.textContent = dateStr;
+            if (tEl) tEl.textContent = timeStr;
+        }
+        setInterval(updateHeaderClock, 1000);
+        updateHeaderClock();
+
+        // TAB SWITCHING LOGIC
+        function switchTab(tabId) {
+            const views = ['overview', 'record', 'materials', 'suggestions', 'history'];
+            views.forEach(v => {
+                const viewEl = document.getElementById(`view-${v}`);
+                const navBtn = document.getElementById(`nav-${v}`);
+
+                if (viewEl) viewEl.classList.add('hidden');
+                if (navBtn) navBtn.classList.remove('active');
+            });
+
+            const activeView = document.getElementById(`view-${tabId}`);
+            const activeNav = document.getElementById(`nav-${tabId}`);
+
+            if (activeView) activeView.classList.remove('hidden');
+            if (activeNav) activeNav.classList.add('active');
+
+            // Render specific view data
+            if (tabId === 'overview') renderOverviewCards();
+            if (tabId === 'materials') renderMaterialsPortal();
+            if (tabId === 'suggestions') renderSuggestionsChat();
+            if (tabId === 'history') renderProductionHistoryTable();
         }
 
+        // INITIALIZATION
         document.addEventListener('DOMContentLoaded', () => {
-            if(window.appProtectRoute) window.appProtectRoute('manufacturer');
+            if (window.appProtectRoute) window.appProtectRoute('manufacturer');
 
-            const staffId = localStorage.getItem('ngae_logged_in_id') || 'NGAE027';
-            document.getElementById('staffIdDisplay').textContent = staffId;
+            populateProductDropdowns();
 
-            if(window.appData) {
-                const sel = document.getElementById('prodProduct');
-                window.appData.products.forEach(p => {
-                    const opt = document.createElement('option');
-                    opt.value = p.id;
-                    opt.textContent = p.name;
-                    sel.appendChild(opt);
-                });
-            }
-
-            document.getElementById('recordProductionForm').addEventListener('submit', (e) => {
+            // Form Submit listeners
+            document.getElementById('recordProductionFormPortal').addEventListener('submit', (e) => {
                 e.preventDefault();
-                const productId = document.getElementById('prodProduct').value;
-                const qty = parseInt(document.getElementById('prodQuantity').value);
-                const notes = document.getElementById('prodNotes').value;
-
-                if(window.appRecordProduction) {
-                    window.appRecordProduction(productId, qty, notes);
-                    toggleModal('recordProductionModal');
-                    showMessage(`Uzalishaji wa ${qty} pcs umerekodiwa kikamilifu!`, 'purple');
-                    renderManufacturerDashboard();
-                    document.getElementById('recordProductionForm').reset();
-                }
+                const pId = document.getElementById('portalProdProduct').value;
+                const qty = parseInt(document.getElementById('portalProdQuantity').value);
+                const notes = document.getElementById('portalProdNotes').value;
+                submitProduction(pId, qty, notes, 'recordProductionFormPortal');
             });
 
-            renderManufacturerDashboard();
-
-            // Suggestions form submit
-            document.getElementById('suggestionSubmitForm').addEventListener('submit', (e) => {
+            document.getElementById('recordProductionModalForm').addEventListener('submit', (e) => {
                 e.preventDefault();
-                const msg = document.getElementById('suggestionMessage').value;
-                if (window.appSubmitSuggestion) {
-                    window.appSubmitSuggestion(msg);
-                    document.getElementById('suggestionMessage').value = '';
-                    renderSuggestionsModal();
-                }
+                const pId = document.getElementById('modalProdProduct').value;
+                const qty = parseInt(document.getElementById('modalProdQuantity').value);
+                const notes = document.getElementById('modalProdNotes').value;
+                submitProduction(pId, qty, notes, 'recordProductionModalForm');
+                closeRecordProductionModal();
             });
+
+            renderOverviewCards();
         });
 
-        function showMessage(text, color) {
-            const div = document.getElementById('actionMessage');
-            div.className = `mb-4 p-3 rounded-lg font-bold bg-${color}-100 text-${color}-700 block`;
-            div.textContent = text;
-            setTimeout(() => div.classList.add('hidden'), 5000);
+        // POPULATE PRODUCT DROPDOWNS
+        function populateProductDropdowns() {
+            if (!window.appData || !window.appData.products) return;
+            const pSel1 = document.getElementById('portalProdProduct');
+            const pSel2 = document.getElementById('modalProdProduct');
+
+            pSel1.innerHTML = '<option value="">-- Chagua Bidhaa --</option>';
+            pSel2.innerHTML = '<option value="">-- Chagua Bidhaa --</option>';
+
+            window.appData.products.forEach(p => {
+                const opt1 = document.createElement('option');
+                opt1.value = p.id;
+                opt1.textContent = `${p.name} (Stoo: ${p.stock.toLocaleString()} pcs)`;
+                pSel1.appendChild(opt1);
+
+                const opt2 = document.createElement('option');
+                opt2.value = p.id;
+                opt2.textContent = `${p.name} (Stoo: ${p.stock.toLocaleString()} pcs)`;
+                pSel2.appendChild(opt2);
+            });
         }
 
-        function renderManufacturerDashboard() {
-            if(!window.appData) return;
-
-            const log = window.appData.productionLog || [];
-            const now = new Date();
-
-            let totalToday = 0, totalMonth = 0, totalYear = 0;
-            log.forEach(entry => {
-                totalYear += entry.quantity;
-                const d = new Date(entry.dateRaw || entry.date);
-                if(d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear()) {
-                    totalMonth += entry.quantity;
-                    if(d.toDateString() === now.toDateString()) totalToday += entry.quantity;
-                }
-            });
-            const staffId = localStorage.getItem('ngae_logged_in_id') || 'NGAE027';
-
-            document.getElementById('prodToday').textContent = totalToday.toLocaleString();
-            document.getElementById('prodMonth').textContent = totalMonth.toLocaleString();
-            document.getElementById('prodYear').textContent = totalYear.toLocaleString();
-
-            // Render active materials stock balance
-            const mBalanceContainer = document.getElementById('manufacturerMaterialsBalance');
-            mBalanceContainer.innerHTML = '';
-            if (window.appGetManufacturerMaterials) {
-                const mats = window.appGetManufacturerMaterials(staffId);
-                if (mats.length === 0) {
-                    mBalanceContainer.innerHTML = `<div class="col-span-full text-center text-gray-400 text-xs py-2">Huna malighafi yoyote iliyokabidhiwa bado.</div>`;
+        // SUBMIT PRODUCTION LOGIC
+        function submitProduction(productId, qty, notes, formId) {
+            if (window.appRecordProduction) {
+                const success = window.appRecordProduction(productId, qty, notes);
+                if (success) {
+                    showActionMessage(`Uzalishaji wa pcs ${qty.toLocaleString()} umerekodiwa kikamilifu!`, 'emerald');
+                    document.getElementById(formId).reset();
+                    populateProductDropdowns();
+                    renderOverviewCards();
+                    renderProductionHistoryTable();
                 } else {
-                    mats.forEach(m => {
-                        const mCard = document.createElement('div');
-                        mCard.className = "bg-blue-50 border border-blue-100 p-3 rounded-lg text-center shadow-sm";
-                        mCard.innerHTML = `
-                            <p class="text-[10px] font-bold text-blue-700 uppercase tracking-wider">${m.name}</p>
-                            <h4 class="text-base font-black text-blue-900 mt-1">${m.qty.toFixed(1)} <span class="text-[10px] uppercase font-bold text-blue-500">${m.unit}</span></h4>
-                        `;
-                        mBalanceContainer.appendChild(mCard);
-                    });
+                    showActionMessage('Kuna tatizo lililotokea wakati wa kurekodi uzalishaji.', 'red');
                 }
             }
+        }
 
-            const prodBody = document.getElementById('productionLogBody');
-            prodBody.innerHTML = '';
-            [...log].reverse().forEach(entry => {
-                const tr = document.createElement('tr');
-                tr.className = "hover:bg-purple-50 transition-colors";
-                tr.innerHTML = `
-                    <td class="p-3 text-gray-500 text-sm">${entry.date}</td>
-                    <td class="p-3 font-bold text-gray-800">${entry.productName}</td>
-                    <td class="p-3 text-right">
-                        <span class="bg-purple-100 text-purple-800 font-bold px-2 py-1 rounded">${entry.quantity.toLocaleString()} pcs</span>
-                    </td>
+        // SHOW ACTION NOTIFICATION MESSAGE
+        function showActionMessage(text, color = 'emerald') {
+            const div = document.getElementById('actionMessage');
+            if (!div) return;
+            div.className = `p-4 rounded-2xl font-bold shadow-md transition-all block bg-${color}-50 text-${color}-800 border border-${color}-200 text-xs flex items-center justify-between`;
+            div.innerHTML = `
+                <span class="flex items-center gap-2">
+                    <i class="bi bi-check-circle-fill text-lg text-${color}-600"></i> ${text}
+                </span>
+                <button onclick="document.getElementById('actionMessage').classList.add('hidden')" class="text-${color}-600 hover:text-${color}-900">&times;</button>
+            `;
+            setTimeout(() => {
+                if (div) div.classList.add('hidden');
+            }, 6000);
+        }
+
+        // RENDER OVERVIEW CARDS & DASHBOARD DATA
+        function renderOverviewCards() {
+            const currentStaffId = localStorage.getItem('ngae_logged_in_id') || 'NGAE027';
+
+            let stats = {
+                prodToday: 0,
+                prodMonth: 0,
+                prodYear: 0,
+                prodTotalItems: 0,
+                prodTypesCount: 0,
+                staffInfo: {
+                    id: currentStaffId,
+                    name: localStorage.getItem('ngae_logged_in_name') || 'DULLAH SHEIZA',
+                    role: 'manufacturer',
+                    photo: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400&auto=format&fit=crop&q=80'
+                }
+            };
+
+            if (window.appGetManufacturerStats) {
+                stats = window.appGetManufacturerStats(currentStaffId);
+            }
+
+            // Update Header & Banner
+            document.getElementById('headerManufacturerName').textContent = stats.staffInfo.name;
+            document.getElementById('headerManufacturerImg').src = stats.staffInfo.photo;
+            document.getElementById('bannerManufacturerName').textContent = stats.staffInfo.name;
+
+            // Update 6 Overview Cards
+            document.getElementById('cardProdToday').innerHTML = `${stats.prodToday.toLocaleString()} <span class="text-xs font-bold text-slate-400 uppercase">Pcs</span>`;
+            document.getElementById('cardProdMonth').innerHTML = `${stats.prodMonth.toLocaleString()} <span class="text-xs font-bold text-slate-400 uppercase">Pcs</span>`;
+            document.getElementById('cardProdYear').innerHTML = `${stats.prodYear.toLocaleString()} <span class="text-xs font-bold text-slate-400 uppercase">Pcs</span>`;
+            document.getElementById('cardProdTotalItems').innerHTML = `${stats.prodTotalItems.toLocaleString()} <span class="text-xs font-bold text-slate-400 uppercase">Pcs Zote</span>`;
+            document.getElementById('cardProdTypesCount').innerHTML = `${stats.prodTypesCount} <span class="text-xs font-bold text-slate-400 uppercase">Aina</span>`;
+
+            // Card 6: Profile Card
+            document.getElementById('cardManufacturerName').textContent = stats.staffInfo.name;
+            document.getElementById('cardManufacturerId').textContent = `ID: ${stats.staffInfo.id}`;
+            document.getElementById('cardManufacturerImg').src = stats.staffInfo.photo;
+
+            // Overview Raw Materials Grid
+            renderRawMaterialsGrid('overviewMaterialsBalanceGrid');
+
+            // Overview Recent Production Table
+            renderRecentProdOverviewTable();
+        }
+
+        // RENDER RAW MATERIALS BALANCE GRID
+        function renderRawMaterialsGrid(containerId) {
+            const container = document.getElementById(containerId);
+            if (!container) return;
+            container.innerHTML = '';
+
+            const currentStaffId = localStorage.getItem('ngae_logged_in_id') || 'NGAE027';
+            let mats = [];
+            if (window.appGetManufacturerMaterials) {
+                mats = window.appGetManufacturerMaterials(currentStaffId);
+            }
+
+            if (mats.length === 0) {
+                container.innerHTML = `
+                    <div class="col-span-full text-center py-6 text-slate-400 text-xs font-bold">
+                        <i class="bi bi-box text-2xl text-slate-300"></i>
+                        <p class="mt-1">Huna malighafi yoyote iliyokabidhiwa na stoo kwa sasa.</p>
+                    </div>
                 `;
-                prodBody.appendChild(tr);
-            });
+                return;
+            }
 
-            // Raw materials received from storekeeper (filtered by logged-in manufacturer)
-            const matBody = document.getElementById('rawMaterialsReceivedBody');
-            matBody.innerHTML = '';
-            const dispatches = (window.appData.rawMaterialsDispatchHistory || []).filter(d => d.manufacturerId === staffId);
+            mats.forEach(m => {
+                const card = document.createElement('div');
+                card.className = "bg-slate-50 border border-slate-200 p-4 rounded-2xl text-center shadow-sm hover:shadow-md transition-all";
+                card.innerHTML = `
+                    <span class="text-[10px] font-extrabold text-purple-600 uppercase tracking-wider bg-purple-50 px-2 py-0.5 rounded-full">${m.name}</span>
+                    <h4 class="text-xl font-black text-slate-900 mt-2">${m.qty.toFixed(1)} <span class="text-xs font-bold text-slate-400 uppercase">${m.unit}</span></h4>
+                    <p class="text-[10px] text-slate-400 mt-1 font-semibold">Bakaa Iliyopo Stoo</p>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        // RENDER RECENT PRODUCTION OVERVIEW TABLE
+        function renderRecentProdOverviewTable() {
+            const tbody = document.getElementById('overviewRecentProdTable');
+            if (!tbody) return;
+            tbody.innerHTML = '';
+
+            const log = (window.appData && window.appData.productionLog) ? window.appData.productionLog : [];
+            if (log.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="4" class="p-6 text-center text-slate-400">Hakuna uzalishaji uliorekodiwa bado.</td></tr>`;
+                return;
+            }
+
+            [...log].reverse().slice(0, 5).forEach(entry => {
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-slate-50 transition-colors";
+                tr.innerHTML = `
+                    <td class="p-3 text-slate-600 font-bold">${entry.date}</td>
+                    <td class="p-3 font-black text-purple-700">${entry.productName}</td>
+                    <td class="p-3 text-right">
+                        <span class="bg-purple-100 text-purple-800 font-black px-2.5 py-1 rounded-full text-xs">
+                            ${entry.quantity.toLocaleString()} pcs
+                        </span>
+                    </td>
+                    <td class="p-3 text-slate-500 italic">${entry.notes || '-'}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        // RENDER MATERIALS PORTAL
+        function renderMaterialsPortal() {
+            renderRawMaterialsGrid('portalMaterialsBalanceGrid');
+
+            const tbody = document.getElementById('portalRawMaterialsTable');
+            if (!tbody) return;
+            tbody.innerHTML = '';
+
+            const currentStaffId = localStorage.getItem('ngae_logged_in_id') || 'NGAE027';
+            const filterText = (document.getElementById('searchMaterialInput')?.value || '').toLowerCase();
+
+            const dispatches = (window.appData && window.appData.rawMaterialsDispatchHistory || [])
+                .filter(d => d.manufacturerId === currentStaffId)
+                .filter(d => d.materialName.toLowerCase().includes(filterText) || d.date.toLowerCase().includes(filterText));
+
+            if (dispatches.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" class="p-6 text-center text-slate-400">Hakuna kumbukumbu za malighafi zilizopokelewa zilizopatikana.</td></tr>`;
+                return;
+            }
+
             [...dispatches].reverse().forEach(d => {
                 const tr = document.createElement('tr');
-                tr.className = "hover:bg-blue-50 transition-colors";
+                tr.className = "hover:bg-slate-50 transition-colors";
                 tr.innerHTML = `
-                    <td class="p-3 text-gray-500 text-sm">${d.date}</td>
-                    <td class="p-3 font-bold text-gray-800">${d.materialName}</td>
-                    <td class="p-3 text-right">
-                        <span class="bg-blue-100 text-blue-800 font-bold px-2 py-1 rounded">${d.qty.toFixed(2)} ${d.unit}</span>
+                    <td class="p-3 text-slate-600 font-bold">${d.date}</td>
+                    <td class="p-3 font-extrabold text-slate-900">${d.materialName}</td>
+                    <td class="p-3 text-right font-black text-blue-600">${d.qty.toFixed(2)}</td>
+                    <td class="p-3 text-slate-500 uppercase font-bold">${d.unit}</td>
+                    <td class="p-3 text-center">
+                        <span class="bg-emerald-100 text-emerald-800 font-extrabold px-2.5 py-0.5 rounded-full text-[10px]">
+                            Iliyopokelewa
+                        </span>
                     </td>
                 `;
-                matBody.appendChild(tr);
+                tbody.appendChild(tr);
             });
         }
 
-        // --- SUGGESTIONS CHAT SYSTEM ---
-        function toggleSuggestionsModal() {
-            const modal = document.getElementById('suggestionsModal');
-            if (modal.classList.contains('hidden')) {
-                modal.classList.remove('hidden');
-                modal.classList.add('flex');
-                renderSuggestionsModal();
-            } else {
-                modal.classList.add('hidden');
-                modal.classList.remove('flex');
-            }
-        }
-
-        function renderSuggestionsModal() {
+        // RENDER SUGGESTIONS CHAT PORTAL
+        function renderSuggestionsChat() {
             if (!window.appData || !window.appGetStaffSuggestions) return;
             const suggs = window.appGetStaffSuggestions();
-            const chatList = document.getElementById('suggestionsChatList');
-            chatList.innerHTML = '';
+            const list = document.getElementById('suggestionsChatPortalList');
+            if (!list) return;
+            list.innerHTML = '';
 
             if (suggs.length === 0) {
-                chatList.innerHTML = `<div class="text-center text-gray-400 text-sm py-8"><i class="bi bi-chat-quote text-3xl text-gray-300"></i><p class="mt-2">Huna mapendekezo yoyote bado. Tuma pendekezo lako la kwanza hapa chini!</p></div>`;
+                list.innerHTML = `
+                    <div class="text-center text-slate-400 py-16">
+                        <i class="bi bi-chat-quote text-4xl text-slate-300"></i>
+                        <p class="mt-3 text-xs font-bold">Huna mapendekezo yoyote bado.</p>
+                        <p class="text-[11px] text-slate-400 mt-1">Tuma pendekezo au changamoto yako kwa uongozi hapa chini.</p>
+                    </div>
+                `;
                 return;
             }
 
             suggs.forEach(s => {
                 const staffDiv = document.createElement('div');
-                staffDiv.className = "flex flex-col items-end space-y-1 mt-2";
+                staffDiv.className = "flex flex-col items-end space-y-1 mt-3";
                 staffDiv.innerHTML = `
-                    <div class="bg-blue-600 text-white p-3 rounded-2xl rounded-tr-none max-w-md text-sm shadow-sm">
+                    <div class="bg-purple-600 text-white p-3.5 rounded-2xl rounded-tr-none max-w-lg text-xs shadow-sm font-medium">
                         ${s.message}
                     </div>
-                    <span class="text-[10px] text-gray-400 font-bold mr-1">${s.date} (Wewe)</span>
+                    <span class="text-[10px] text-slate-400 font-bold mr-1">${s.date} (Wewe)</span>
                 `;
-                chatList.appendChild(staffDiv);
+                list.appendChild(staffDiv);
 
                 if (s.replies && s.replies.length > 0) {
                     s.replies.forEach(r => {
                         const adminDiv = document.createElement('div');
                         adminDiv.className = "flex flex-col items-start space-y-1 mt-2";
                         adminDiv.innerHTML = `
-                            <div class="bg-gray-200 text-gray-800 p-3 rounded-2xl rounded-tl-none max-w-md text-sm shadow-sm">
+                            <div class="bg-slate-200 text-slate-800 p-3.5 rounded-2xl rounded-tl-none max-w-lg text-xs shadow-sm font-medium">
                                 ${r.message}
                             </div>
-                            <span class="text-[10px] text-gray-500 font-bold ml-1">${r.date} (Mkurugenzi)</span>
+                            <span class="text-[10px] text-slate-500 font-bold ml-1">${r.date} (Uongozi/Admin)</span>
                         `;
-                        chatList.appendChild(adminDiv);
+                        list.appendChild(adminDiv);
                     });
                 }
             });
 
-            chatList.scrollTop = chatList.scrollHeight;
+            list.scrollTop = list.scrollHeight;
+        }
+
+        // HANDLE SUGGESTION SUBMIT
+        function handleSuggestionSubmit(e) {
+            e.preventDefault();
+            const msgInput = document.getElementById('suggestionPortalMessage');
+            const msg = msgInput.value.trim();
+            if (msg && window.appSubmitSuggestion) {
+                window.appSubmitSuggestion(msg);
+                msgInput.value = '';
+                renderSuggestionsChat();
+                showActionMessage('Pendekezo lako limetumwa kikamilifu kwa uongozi!', 'emerald');
+            }
+        }
+
+        // RENDER PRODUCTION HISTORY TABLE PORTAL
+        function renderProductionHistoryTable() {
+            const tbody = document.getElementById('productionHistoryTableBody');
+            if (!tbody) return;
+            tbody.innerHTML = '';
+
+            const filterText = (document.getElementById('historySearchInput')?.value || '').toLowerCase();
+            const log = (window.appData && window.appData.productionLog) ? window.appData.productionLog : [];
+
+            const filteredLog = log.filter(entry => 
+                entry.productName.toLowerCase().includes(filterText) ||
+                entry.date.toLowerCase().includes(filterText) ||
+                (entry.notes || '').toLowerCase().includes(filterText)
+            );
+
+            if (filteredLog.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" class="p-8 text-center text-slate-400 font-bold">Hakuna rekodi za uzalishaji zilizopatikana.</td></tr>`;
+                return;
+            }
+
+            [...filteredLog].reverse().forEach(entry => {
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-slate-50 transition-colors";
+                tr.innerHTML = `
+                    <td class="p-4 text-slate-600 font-bold">${entry.date}</td>
+                    <td class="p-4 font-black text-purple-700 text-sm">${entry.productName}</td>
+                    <td class="p-4 text-right">
+                        <span class="bg-purple-100 text-purple-800 font-black px-3 py-1 rounded-full text-xs">
+                            ${entry.quantity.toLocaleString()} pcs
+                        </span>
+                    </td>
+                    <td class="p-4 text-slate-500 italic">${entry.notes || '-'}</td>
+                    <td class="p-4 text-center">
+                        <span class="bg-emerald-100 text-emerald-800 font-extrabold px-2.5 py-0.5 rounded-full text-[10px]">
+                            Imerekodiwa Stoo
+                        </span>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        // MODAL OPEN / CLOSE HANDLERS
+        function openRecordProductionModal() {
+            populateProductDropdowns();
+            const modal = document.getElementById('recordProductionModal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+        function closeRecordProductionModal() {
+            const modal = document.getElementById('recordProductionModal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+            document.getElementById('recordProductionModalForm').reset();
+        }
+
+        function openProfilePhotoModal() {
+            const modal = document.getElementById('profilePhotoModal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+        function closeProfilePhotoModal() {
+            const modal = document.getElementById('profilePhotoModal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+            document.getElementById('modalPhotoUrlInput').value = '';
+            document.getElementById('modalPhotoFileInput').value = '';
+        }
+
+        function saveModalProfilePhoto() {
+            const currentStaffId = localStorage.getItem('ngae_logged_in_id') || 'NGAE027';
+            const urlInput = document.getElementById('modalPhotoUrlInput').value.trim();
+            const fileInput = document.getElementById('modalPhotoFileInput');
+
+            if (fileInput.files && fileInput.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    if (window.appSaveStaffPhoto) {
+                        window.appSaveStaffPhoto(currentStaffId, e.target.result);
+                        closeProfilePhotoModal();
+                        renderOverviewCards();
+                        showActionMessage('Picha yako imehifadhiwa kikamilifu!', 'emerald');
+                    }
+                };
+                reader.readAsDataURL(fileInput.files[0]);
+            } else if (urlInput) {
+                if (window.appSaveStaffPhoto) {
+                    window.appSaveStaffPhoto(currentStaffId, urlInput);
+                    closeProfilePhotoModal();
+                    renderOverviewCards();
+                    showActionMessage('Picha yako imehifadhiwa kikamilifu!', 'emerald');
+                }
+            } else {
+                alert("Tafadhali chagua picha au weka link ya picha.");
+            }
         }
     </script>
-
-    <!-- Modal ya Mapendekezo Yangu -->
-    <div id="suggestionsModal" class="hidden fixed inset-0 z-50 items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
-        <div class="bg-white rounded-2xl w-full max-w-2xl overflow-hidden shadow-2xl transform transition-all flex flex-col h-[500px]">
-            <div class="bg-blue-600 p-4 flex justify-between items-center text-white flex-none">
-                <h3 class="font-bold"><i class="bi bi-chat-left-text-fill mr-2"></i> Mapendekezo Yangu kwa Admin</h3>
-                <button onclick="toggleSuggestionsModal()" class="text-2xl hover:text-blue-200">&times;</button>
-            </div>
-            
-            <div class="flex-1 p-5 overflow-y-auto custom-scrollbar space-y-4 bg-gray-50 flex flex-col min-h-0">
-                <div class="flex-1 overflow-y-auto space-y-3 custom-scrollbar pr-1" id="suggestionsChatList">
-                    <!-- Loaded dynamically from JS -->
-                </div>
-                
-                <form id="suggestionSubmitForm" class="flex-none border-t pt-3 flex gap-2 items-end">
-                    <div class="flex-1">
-                        <label class="block text-[11px] font-bold text-gray-500 uppercase mb-1">Andika Pendekezo au Ujumbe</label>
-                        <textarea id="suggestionMessage" required placeholder="Andika maoni yako hapa..." rows="2" class="w-full border border-gray-300 rounded-xl p-2.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none"></textarea>
-                    </div>
-                    <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-bold px-5 py-3 rounded-xl shadow-md transition-colors h-fit flex items-center gap-1">
-                        <i class="bi bi-send-fill"></i> Tuma
-                    </button>
-                </form>
-            </div>
-        </div>
-    </div>
 </body>
 </html>

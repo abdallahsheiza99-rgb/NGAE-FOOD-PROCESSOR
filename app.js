@@ -1225,6 +1225,80 @@ window.appGetSellerStats = function(sellerId) {
 };
 
 // ==========================================
+// MANUFACTURER DASHBOARD HELPER
+// ==========================================
+window.appGetManufacturerStats = function(manufacturerId = 'NGAE027') {
+    if (!appData) appData = loadData();
+
+    const log = appData.productionLog || [];
+    const now = new Date();
+    const todayStr = now.toDateString();
+
+    let prodToday = 0;
+    let prodMonth = 0;
+    let prodYear = 0;
+    let prodTotalItems = 0;
+    const prodTypesSet = new Set();
+
+    log.forEach(entry => {
+        const qty = Number(entry.quantity) || 0;
+        prodTotalItems += qty;
+
+        if (entry.productId) prodTypesSet.add(entry.productId);
+        else if (entry.productName) prodTypesSet.add(entry.productName);
+
+        const d = new Date(entry.dateRaw || entry.date);
+        if (!isNaN(d.getTime())) {
+            if (d.getFullYear() === now.getFullYear()) {
+                prodYear += qty;
+                if (d.getMonth() === now.getMonth()) {
+                    prodMonth += qty;
+                    if (d.toDateString() === todayStr) {
+                        prodToday += qty;
+                    }
+                }
+            }
+        } else {
+            prodMonth += qty;
+            prodYear += qty;
+        }
+    });
+
+    const totalProductCatalogCount = (appData.products || []).length;
+    const uniqueProducedTypesCount = prodTypesSet.size > 0 ? prodTypesSet.size : totalProductCatalogCount;
+
+    const currentId = (localStorage.getItem('ngae_logged_in_id') || manufacturerId).toUpperCase();
+    const staffObj = (appData.staff && appData.staff[currentId]) ? appData.staff[currentId] : { name: 'DULLAH SHEIZA', role: 'manufacturer' };
+
+    let photo = staffObj.photo;
+    if (!photo && appData.salaryList) {
+        const emp = appData.salaryList.find(e => e.id === currentId);
+        if (emp && emp.photo) photo = emp.photo;
+    }
+
+    if (!photo) {
+        photo = 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400&auto=format&fit=crop&q=80';
+    }
+
+    return {
+        prodToday,
+        prodMonth,
+        prodYear,
+        prodTotalItems,
+        prodTypesCount: uniqueProducedTypesCount,
+        totalCatalogCount: totalProductCatalogCount,
+        staffInfo: {
+            id: currentId,
+            name: staffObj.name || localStorage.getItem('ngae_logged_in_name') || 'DULLAH SHEIZA',
+            role: staffObj.role || 'manufacturer',
+            department: 'Uzalishaji (Production)',
+            status: 'Active (Kazini)',
+            photo: photo
+        }
+    };
+};
+
+// ==========================================
 // HOMEPAGE - Update cart badge count
 // ==========================================
 document.addEventListener('DOMContentLoaded', () => {

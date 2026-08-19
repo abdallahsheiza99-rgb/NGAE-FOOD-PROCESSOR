@@ -291,8 +291,14 @@ function _recalculateAllStocks(data) {
                 }
             });
 
-            const baseStock = Number(p.initialStock !== undefined ? p.initialStock : (p.baseStock || 0));
-            p.stock = Math.max(0, baseStock + totalProduced - totalDispatched);
+            let baseStock = p.initialStock;
+            if (baseStock === undefined) baseStock = p.baseStock;
+            if (baseStock === undefined) {
+                baseStock = Number(p.stock) || 0;
+                p.initialStock = baseStock;
+                p.baseStock = baseStock;
+            }
+            p.stock = Math.max(0, Number(baseStock) + totalProduced - totalDispatched);
         });
     }
 
@@ -326,8 +332,14 @@ function _recalculateAllStocks(data) {
                 }
             });
 
-            const baseMatStock = Number(m.initialStock !== undefined ? m.initialStock : (m.baseStock || 0));
-            m.stock = Math.max(0, baseMatStock + totalReceived - totalDispatched);
+            let baseMatStock = m.initialStock;
+            if (baseMatStock === undefined) baseMatStock = m.baseStock;
+            if (baseMatStock === undefined) {
+                baseMatStock = Number(m.stock) || 0;
+                m.initialStock = baseMatStock;
+                m.baseStock = baseMatStock;
+            }
+            m.stock = Math.max(0, Number(baseMatStock) + totalReceived - totalDispatched);
         });
     }
 
@@ -390,15 +402,30 @@ function startRealtimeSync() {
                 const mergedData = _mergeAppData(appData, remoteData);
 
                 const currentStr = JSON.stringify(appData);
+                const remoteStr = JSON.stringify(remoteData);
                 const mergedStr = JSON.stringify(mergedData);
 
+                let localUpdated = false;
                 if (currentStr !== mergedStr) {
                     console.log('[NGAE] 📥 Data mpya kutoka kifaa kingine — inasasisha kikamilifu...');
-
                     appData = mergedData;
                     window.appData = appData;
                     localStorage.setItem(STORAGE_KEY, JSON.stringify(appData));
+                    localUpdated = true;
+                }
 
+                // Ikiwa remoteData haina baadhi ya taarifa ambazo zipo kwenye mergedData (k.m. wakati wa merge conflicts),
+                // andika mergedData kurudi kwenye Firestore ili isipotee kwenye server!
+                if (remoteStr !== mergedStr) {
+                    console.log('[NGAE] 📤 Server haina baadhi ya data za hapa — inasawazisha server na data mpya...');
+                    _db.collection(FIRESTORE_COLLECTION).doc(FIRESTORE_DOC)
+                        .set(mergedData, { merge: true })
+                        .catch(err => {
+                            console.error('[NGAE] Firestore sync-back error:', err.message);
+                        });
+                }
+
+                if (localUpdated) {
                     window.dispatchEvent(new CustomEvent('ngae-data-updated', { detail: appData }));
                     _refreshUIIfPossible();
                 }
@@ -424,11 +451,22 @@ async function loadFromFirestore() {
             const remoteData = doc.data();
             const mergedData = _mergeAppData(appData, remoteData);
 
+            const remoteStr = JSON.stringify(remoteData);
+            const mergedStr = JSON.stringify(mergedData);
+
             appData = mergedData;
             window.appData = appData;
             localStorage.setItem(STORAGE_KEY, JSON.stringify(appData));
 
             console.log('[NGAE] ✅ Data imepakiwa na ku-merge kutoka Firestore.');
+
+            // Ikiwa remoteData haina baadhi ya taarifa ambazo zipo kwenye local au zimeunganishwa, sawazisha server
+            if (remoteStr !== mergedStr) {
+                console.log('[NGAE] 📤 Inasawazisha server baada ya load...');
+                _db.collection(FIRESTORE_COLLECTION).doc(FIRESTORE_DOC)
+                    .set(mergedData, { merge: true })
+                    .catch(err => console.error('[NGAE] Firestore load-sync error:', err.message));
+            }
 
             window.dispatchEvent(new CustomEvent('ngae-data-updated', { detail: appData }));
             _refreshUIIfPossible();
@@ -534,6 +572,8 @@ window.appAddProduct = function(name, price, stock = 0) {
         name: formattedName,
         price: parseFloat(price) || 0,
         stock: parseInt(stock) || 0,
+        initialStock: parseInt(stock) || 0,
+        baseStock: parseInt(stock) || 0,
         dateAdded: dateStr
     };
     appData.products.push(product);
@@ -555,7 +595,31 @@ window.appUpdateProduct = function(id, name, price, stock) {
     product.name = name.toUpperCase().trim();
     product.price = parseFloat(price) || 0;
     if (stock !== undefined && stock !== null && stock !== '') {
-        product.stock = parseInt(stock) || 0;
+        const targetStock = parseInt(stock) || 0;
+        const pId = (product.id || '').toUpperCase();
+        const pName = (product.name || '').toUpperCase().trim();
+        let totalProduced = 0;
+        (appData.productionLog || []).forEach(l => {
+            if (!l) return;
+            const lId = (l.productId || '').toUpperCase();
+            const lName = (l.productName || '').toUpperCase().trim();
+            if ((pId && lId === pId) || (pName && lName === pName)) {
+                totalProduced += (Number(l.quantity) || 0);
+            }
+        });
+        let totalDispatched = 0;
+        (appData.dispatchHistory || []).forEach(d => {
+            if (!d) return;
+            const dId = (d.productId || '').toUpperCase();
+            const dName = (d.productName || '').toUpperCase().trim();
+            if ((pId && dId === pId) || (pName && dName === pName)) {
+                totalDispatched += (Number(d.quantity) || 0);
+            }
+        });
+
+        product.stock = targetStock;
+        product.initialStock = targetStock - totalProduced + totalDispatched;
+        product.baseStock = targetStock - totalProduced + totalDispatched;
     }
     saveData(appData);
     window.appData = appData;
@@ -884,6 +948,8 @@ window.appRecordProduction = function(productId, qty, notes) {
             name: newName,
             price: 2500, // Thamani ya mwanzo ya msingi (Tsh)
             stock: 0,
+            initialStock: 0,
+            baseStock: 0,
             dateAdded: dateStr
         };
         appData.products.push(product);
@@ -927,7 +993,33 @@ window.appAdminEditRawMaterial = function(materialId, name, unit, stock) {
     if (!mat) return false;
     mat.name = name.toUpperCase().trim();
     mat.unit = unit;
-    mat.stock = Number(stock) || 0;
+    
+    const targetStock = Number(stock) || 0;
+    const mId = (mat.id || '').toUpperCase();
+    const mName = (mat.name || '').toUpperCase().trim();
+    let totalReceived = 0;
+    (appData.rawMaterialsHistory || []).forEach(r => {
+        if (!r) return;
+        const rId = (r.materialId || '').toUpperCase();
+        const rName = (r.materialName || '').toUpperCase().trim();
+        if ((mId && rId === mId) || (mName && rName === mName)) {
+            totalReceived += (Number(r.qty) || 0);
+        }
+    });
+    let totalDispatched = 0;
+    (appData.rawMaterialsDispatchHistory || []).forEach(d => {
+        if (!d) return;
+        const dId = (d.materialId || '').toUpperCase();
+        const dName = (d.materialName || '').toUpperCase().trim();
+        if ((mId && dId === mId) || (mName && dName === mName)) {
+            totalDispatched += (Number(d.qty) || 0);
+        }
+    });
+
+    mat.stock = targetStock;
+    mat.initialStock = targetStock - totalReceived + totalDispatched;
+    mat.baseStock = targetStock - totalReceived + totalDispatched;
+
     saveData(appData);
     window.appData = appData;
     return true;

@@ -2180,9 +2180,8 @@ Saini ya Mwajiriwa (${emp.name}): ____________________      Tarehe: ____________
                 const shopDispatches = dispatchHistory.filter(d => d.shopId === shop.id);
                 let shopCargoValue = 0;
                 shopDispatches.forEach(d => {
-                    const prod = products.find(p => p.id === d.productId);
-                    const price = prod ? prod.price : 1000;
-                    shopCargoValue += price * d.quantity;
+                    const val = Number(d.totalValue) || (Number(d.unitPrice || 1000) * Number(d.quantity || 0));
+                    shopCargoValue += val;
                 });
 
                 const shopFinance = finances[shop.id] || { submitted: 0 };
@@ -2218,9 +2217,8 @@ Saini ya Mwajiriwa (${emp.name}): ____________________      Tarehe: ____________
                 const shopDispatches = dispatchHistory.filter(d => d.shopId === shop.id);
                 let shopCargoValue = 0;
                 shopDispatches.forEach(d => {
-                    const prod = products.find(p => p.id === d.productId);
-                    const price = prod ? (prod.price || 1000) : 1000;
-                    shopCargoValue += price * (d.quantity || 0);
+                    const val = Number(d.totalValue) || (Number(d.unitPrice || 1000) * Number(d.quantity || 0));
+                    shopCargoValue += val;
                 });
 
                 const shopFinance = finances[shop.id] || { submitted: 0 };
@@ -3967,9 +3965,8 @@ Saini ya Mwajiriwa (${emp.name}): ____________________      Tarehe: ____________
 
             let totalCargoValue = 0;
             shopDispatches.forEach(d => {
-                const prod = products.find(p => p.id === d.productId);
-                const price = prod ? (prod.price || 1000) : 1000;
-                totalCargoValue += price * (d.quantity || 0);
+                const val = Number(d.totalValue) || (Number(d.unitPrice || 1000) * Number(d.quantity || 0));
+                totalCargoValue += val;
             });
 
             const submittedCash = shopFinance.submitted || 0;
@@ -3994,9 +3991,8 @@ Saini ya Mwajiriwa (${emp.name}): ____________________      Tarehe: ____________
                 `;
             } else {
                 [...shopDispatches].reverse().forEach(d => {
-                    const prod = products.find(p => p.id === d.productId);
-                    const price = prod ? (prod.price || 1000) : 1000;
-                    const subtotal = price * (d.quantity || 0);
+                    const price = Number(d.unitPrice) || 1000;
+                    const subtotal = Number(d.totalValue) || (price * (d.quantity || 0));
                     dispatchesRowsHtml += `
                         <tr class="hover:bg-gray-50 border-b border-gray-100 transition-colors text-xs">
                             <td class="p-2.5 font-bold text-gray-600">${d.date}</td>

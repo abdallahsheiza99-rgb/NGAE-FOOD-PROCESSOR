@@ -1678,9 +1678,8 @@ window.appGetSellerStats = function(sellerId) {
     const receivedDispatches = (appData.dispatchHistory || []).filter(h => h.shopId === shop.id);
     let totalCargoValue = 0;
     receivedDispatches.forEach(item => {
-        const prod = (appData.products || []).find(p => p.id === item.productId || p.name.toLowerCase() === (item.productName || '').toLowerCase());
-        const price = prod ? (Number(prod.price) || 0) : (Number(item.unitPrice) || 0);
-        totalCargoValue += (price * (Number(item.quantity) || 0));
+        const itemVal = Number(item.totalValue) || ((Number(item.unitPrice) || 0) * (Number(item.quantity) || 0));
+        totalCargoValue += itemVal;
     });
 
     const shopFinance = (appData.finances && appData.finances[shop.id]) ? appData.finances[shop.id] : { submitted: 0, salesHistory: [], personalExpenses: [] };

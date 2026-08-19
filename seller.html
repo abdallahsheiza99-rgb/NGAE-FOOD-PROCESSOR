@@ -772,9 +772,8 @@
             if (overviewCargoBody) overviewCargoBody.innerHTML = '';
 
             [...stats.receivedDispatches].reverse().forEach((item, index) => {
-                const prod = (window.appData.products || []).find(p => p.id === item.productId);
-                const price = prod ? prod.price : 1000;
-                const itemValue = price * (item.quantity || 0);
+                const price = Number(item.unitPrice) || 1000;
+                const itemValue = Number(item.totalValue) || (price * (item.quantity || 0));
 
                 const tr = document.createElement('tr');
                 tr.className = "hover:bg-slate-50 transition-colors";

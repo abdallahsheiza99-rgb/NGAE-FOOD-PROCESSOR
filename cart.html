@@ -227,7 +227,46 @@
                     window.scrollTo(0,0);
                 }
             });
+
+            // ✅ REAL-TIME UPDATE: Sikiliza mabadiliko kutoka Firebase
+            window.addEventListener('ngae-data-updated', () => {
+                refreshProductDropdowns();
+            });
+
+            // ✅ Pakia tena bidhaa baada ya sekunde 1.5 kama backup
+            setTimeout(refreshProductDropdowns, 1500);
         });
+
+        function refreshProductDropdowns() {
+            const selects = document.querySelectorAll('.product-select');
+            const products = window.appGetProducts ? window.appGetProducts() : ((window.appData && window.appData.products) ? window.appData.products : []);
+            
+            selects.forEach(select => {
+                const currentVal = select.value;
+                select.innerHTML = '<option value="" data-price="0">-- Chagua Bidhaa --</option>';
+                
+                if (products.length === 0) {
+                    const opt = document.createElement('option');
+                    opt.value = "";
+                    opt.setAttribute('data-price', 0);
+                    opt.textContent = "-- Hakuna Bidhaa Zilizosajiliwa Bado --";
+                    select.appendChild(opt);
+                } else {
+                    products.forEach(p => {
+                        const opt = document.createElement('option');
+                        opt.value = p.id || p.name;
+                        opt.setAttribute('data-price', p.price);
+                        opt.textContent = `${p.name} (Tsh ${p.price.toLocaleString()} / pcs)`;
+                        select.appendChild(opt);
+                    });
+                }
+                
+                if (currentVal) {
+                    select.value = currentVal;
+                }
+            });
+            calculateGrandTotal();
+        }
 
         function showOrderForm() {
             document.getElementById('welcomeSection').style.display = 'none';

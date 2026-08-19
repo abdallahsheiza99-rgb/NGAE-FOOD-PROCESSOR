@@ -358,10 +358,7 @@ function seedData() {
  * 2. Firestore (real-time sync kwa vifaa vyote)
  */
 function saveData(data) {
-    const localCurrent = loadData();
-    const dataToSave = _mergeAppData(localCurrent, data);
-
-    appData = dataToSave;
+    appData = data;
     window.appData = appData;
 
     // 1. Hifadhi kwenye localStorage haraka
@@ -370,10 +367,10 @@ function saveData(data) {
     // 2. Rekodi muda wa save
     _lastSaveTimestamp = Date.now();
 
-    // 3. Hifadhi kwenye Firestore na merge option (async - background)
+    // 3. Hifadhi kwenye Firestore (async - background) - Bila merge option ili kuruhusu deletion ya staff/products
     if (_firebaseReady && _db) {
         _db.collection(FIRESTORE_COLLECTION).doc(FIRESTORE_DOC)
-            .set(appData, { merge: true })
+            .set(appData)
             .catch(err => {
                 console.error('[NGAE] Firestore save error:', err.message);
             });
@@ -419,7 +416,7 @@ function startRealtimeSync() {
                 if (remoteStr !== mergedStr) {
                     console.log('[NGAE] 📤 Server haina baadhi ya data za hapa — inasawazisha server na data mpya...');
                     _db.collection(FIRESTORE_COLLECTION).doc(FIRESTORE_DOC)
-                        .set(mergedData, { merge: true })
+                        .set(mergedData)
                         .catch(err => {
                             console.error('[NGAE] Firestore sync-back error:', err.message);
                         });
@@ -464,7 +461,7 @@ async function loadFromFirestore() {
             if (remoteStr !== mergedStr) {
                 console.log('[NGAE] 📤 Inasawazisha server baada ya load...');
                 _db.collection(FIRESTORE_COLLECTION).doc(FIRESTORE_DOC)
-                    .set(mergedData, { merge: true })
+                    .set(mergedData)
                     .catch(err => console.error('[NGAE] Firestore load-sync error:', err.message));
             }
 

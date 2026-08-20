@@ -140,54 +140,19 @@ function _mergeAppData(local, remote) {
     const adminExpenses = mergeArrays(local.adminExpenses, remote.adminExpenses, e => e.id || `${e.description}_${e.amount}`);
     const suggestions = mergeArrays(local.suggestions, remote.suggestions, s => s.id || `${s.senderId}_${s.dateRaw}`);
     const notifications = mergeArrays(local.notifications, remote.notifications, n => n.id || `${n.title}_${n.dateRaw}`);
-    const salaryList = mergeArrays(local.salaryList, remote.salaryList, emp => (emp.id || '').toUpperCase());
+    const salaryList = (remote.salaryList && remote.salaryList.length > 0) ? remote.salaryList : (local.salaryList || []);
 
-    // 2. Merge Staff Accounts
-    const staff = Object.assign({}, remote.staff || {}, local.staff || {});
+    // 2. Merge Staff Accounts (Remote override, fallback to local if remote empty)
+    const staff = (remote.staff && Object.keys(remote.staff).length > 0) ? remote.staff : (local.staff || {});
 
-    // 3. Merge Products & Catalog
-    const productsMap = new Map();
-    (remote.products || []).concat(local.products || []).forEach(p => {
-        if (!p) return;
-        const sig = prodSig(p);
-        if (!productsMap.has(sig)) {
-            productsMap.set(sig, Object.assign({}, p));
-        } else {
-            const existing = productsMap.get(sig);
-            productsMap.set(sig, {
-                id: existing.id || p.id,
-                name: existing.name || p.name,
-                price: Number(p.price) || Number(existing.price) || 0,
-                initialStock: (existing.initialStock !== undefined ? existing.initialStock : p.initialStock),
-                baseStock: (existing.baseStock !== undefined ? existing.baseStock : p.baseStock),
-                dateAdded: existing.dateAdded || p.dateAdded
-            });
-        }
-    });
-    const products = Array.from(productsMap.values());
+    // 3. Merge Products & Catalog (Remote override, fallback to local if remote empty)
+    const products = (remote.products && remote.products.length > 0) ? remote.products : (local.products || []);
 
-    // 4. Merge Shops
-    const shops = mergeArrays(local.shops, remote.shops, shopSig);
+    // 4. Merge Shops (Remote override, fallback to local if remote empty)
+    const shops = (remote.shops && remote.shops.length > 0) ? remote.shops : (local.shops || []);
 
-    // 5. Merge Raw Materials
-    const rawMatsMap = new Map();
-    (remote.rawMaterials || []).concat(local.rawMaterials || []).forEach(m => {
-        if (!m) return;
-        const sig = (m.id || m.name || '').toUpperCase().trim();
-        if (!rawMatsMap.has(sig)) {
-            rawMatsMap.set(sig, Object.assign({}, m));
-        } else {
-            const existing = rawMatsMap.get(sig);
-            rawMatsMap.set(sig, {
-                id: existing.id || m.id,
-                name: existing.name || m.name,
-                unit: existing.unit || m.unit,
-                initialStock: (existing.initialStock !== undefined ? existing.initialStock : m.initialStock),
-                baseStock: (existing.baseStock !== undefined ? existing.baseStock : m.baseStock)
-            });
-        }
-    });
-    const rawMaterials = Array.from(rawMatsMap.values());
+    // 5. Merge Raw Materials (Remote override, fallback to local if remote empty)
+    const rawMaterials = (remote.rawMaterials && remote.rawMaterials.length > 0) ? remote.rawMaterials : (local.rawMaterials || []);
 
     // 6. Merge Manufacturer Materials
     const manufacturerMaterials = Object.assign({}, remote.manufacturerMaterials || {}, local.manufacturerMaterials || {});

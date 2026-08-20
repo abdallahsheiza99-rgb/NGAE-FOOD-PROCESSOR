@@ -22,12 +22,84 @@ const STORAGE_KEY = 'ngae_app_data'; // Bado tunalinda kwa localStorage kama bac
 let _db = null;          // Firestore instance
 let _firebaseReady = false;
 let _syncListenerActive = false;
-const FIRESTORE_DOC = 'main'; // Jina la document kwenye Firestore
-const FIRESTORE_COLLECTION = 'ngae_data'; // Jina la collection kwenye Firestore
+let _loadedCollectionsCount = 0;
+const TOTAL_COLLECTIONS = 16;
+let lastSyncedAppData = null;
 
-// Kuzuia race condition: snapshot listener isifute data tuliyoandika sisi wenyewe
-let _lastSaveTimestamp = 0;
-const SAVE_GRACE_PERIOD_MS = 3000; // Subiri sekunde 3 kabla ya kukubali data kutoka nje
+// Deep clone helper
+function deepClone(obj) {
+    if (!obj) return obj;
+    return JSON.parse(JSON.stringify(obj));
+}
+
+/**
+ * Visual Sync Status Indicator Creator
+ */
+function createSyncIndicator() {
+    if (typeof document === 'undefined' || !document.body) {
+        document.addEventListener('DOMContentLoaded', createSyncIndicator);
+        return;
+    }
+    const id = 'ngae-sync-badge';
+    if (document.getElementById(id)) return;
+
+    const div = document.createElement('div');
+    div.id = id;
+    div.style.position = 'fixed';
+    div.style.bottom = '16px';
+    div.style.right = '16px';
+    div.style.zIndex = '99999';
+    div.style.display = 'flex';
+    div.style.alignItems = 'center';
+    div.style.gap = '8px';
+    div.style.padding = '8px 12px';
+    div.style.borderRadius = '20px';
+    div.style.fontSize = '12px';
+    div.style.fontWeight = '600';
+    div.style.fontFamily = "'Poppins', sans-serif";
+    div.style.boxShadow = '0 4px 12px rgba(0,0,0,0.15)';
+    div.style.backdropFilter = 'blur(8px)';
+    div.style.webkitBackdropFilter = 'blur(8px)';
+    div.style.transition = 'all 0.3s ease';
+    div.style.border = '1px solid rgba(255,255,255,0.2)';
+    
+    // Initial state: Connecting
+    div.style.backgroundColor = 'rgba(217, 119, 6, 0.9)'; // Amber
+    div.style.color = '#ffffff';
+    div.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Inatafuta mtandao...';
+
+    document.body.appendChild(div);
+}
+
+function updateSyncIndicator(status, message) {
+    const div = document.getElementById('ngae-sync-badge');
+    if (!div) return;
+
+    if (status === 'syncing') {
+        div.style.backgroundColor = 'rgba(37, 99, 235, 0.9)'; // Blue
+        div.style.color = '#ffffff';
+        div.innerHTML = '<i class="fas fa-sync fa-spin"></i> Inasawazisha...';
+    } else if (status === 'synced') {
+        div.style.backgroundColor = 'rgba(16, 185, 129, 0.9)'; // Emerald Green
+        div.style.color = '#ffffff';
+        div.innerHTML = '<i class="fas fa-check-circle"></i> Imesawazishwa';
+        setTimeout(() => {
+            if (div.innerHTML.includes('Imesawazishwa')) {
+                div.style.opacity = '0.7';
+            }
+        }, 3000);
+    } else if (status === 'offline') {
+        div.style.backgroundColor = 'rgba(107, 114, 128, 0.9)'; // Gray
+        div.style.color = '#ffffff';
+        div.innerHTML = '<i class="fas fa-wifi-slash"></i> Offline (Kadi ya Ndani)';
+        div.style.opacity = '1';
+    } else if (status === 'error') {
+        div.style.backgroundColor = 'rgba(220, 38, 38, 0.9)'; // Red
+        div.style.color = '#ffffff';
+        div.innerHTML = `<i class="fas fa-exclamation-triangle"></i> Hitilafu: ${message || 'Sync error'}`;
+        div.style.opacity = '1';
+    }
+}
 
 /**
  * Anzisha Firebase na Firestore
@@ -38,7 +110,6 @@ function initFirebase() {
         const config = window.FIREBASE_CONFIG;
         if (!config || config.apiKey === 'WEKA_API_KEY_YAKO_HAPA') {
             console.warn('[NGAE] Firebase config haijajazwa. Taarifa zitahifadhiwa kwenye localStorage tu (kifaa kimoja).');
-            console.warn('[NGAE] Fungua firebase-config.js uweke config yako ya Firebase ili uwezesha sync kati ya vifaa.');
             _firebaseReady = false;
             return;
         }
@@ -50,6 +121,23 @@ function initFirebase() {
         _db = firebase.firestore();
         _firebaseReady = true;
         console.log('[NGAE] ✅ Firebase imeanzishwa. Firestore inapatikana.');
+
+        // Weka visual sync status badge
+        createSyncIndicator();
+
+        // Washa offline persistence ili data isipotee hata mtandao ukikatika
+        _db.enablePersistence({ synchronizeTabs: true })
+            .then(() => {
+                console.log('[NGAE] 💾 Offline persistence imewezeshwa kwa mafanikio.');
+            })
+            .catch(err => {
+                if (err.code === 'failed-precondition') {
+                    console.warn('[NGAE] Offline persistence failed: multiple tabs open');
+                } else if (err.code === 'unimplemented') {
+                    console.warn('[NGAE] Offline persistence is not supported by the browser');
+                }
+            });
+
     } catch (e) {
         console.error('[NGAE] Firebase haikuanzishwa:', e.message);
         _firebaseReady = false;
@@ -96,126 +184,6 @@ function _ensureFields(data) {
     if (!data.salaryList) data.salaryList = [];
 
     return data;
-}
-
-/**
- * Merges local appData and remote Firestore data intelligently so that no
- * production logs, dispatches, receipts, or financial records are EVER lost.
- */
-function _mergeAppData(local, remote) {
-    local = _ensureFields(local || {});
-    remote = _ensureFields(remote || {});
-
-    // Helper: merge array of objects using unique identifier signature
-    function mergeArrays(arr1, arr2, keyFn) {
-        const map = new Map();
-        (arr1 || []).forEach(item => {
-            if (!item) return;
-            const k = keyFn(item);
-            map.set(k, item);
-        });
-        (arr2 || []).forEach(item => {
-            if (!item) return;
-            const k = keyFn(item);
-            if (!map.has(k)) {
-                map.set(k, item);
-            } else {
-                map.set(k, Object.assign({}, map.get(k), item));
-            }
-        });
-        return Array.from(map.values());
-    }
-
-    // Key signatures for historical logs
-    const logSig = item => item.id || `${item.dateRaw || item.date}_${item.productId || item.materialId || item.productName || item.materialName}_${item.quantity || item.qty || item.amount}`;
-    const shopSig = item => (item.id || item.location || '').toString().toUpperCase().trim();
-    const prodSig = item => (item.id || item.name || '').toString().toUpperCase().trim();
-
-    // 1. Merge Logs & Histories (UNION - Never Delete)
-    const productionLog = mergeArrays(local.productionLog, remote.productionLog, logSig);
-    const dispatchHistory = mergeArrays(local.dispatchHistory, remote.dispatchHistory, logSig);
-    const rawMaterialsHistory = mergeArrays(local.rawMaterialsHistory, remote.rawMaterialsHistory, logSig);
-    const rawMaterialsDispatchHistory = mergeArrays(local.rawMaterialsDispatchHistory, remote.rawMaterialsDispatchHistory, logSig);
-    const customerOrders = mergeArrays(local.customerOrders, remote.customerOrders, o => o.id || `${o.customer_name}_${o.dateRaw}`);
-    const adminExpenses = mergeArrays(local.adminExpenses, remote.adminExpenses, e => e.id || `${e.description}_${e.amount}`);
-    const suggestions = mergeArrays(local.suggestions, remote.suggestions, s => s.id || `${s.senderId}_${s.dateRaw}`);
-    const notifications = mergeArrays(local.notifications, remote.notifications, n => n.id || `${n.title}_${n.dateRaw}`);
-    const salaryList = (remote.salaryList && remote.salaryList.length > 0) ? remote.salaryList : (local.salaryList || []);
-
-    // 2. Merge Staff Accounts (Remote override, fallback to local if remote empty)
-    const staff = (remote.staff && Object.keys(remote.staff).length > 0) ? remote.staff : (local.staff || {});
-
-    // 3. Merge Products & Catalog (Remote override, fallback to local if remote empty)
-    const products = (remote.products && remote.products.length > 0) ? remote.products : (local.products || []);
-
-    // 4. Merge Shops (Remote override, fallback to local if remote empty)
-    const shops = (remote.shops && remote.shops.length > 0) ? remote.shops : (local.shops || []);
-
-    // 5. Merge Raw Materials (Remote override, fallback to local if remote empty)
-    const rawMaterials = (remote.rawMaterials && remote.rawMaterials.length > 0) ? remote.rawMaterials : (local.rawMaterials || []);
-
-    // 6. Merge Manufacturer Materials
-    const manufacturerMaterials = Object.assign({}, remote.manufacturerMaterials || {}, local.manufacturerMaterials || {});
-    Object.keys(local.manufacturerMaterials || {}).forEach(mId => {
-        const upper = mId.toUpperCase().trim();
-        if (!manufacturerMaterials[upper]) manufacturerMaterials[upper] = {};
-        Object.assign(manufacturerMaterials[upper], local.manufacturerMaterials[mId]);
-    });
-
-    // 7. Merge Finances by shopId
-    const finances = Object.assign({}, remote.finances || {}, local.finances || {});
-    Object.keys(local.finances || {}).forEach(shopId => {
-        if (!finances[shopId]) {
-            finances[shopId] = local.finances[shopId];
-        } else {
-            const locFin = local.finances[shopId];
-            const remFin = finances[shopId];
-            const mergedSales = mergeArrays(locFin.salesHistory, remFin.salesHistory, s => s.id || `${s.dateRaw}_${s.amount}`);
-            const mergedExp = mergeArrays(locFin.personalExpenses, remFin.personalExpenses, e => e.id || `${e.dateRaw}_${e.amount}`);
-            
-            let sumSubmitted = 0;
-            mergedSales.forEach(s => sumSubmitted += (Number(s.amount) || 0));
-
-            finances[shopId] = {
-                submitted: Math.max(sumSubmitted, Number(remFin.submitted) || 0, Number(locFin.submitted) || 0),
-                reportedDebt: Number(remFin.reportedDebt) || Number(locFin.reportedDebt) || 0,
-                salesHistory: mergedSales,
-                personalExpenses: mergedExp
-            };
-        }
-    });
-
-    // 8. Merge Cash Flow
-    const localCF = local.cashFlow || { balance: 0, transactions: [] };
-    const remoteCF = remote.cashFlow || { balance: 0, transactions: [] };
-    const mergedTransactions = mergeArrays(localCF.transactions, remoteCF.transactions, t => t.id || `${t.dateRaw}_${t.amount}_${t.type}`);
-    let cfBal = 0;
-    mergedTransactions.forEach(t => {
-        if (t.type === 'IN') cfBal += (Number(t.amount) || 0);
-        else if (t.type === 'OUT') cfBal -= (Number(t.amount) || 0);
-    });
-    const cashFlow = { balance: cfBal, transactions: mergedTransactions };
-
-    const mergedData = _ensureFields({
-        staff,
-        products,
-        shops,
-        rawMaterials,
-        dispatchHistory,
-        rawMaterialsHistory,
-        rawMaterialsDispatchHistory,
-        productionLog,
-        finances,
-        customerOrders,
-        cashFlow,
-        suggestions,
-        notifications,
-        manufacturerMaterials,
-        adminExpenses,
-        salaryList
-    });
-
-    return _recalculateAllStocks(mergedData);
 }
 
 /**
@@ -320,126 +288,416 @@ function seedData() {
 /**
  * Hifadhi data:
  * 1. Smart merge na localStorage (mara moja - offline support)
- * 2. Firestore (real-time sync kwa vifaa vyote)
+ * 2. Firestore Incremental updates (real-time sync kwa vifaa vyote)
  */
-function saveData(data) {
+async function saveData(data) {
     appData = data;
     window.appData = appData;
 
     // 1. Hifadhi kwenye localStorage haraka
     localStorage.setItem(STORAGE_KEY, JSON.stringify(appData));
 
-    // 2. Rekodi muda wa save
-    _lastSaveTimestamp = Date.now();
-
-    // 3. Hifadhi kwenye Firestore (async - background) - Bila merge option ili kuruhusu deletion ya staff/products
+    // 2. Hifadhi kwenye Firestore incremental changes
     if (_firebaseReady && _db) {
-        _db.collection(FIRESTORE_COLLECTION).doc(FIRESTORE_DOC)
-            .set(appData)
-            .catch(err => {
-                console.error('[NGAE] Firestore save error:', err.message);
-            });
+        try {
+            updateSyncIndicator('syncing');
+
+            if (!lastSyncedAppData) {
+                lastSyncedAppData = _ensureFields({});
+            }
+
+            const promises = [];
+
+            // Helper ya array-based collections
+            function syncArrayCol(colName, currentArray, lastSyncedArray, key) {
+                currentArray = currentArray || [];
+                lastSyncedArray = lastSyncedArray || [];
+
+                const currentMap = new Map(currentArray.map(item => [item[key], item]));
+                const lastSyncedMap = new Map(lastSyncedArray.map(item => [item[key], item]));
+
+                // Additions au updates
+                for (const [id, item] of currentMap) {
+                    const lastItem = lastSyncedMap.get(id);
+                    if (!lastItem || JSON.stringify(item) !== JSON.stringify(lastItem)) {
+                        promises.push(_db.collection(colName).doc(id).set(item));
+                    }
+                }
+
+                // Deletions
+                for (const [id, item] of lastSyncedMap) {
+                    if (!currentMap.has(id)) {
+                        promises.push(_db.collection(colName).doc(id).delete());
+                    }
+                }
+            }
+
+            // Helper ya object-based collections
+            function syncObjectCol(colName, currentObj, lastSyncedObj) {
+                currentObj = currentObj || {};
+                lastSyncedObj = lastSyncedObj || {};
+
+                // Additions au updates
+                for (const id in currentObj) {
+                    const item = currentObj[id];
+                    const lastItem = lastSyncedObj[id];
+                    if (!lastItem || JSON.stringify(item) !== JSON.stringify(lastItem)) {
+                        promises.push(_db.collection(colName).doc(id).set(item));
+                    }
+                }
+
+                // Deletions
+                for (const id in lastSyncedObj) {
+                    if (!(id in currentObj)) {
+                        promises.push(_db.collection(colName).doc(id).delete());
+                    }
+                }
+            }
+
+            // Sync all 15 basic collections + cash flow
+            syncObjectCol('staff', appData.staff, lastSyncedAppData.staff);
+            syncArrayCol('products', appData.products, lastSyncedAppData.products, 'id');
+            syncArrayCol('shops', appData.shops, lastSyncedAppData.shops, 'id');
+            syncArrayCol('raw_materials', appData.rawMaterials, lastSyncedAppData.rawMaterials, 'id');
+            syncArrayCol('dispatch_history', appData.dispatchHistory, lastSyncedAppData.dispatchHistory, 'id');
+            syncArrayCol('raw_materials_history', appData.rawMaterialsHistory, lastSyncedAppData.rawMaterialsHistory, 'id');
+            syncArrayCol('raw_materials_dispatch_history', appData.rawMaterialsDispatchHistory, lastSyncedAppData.rawMaterialsDispatchHistory, 'id');
+            syncArrayCol('production_log', appData.productionLog, lastSyncedAppData.productionLog, 'id');
+            syncObjectCol('finances', appData.finances, lastSyncedAppData.finances);
+            syncArrayCol('customer_orders', appData.customerOrders, lastSyncedAppData.customerOrders, 'id');
+            syncArrayCol('suggestions', appData.suggestions, lastSyncedAppData.suggestions, 'id');
+            syncArrayCol('notifications', appData.notifications, lastSyncedAppData.notifications, 'id');
+            syncObjectCol('manufacturer_materials', appData.manufacturerMaterials, lastSyncedAppData.manufacturerMaterials);
+            syncArrayCol('admin_expenses', appData.adminExpenses, lastSyncedAppData.adminExpenses, 'id');
+            syncArrayCol('salary_list', appData.salaryList, lastSyncedAppData.salaryList, 'id');
+
+            // Cash flow transactions
+            const currentCFTransactions = (appData.cashFlow && appData.cashFlow.transactions) ? appData.cashFlow.transactions : [];
+            const lastCFTransactions = (lastSyncedAppData.cashFlow && lastSyncedAppData.cashFlow.transactions) ? lastSyncedAppData.cashFlow.transactions : [];
+            syncArrayCol('cash_flow_transactions', currentCFTransactions, lastCFTransactions, 'id');
+
+            if (promises.length > 0) {
+                await Promise.all(promises);
+                console.log(`[NGAE] ✅ Synced ${promises.length} changed docs to Firestore.`);
+            }
+
+            lastSyncedAppData = deepClone(appData);
+            updateSyncIndicator('synced');
+        } catch (err) {
+            console.error('[NGAE] Firestore save error:', err.message);
+            updateSyncIndicator('error', err.message);
+        }
     }
 }
 
 /**
- * Anzisha real-time listener ya Firestore.
+ * Migration helper to move data from old single-doc setup to the new collection structure
+ */
+async function migrateOldDataIfNeeded() {
+    if (!_firebaseReady || !_db) return;
+
+    try {
+        const migDoc = await _db.collection('metadata').doc('migration').get();
+        if (migDoc.exists && migDoc.data().done) {
+            return;
+        }
+
+        const oldDoc = await _db.collection('ngae_data').doc('main').get();
+        if (!oldDoc.exists) {
+            await _db.collection('metadata').doc('migration').set({ done: true });
+            return;
+        }
+
+        console.log('[NGAE] 🚚 Inahamisha data ya zamani kwenda kwenye mfumo mpya wa collections...');
+        const oldData = oldDoc.data();
+
+        // 1. Staff
+        if (oldData.staff) {
+            for (const id in oldData.staff) {
+                await _db.collection('staff').doc(id).set(oldData.staff[id]);
+            }
+        }
+        // 2. Products
+        if (oldData.products) {
+            for (const p of oldData.products) {
+                if (p.id) await _db.collection('products').doc(p.id).set(p);
+            }
+        }
+        // 3. Shops
+        if (oldData.shops) {
+            for (const s of oldData.shops) {
+                if (s.id) await _db.collection('shops').doc(s.id).set(s);
+            }
+        }
+        // 4. Raw Materials
+        if (oldData.rawMaterials) {
+            for (const m of oldData.rawMaterials) {
+                if (m.id) await _db.collection('raw_materials').doc(m.id).set(m);
+            }
+        }
+        // 5. Dispatch History
+        if (oldData.dispatchHistory) {
+            for (const d of oldData.dispatchHistory) {
+                if (d.id) await _db.collection('dispatch_history').doc(d.id).set(d);
+            }
+        }
+        // 6. Raw Materials History
+        if (oldData.rawMaterialsHistory) {
+            for (const h of oldData.rawMaterialsHistory) {
+                if (h.id) await _db.collection('raw_materials_history').doc(h.id).set(h);
+            }
+        }
+        // 7. Raw Materials Dispatch History
+        if (oldData.rawMaterialsDispatchHistory) {
+            for (const d of oldData.rawMaterialsDispatchHistory) {
+                if (d.id) await _db.collection('raw_materials_dispatch_history').doc(d.id).set(d);
+            }
+        }
+        // 8. Production Log
+        if (oldData.productionLog) {
+            for (const l of oldData.productionLog) {
+                if (l.id) await _db.collection('production_log').doc(l.id).set(l);
+            }
+        }
+        // 9. Finances
+        if (oldData.finances) {
+            for (const shopId in oldData.finances) {
+                await _db.collection('finances').doc(shopId).set(oldData.finances[shopId]);
+            }
+        }
+        // 10. Customer Orders
+        if (oldData.customerOrders) {
+            for (const o of oldData.customerOrders) {
+                if (o.id) await _db.collection('customer_orders').doc(o.id).set(o);
+            }
+        }
+        // 11. Suggestions
+        if (oldData.suggestions) {
+            for (const s of oldData.suggestions) {
+                if (s.id) await _db.collection('suggestions').doc(s.id).set(s);
+            }
+        }
+        // 12. Notifications
+        if (oldData.notifications) {
+            for (const n of oldData.notifications) {
+                if (n.id) await _db.collection('notifications').doc(n.id).set(n);
+            }
+        }
+        // 13. Manufacturer Materials
+        if (oldData.manufacturerMaterials) {
+            for (const mId in oldData.manufacturerMaterials) {
+                await _db.collection('manufacturer_materials').doc(mId).set(oldData.manufacturerMaterials[mId]);
+            }
+        }
+        // 14. Admin Expenses
+        if (oldData.adminExpenses) {
+            for (const e of oldData.adminExpenses) {
+                if (e.id) await _db.collection('admin_expenses').doc(e.id).set(e);
+            }
+        }
+        // 15. Salary List
+        if (oldData.salaryList) {
+            for (const s of oldData.salaryList) {
+                if (s.id) await _db.collection('salary_list').doc(s.id).set(s);
+            }
+        }
+        // 16. Cash Flow Transactions
+        if (oldData.cashFlow && oldData.cashFlow.transactions) {
+            for (const t of oldData.cashFlow.transactions) {
+                if (t.id) await _db.collection('cash_flow_transactions').doc(t.id).set(t);
+            }
+        }
+
+        await _db.collection('metadata').doc('migration').set({ done: true });
+        console.log('[NGAE] ✅ Data yote ya zamani imehamishwa kikamilifu!');
+    } catch (e) {
+        console.error('[NGAE] Hitilafu ya uhamisho wa data:', e);
+    }
+}
+
+/**
+ * Listener registration helper for Firestore collections
+ */
+function listenToCollection(colName, type, updateFn) {
+    let firstFire = true;
+    _db.collection(colName).onSnapshot({ includeMetadataChanges: true }, snapshot => {
+        if (snapshot.metadata && snapshot.metadata.hasPendingWrites) {
+            return;
+        }
+
+        updateFn(snapshot);
+
+        if (firstFire) {
+            firstFire = false;
+            _loadedCollectionsCount++;
+            if (_loadedCollectionsCount === TOTAL_COLLECTIONS) {
+                console.log('[NGAE] 🎉 Initial real-time sync completed for all collections!');
+                lastSyncedAppData = deepClone(appData);
+                _recalculateAllStocks(appData);
+                _refreshUIIfPossible();
+                window.dispatchEvent(new CustomEvent('ngae-data-updated', { detail: appData }));
+                updateSyncIndicator('synced');
+            }
+        } else {
+            lastSyncedAppData = deepClone(appData);
+            _recalculateAllStocks(appData);
+            _refreshUIIfPossible();
+            window.dispatchEvent(new CustomEvent('ngae-data-updated', { detail: appData }));
+            updateSyncIndicator('synced');
+        }
+    }, err => {
+        console.error(`[NGAE] Firestore listener error for ${colName}:`, err.message);
+        updateSyncIndicator('error', err.message);
+    });
+}
+
+/**
+ * Anzisha real-time listeners kwa collections zote husika.
  * Ukibadilika taarifa kwenye kifaa kingine, ukurasa huu unasasishwa otomatiki.
  */
 function startRealtimeSync() {
     if (!_firebaseReady || !_db || _syncListenerActive) return;
 
     _syncListenerActive = true;
-    console.log('[NGAE] 🔄 Real-time sync imeanzishwa...');
+    console.log('[NGAE] 🔄 Real-time sync imeanzishwa kwa collections zote...');
+    updateSyncIndicator('syncing');
 
-    _db.collection(FIRESTORE_COLLECTION).doc(FIRESTORE_DOC)
-        .onSnapshot({ includeMetadataChanges: true }, doc => {
-            if (doc.metadata && doc.metadata.hasPendingWrites) {
-                console.log('[NGAE] ⏳ Local write pending - snapshot inapuuzwa.');
-                return;
-            }
-
-            if (doc.exists) {
-                const remoteData = doc.data();
-                const mergedData = _mergeAppData(appData, remoteData);
-
-                const currentStr = JSON.stringify(appData);
-                const remoteStr = JSON.stringify(remoteData);
-                const mergedStr = JSON.stringify(mergedData);
-
-                let localUpdated = false;
-                if (currentStr !== mergedStr) {
-                    console.log('[NGAE] 📥 Data mpya kutoka kifaa kingine — inasasisha kikamilifu...');
-                    appData = mergedData;
-                    window.appData = appData;
-                    localStorage.setItem(STORAGE_KEY, JSON.stringify(appData));
-                    localUpdated = true;
-                }
-
-                // Ikiwa remoteData haina baadhi ya taarifa ambazo zipo kwenye mergedData (k.m. wakati wa merge conflicts),
-                // andika mergedData kurudi kwenye Firestore ili isipotee kwenye server!
-                if (remoteStr !== mergedStr) {
-                    console.log('[NGAE] 📤 Server haina baadhi ya data za hapa — inasawazisha server na data mpya...');
-                    _db.collection(FIRESTORE_COLLECTION).doc(FIRESTORE_DOC)
-                        .set(mergedData)
-                        .catch(err => {
-                            console.error('[NGAE] Firestore sync-back error:', err.message);
-                        });
-                }
-
-                if (localUpdated) {
-                    window.dispatchEvent(new CustomEvent('ngae-data-updated', { detail: appData }));
-                    _refreshUIIfPossible();
-                }
-            } else {
-                console.log('[NGAE] 📤 Inapakia data ya sasa kwenye Firestore kwa mara ya kwanza...');
-                saveData(appData);
-            }
-        }, err => {
-            console.error('[NGAE] Firestore listener error:', err.message);
+    migrateOldDataIfNeeded().then(() => {
+        listenToCollection('staff', 'object', snapshot => {
+            const localStaff = {};
+            snapshot.forEach(doc => {
+                localStaff[doc.id] = doc.data();
+            });
+            appData.staff = localStaff;
         });
-}
 
-/**
- * Pakia data kutoka Firestore mara moja ukurasa unapoanza.
- */
-async function loadFromFirestore() {
-    if (!_firebaseReady || !_db) return;
+        listenToCollection('products', 'array', snapshot => {
+            const arr = [];
+            snapshot.forEach(doc => {
+                arr.push({ id: doc.id, ...doc.data() });
+            });
+            appData.products = arr;
+        });
 
-    try {
-        console.log('[NGAE] 📡 Inapakia data kutoka Firestore...');
-        const doc = await _db.collection(FIRESTORE_COLLECTION).doc(FIRESTORE_DOC).get();
-        if (doc.exists) {
-            const remoteData = doc.data();
-            const mergedData = _mergeAppData(appData, remoteData);
+        listenToCollection('shops', 'array', snapshot => {
+            const arr = [];
+            snapshot.forEach(doc => {
+                arr.push({ id: doc.id, ...doc.data() });
+            });
+            appData.shops = arr;
+        });
 
-            const remoteStr = JSON.stringify(remoteData);
-            const mergedStr = JSON.stringify(mergedData);
+        listenToCollection('raw_materials', 'array', snapshot => {
+            const arr = [];
+            snapshot.forEach(doc => {
+                arr.push({ id: doc.id, ...doc.data() });
+            });
+            appData.rawMaterials = arr;
+        });
 
-            appData = mergedData;
-            window.appData = appData;
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(appData));
+        listenToCollection('dispatch_history', 'array', snapshot => {
+            const arr = [];
+            snapshot.forEach(doc => {
+                arr.push({ id: doc.id, ...doc.data() });
+            });
+            appData.dispatchHistory = arr;
+        });
 
-            console.log('[NGAE] ✅ Data imepakiwa na ku-merge kutoka Firestore.');
+        listenToCollection('raw_materials_history', 'array', snapshot => {
+            const arr = [];
+            snapshot.forEach(doc => {
+                arr.push({ id: doc.id, ...doc.data() });
+            });
+            appData.rawMaterialsHistory = arr;
+        });
 
-            // Ikiwa remoteData haina baadhi ya taarifa ambazo zipo kwenye local au zimeunganishwa, sawazisha server
-            if (remoteStr !== mergedStr) {
-                console.log('[NGAE] 📤 Inasawazisha server baada ya load...');
-                _db.collection(FIRESTORE_COLLECTION).doc(FIRESTORE_DOC)
-                    .set(mergedData)
-                    .catch(err => console.error('[NGAE] Firestore load-sync error:', err.message));
-            }
+        listenToCollection('raw_materials_dispatch_history', 'array', snapshot => {
+            const arr = [];
+            snapshot.forEach(doc => {
+                arr.push({ id: doc.id, ...doc.data() });
+            });
+            appData.rawMaterialsDispatchHistory = arr;
+        });
 
-            window.dispatchEvent(new CustomEvent('ngae-data-updated', { detail: appData }));
-            _refreshUIIfPossible();
-        } else {
-            console.log('[NGAE] 📤 Hakuna data Firestore. Inahamisha localStorage → Firestore...');
-            _lastSaveTimestamp = 0;
-            saveData(appData);
-        }
-    } catch (e) {
-        console.warn('[NGAE] ⚠️ Haikuweza kupakia Firestore (labda offline):', e.message);
-    }
+        listenToCollection('production_log', 'array', snapshot => {
+            const arr = [];
+            snapshot.forEach(doc => {
+                arr.push({ id: doc.id, ...doc.data() });
+            });
+            appData.productionLog = arr;
+        });
+
+        listenToCollection('finances', 'object', snapshot => {
+            const localFin = {};
+            snapshot.forEach(doc => {
+                localFin[doc.id] = doc.data();
+            });
+            appData.finances = localFin;
+        });
+
+        listenToCollection('customer_orders', 'array', snapshot => {
+            const arr = [];
+            snapshot.forEach(doc => {
+                arr.push({ id: doc.id, ...doc.data() });
+            });
+            appData.customerOrders = arr;
+        });
+
+        listenToCollection('suggestions', 'array', snapshot => {
+            const arr = [];
+            snapshot.forEach(doc => {
+                arr.push({ id: doc.id, ...doc.data() });
+            });
+            appData.suggestions = arr;
+        });
+
+        listenToCollection('notifications', 'array', snapshot => {
+            const arr = [];
+            snapshot.forEach(doc => {
+                arr.push({ id: doc.id, ...doc.data() });
+            });
+            appData.notifications = arr;
+        });
+
+        listenToCollection('manufacturer_materials', 'object', snapshot => {
+            const localMM = {};
+            snapshot.forEach(doc => {
+                localMM[doc.id] = doc.data();
+            });
+            appData.manufacturerMaterials = localMM;
+        });
+
+        listenToCollection('admin_expenses', 'array', snapshot => {
+            const arr = [];
+            snapshot.forEach(doc => {
+                arr.push({ id: doc.id, ...doc.data() });
+            });
+            appData.adminExpenses = arr;
+        });
+
+        listenToCollection('salary_list', 'array', snapshot => {
+            const arr = [];
+            snapshot.forEach(doc => {
+                arr.push({ id: doc.id, ...doc.data() });
+            });
+            appData.salaryList = arr;
+        });
+
+        listenToCollection('cash_flow_transactions', 'array', snapshot => {
+            const arr = [];
+            snapshot.forEach(doc => {
+                arr.push({ id: doc.id, ...doc.data() });
+            });
+            if (!appData.cashFlow) appData.cashFlow = { balance: 0, transactions: [] };
+            appData.cashFlow.transactions = arr;
+            let balance = 0;
+            arr.forEach(t => {
+                if (t.type === 'IN') balance += (Number(t.amount) || 0);
+                else if (t.type === 'OUT') balance -= (Number(t.amount) || 0);
+            });
+            appData.cashFlow.balance = balance;
+        });
+    });
 }
 
 /**
@@ -506,11 +764,8 @@ window.appData = appData;
 // Anzisha Firebase (async - background)
 initFirebase();
 
-// Pakia data ya hivi karibuni kutoka Firestore, halafu anza real-time sync
-(async () => {
-    await loadFromFirestore();
-    startRealtimeSync();
-})();
+// Anzisha real-time sync mara moja (ambayo itafanya pia load ya kwanza)
+startRealtimeSync();
 
 // Automatic Sync on network reconnection (online event)
 window.addEventListener('online', async () => {
@@ -519,10 +774,16 @@ window.addEventListener('online', async () => {
         initFirebase();
     }
     if (_firebaseReady && _db) {
-        await loadFromFirestore();
         startRealtimeSync();
     }
 });
+
+// Automatic Sync status on network reconnection (offline event)
+window.addEventListener('offline', () => {
+    console.log('[NGAE] 📴 Device went offline. Switching to local cache.');
+    updateSyncIndicator('offline');
+});
+
 
 // ==========================================
 // PRODUCT MANAGEMENT API

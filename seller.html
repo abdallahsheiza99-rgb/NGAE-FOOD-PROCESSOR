@@ -516,8 +516,26 @@
                             <input type="number" id="sellerExpAmount" required placeholder="Mfano: 5000" class="w-full border border-slate-300 rounded-2xl p-3 text-sm focus:ring-2 focus:ring-red-500 outline-none font-bold">
                         </div>
                         <div>
+                            <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Kundi la Matumizi</label>
+                            <select id="sellerExpCategory" required class="w-full border border-slate-300 rounded-2xl p-3 text-xs focus:ring-2 focus:ring-red-500 outline-none bg-white font-semibold">
+                                <option value="Chakula">Chakula (Food)</option>
+                                <option value="Nauli">Nauli / Usafiri (Transport)</option>
+                                <option value="Vifungashio">Vifungashio (Packaging)</option>
+                                <option value="Ulinzi">Ulinzi (Security)</option>
+                                <option value="Mengineyo" selected>Mengineyo (Other)</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Tarehe ya Matumizi</label>
+                            <input type="date" id="sellerExpDate" required class="w-full border border-slate-300 rounded-2xl p-3 text-xs focus:ring-2 focus:ring-red-500 outline-none font-semibold">
+                        </div>
+                        <div>
                             <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Maelezo ya Matumizi</label>
                             <input type="text" id="sellerExpDesc" required placeholder="Chakula, Nauli, Mifuko..." class="w-full border border-slate-300 rounded-2xl p-3 text-xs focus:ring-2 focus:ring-red-500 outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Maelezo ya Ziada (Hiari)</label>
+                            <textarea id="sellerExpNotes" placeholder="Maelezo yoyote ya ziada (hiari)..." rows="2" class="w-full border border-slate-300 rounded-2xl p-3 text-xs focus:ring-2 focus:ring-red-500 outline-none"></textarea>
                         </div>
                         <button type="submit" class="w-full bg-red-600 hover:bg-red-700 text-white font-extrabold py-3 rounded-2xl text-xs transition-all shadow-md flex items-center justify-center gap-2">
                             <i class="bi bi-check2-circle text-base"></i> Rekodi Matumizi
@@ -538,7 +556,8 @@
                             <thead class="bg-slate-50 text-slate-500 uppercase font-bold sticky top-0 border-b">
                                 <tr>
                                     <th class="p-3">Tarehe</th>
-                                    <th class="p-3">Matumizi / Maelezo</th>
+                                    <th class="p-3">Kundi</th>
+                                    <th class="p-3">Maelezo</th>
                                     <th class="p-3 text-right font-black text-red-600">Kiasi (Tsh)</th>
                                 </tr>
                             </thead>
@@ -663,6 +682,11 @@
 
             renderSellerDashboard();
 
+            // Set default date for expenses date picker
+            const todayStr = new Date().toISOString().split('T')[0];
+            const expDateInput = document.getElementById('sellerExpDate');
+            if (expDateInput) expDateInput.value = todayStr;
+
             // Submit Sales Form Listener
             document.getElementById('submitSalesForm').addEventListener('submit', (e) => {
                 e.preventDefault();
@@ -726,6 +750,9 @@
                 e.preventDefault();
                 const amt = parseFloat(document.getElementById('sellerExpAmount').value);
                 const desc = document.getElementById('sellerExpDesc').value;
+                const cat = document.getElementById('sellerExpCategory').value;
+                const date = document.getElementById('sellerExpDate').value;
+                const notes = document.getElementById('sellerExpNotes').value;
 
                 if (amt <= 0 || isNaN(amt)) {
                     alert("Tafadhali weka kiasi halali cha matumizi binafsi (zaidi ya 0).");
@@ -733,10 +760,15 @@
                 }
 
                 if (window.appAddSellerExpense) {
-                    const success = window.appAddSellerExpense(amt, desc);
+                    const success = window.appAddSellerExpense(amt, desc, cat, date, notes);
                     if (success) {
                         alert("Matumizi binafsi yamehifadhiwa!");
                         document.getElementById('sellerExpenseForm').reset();
+                        // Reset date picker to today
+                        const defaultToday = new Date().toISOString().split('T')[0];
+                        const expDateEl = document.getElementById('sellerExpDate');
+                        if (expDateEl) expDateEl.value = defaultToday;
+                        
                         renderSellerDashboard();
                     } else {
                         alert("Imeshindwa kuhifadhi matumizi binafsi. Hakikisha duka lako limesajiliwa.");
@@ -925,7 +957,11 @@
                     tr.className = "hover:bg-red-50/40 transition-colors";
                     tr.innerHTML = `
                         <td class="p-3 text-slate-500 font-bold">${e.date}</td>
-                        <td class="p-3 text-slate-800 font-semibold">${e.description}</td>
+                        <td class="p-3 text-slate-700 font-bold uppercase"><span class="bg-red-50 text-red-700 text-[10px] px-2.5 py-0.5 rounded-full border border-red-200">${e.category || 'Mengineyo'}</span></td>
+                        <td class="p-3 text-slate-800 font-semibold">
+                            <div>${e.description}</div>
+                            ${e.notes ? `<div class="text-[10px] text-slate-400 italic font-normal">${e.notes}</div>` : ''}
+                        </td>
                         <td class="p-3 text-right font-black text-red-600">Tsh ${e.amount.toLocaleString()}</td>
                     `;
                     expBody.appendChild(tr);

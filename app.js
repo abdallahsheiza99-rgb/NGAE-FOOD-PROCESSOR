@@ -547,6 +547,18 @@ initFirebase();
     startRealtimeSync();
 })();
 
+// Automatic Sync on network reconnection (online event)
+window.addEventListener('online', async () => {
+    console.log('[NGAE] 📶 Device went online. Synchronizing data...');
+    if (!_firebaseReady) {
+        initFirebase();
+    }
+    if (_firebaseReady && _db) {
+        await loadFromFirestore();
+        startRealtimeSync();
+    }
+});
+
 // ==========================================
 // PRODUCT MANAGEMENT API
 // ==========================================
@@ -804,7 +816,7 @@ window.appReportDebt = function(amount, reason) {
     return true;
 };
 
-window.appAddSellerExpense = function(amount, description) {
+window.appAddSellerExpense = function(amount, description, category, date, notes) {
     const staffId = (localStorage.getItem('ngae_logged_in_id') || '').toUpperCase().trim();
     const staffRecord = appData.staff[staffId];
     if (!staffRecord || !staffRecord.shopId) return false;
@@ -820,16 +832,25 @@ window.appAddSellerExpense = function(amount, description) {
         appData.finances[shopId].personalExpenses = [];
     }
 
-    const now = new Date();
-    const dateStr = now.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
-    const timeStr = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+    let expDate = new Date();
+    if (date) {
+        const parsedDate = new Date(date);
+        if (!isNaN(parsedDate.getTime())) {
+            expDate = parsedDate;
+        }
+    }
+
+    const dateStr = expDate.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+    const timeStr = expDate.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
 
     appData.finances[shopId].personalExpenses.push({
         id: 'seller_exp_' + Date.now() + '_' + Math.random().toString(36).substr(2, 6),
         amount: numAmount,
         description: description,
+        category: category || 'Mengineyo',
+        notes: notes || '',
         date: `${dateStr} ${timeStr}`,
-        dateRaw: now.toISOString()
+        dateRaw: expDate.toISOString()
     });
 
     saveData(appData);

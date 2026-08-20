@@ -182,6 +182,24 @@
         <!-- Quick Notification Alert -->
         <div id="salesMessage" class="hidden font-bold p-4 rounded-2xl shadow-md transition-all"></div>
 
+        <!-- WARNING BANNER FOR UNREGISTERED SHOP -->
+        <div id="unregisteredShopWarning" class="hidden max-w-2xl mx-auto my-12 p-8 bg-white rounded-3xl shadow-xl border border-amber-100 text-center space-y-6">
+            <div class="w-16 h-16 bg-amber-100 text-amber-600 rounded-full flex items-center justify-center mx-auto">
+                <i class="bi bi-exclamation-triangle text-3xl"></i>
+            </div>
+            <div class="space-y-2">
+                <h2 class="text-xl font-extrabold text-slate-800">Duka Halijasajiliwa au Limefutwa</h2>
+                <p class="text-xs text-slate-500 leading-relaxed">
+                    Akaunti yako ya muuzaji haina duka lolote lililosajiliwa kwa sasa, au duka lako limefutwa na Uongozi/Admin. Tafadhali wasiliana na Admin wako ili kusajili upya duka na kuanza kazi.
+                </p>
+            </div>
+            <div class="pt-2">
+                <button onclick="window.appLogout()" class="bg-red-600 hover:bg-red-700 text-white font-extrabold text-xs px-6 py-3 rounded-2xl shadow-md transition-all">
+                    Ondoka Ndani (Logout)
+                </button>
+            </div>
+        </div>
+
         <!-- =================================================================== -->
         <!-- VIEW 1: OVERVIEW DASHBOARD (KADI SITA ZA MUHTASARI)                 -->
         <!-- =================================================================== -->
@@ -255,9 +273,14 @@
                     </div>
                     <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Deni / Kiasi Kilichobaki</p>
                     <h3 class="text-2xl md:text-3xl font-black text-slate-800 mt-1" id="totalDebt">Tsh 0</h3>
-                    <p class="text-[11px] text-slate-500 mt-2 flex items-center gap-1 font-medium">
-                        <i class="bi bi-clock-history text-amber-500"></i> Pesa ambazo seller bado hajakabidhi
-                    </p>
+                    <div class="flex justify-between items-center mt-2 flex-wrap gap-2">
+                        <p class="text-[11px] text-slate-500 flex items-center gap-1 font-medium">
+                            <i class="bi bi-clock-history text-amber-500"></i> Pesa ambazo bado hazijawasilishwa
+                        </p>
+                        <span class="text-[10px] bg-amber-50 text-amber-700 font-bold px-2.5 py-0.5 rounded-full border border-amber-200" id="reportedDebtBadge">
+                            Lililoripotiwa: Tsh 0
+                        </span>
+                    </div>
                 </div>
 
                 <!-- CARD 4: HALI YA DUKA (CONDITION DRIVEN) -->
@@ -646,17 +669,26 @@
                 const amount = parseInt(document.getElementById('submittedAmount').value);
                 const notes = document.getElementById('salesNotes').value;
                 
+                if (amount <= 0 || isNaN(amount)) {
+                    alert("Tafadhali weka kiasi halali cha mauzo (zaidi ya 0).");
+                    return;
+                }
+
                 if (window.appSubmitSales) {
-                    window.appSubmitSales(amount, notes);
-                    toggleModal('submitSalesModal');
-                    
-                    const msg = document.getElementById('salesMessage');
-                    msg.textContent = `Mauzo ya Tsh ${amount.toLocaleString()} yamewasilishwa kikamilifu!`;
-                    msg.className = "p-4 rounded-2xl font-bold bg-emerald-100 text-emerald-800 border border-emerald-200 block shadow-sm";
-                    setTimeout(() => msg.classList.add('hidden'), 5000);
-                    
-                    renderSellerDashboard();
-                    document.getElementById('submitSalesForm').reset();
+                    const success = window.appSubmitSales(amount, notes);
+                    if (success) {
+                        toggleModal('submitSalesModal');
+                        
+                        const msg = document.getElementById('salesMessage');
+                        msg.textContent = `Mauzo ya Tsh ${amount.toLocaleString()} yamewasilishwa kikamilifu!`;
+                        msg.className = "p-4 rounded-2xl font-bold bg-emerald-100 text-emerald-800 border border-emerald-200 block shadow-sm";
+                        setTimeout(() => msg.classList.add('hidden'), 5000);
+                        
+                        renderSellerDashboard();
+                        document.getElementById('submitSalesForm').reset();
+                    } else {
+                        alert("Imeshindwa kuwasilisha mauzo. Hakikisha duka lako limesajiliwa.");
+                    }
                 }
             });
 
@@ -666,17 +698,26 @@
                 const amount = parseInt(document.getElementById('debtAmount').value);
                 const reason = document.getElementById('debtReason').value;
                 
+                if (amount <= 0 || isNaN(amount)) {
+                    alert("Tafadhali weka kiasi halali cha deni (zaidi ya 0).");
+                    return;
+                }
+
                 if (window.appReportDebt) {
-                    window.appReportDebt(amount, reason);
-                    toggleModal('debtReportModal');
-                    
-                    const msg = document.getElementById('salesMessage');
-                    msg.textContent = `Ripoti ya deni ya Tsh ${amount.toLocaleString()} imetumwa kikamilifu!`;
-                    msg.className = "p-4 rounded-2xl font-bold bg-amber-100 text-amber-800 border border-amber-200 block shadow-sm";
-                    setTimeout(() => msg.classList.add('hidden'), 5000);
-                    
-                    renderSellerDashboard();
-                    document.getElementById('debtReportForm').reset();
+                    const success = window.appReportDebt(amount, reason);
+                    if (success) {
+                        toggleModal('debtReportModal');
+                        
+                        const msg = document.getElementById('salesMessage');
+                        msg.textContent = `Ripoti ya deni ya Tsh ${amount.toLocaleString()} imetumwa kikamilifu!`;
+                        msg.className = "p-4 rounded-2xl font-bold bg-amber-100 text-amber-800 border border-amber-200 block shadow-sm";
+                        setTimeout(() => msg.classList.add('hidden'), 5000);
+                        
+                        renderSellerDashboard();
+                        document.getElementById('debtReportForm').reset();
+                    } else {
+                        alert("Imeshindwa kutuma ripoti ya deni. Hakikisha duka lako limesajiliwa.");
+                    }
                 }
             });
 
@@ -686,11 +727,20 @@
                 const amt = parseFloat(document.getElementById('sellerExpAmount').value);
                 const desc = document.getElementById('sellerExpDesc').value;
 
+                if (amt <= 0 || isNaN(amt)) {
+                    alert("Tafadhali weka kiasi halali cha matumizi binafsi (zaidi ya 0).");
+                    return;
+                }
+
                 if (window.appAddSellerExpense) {
-                    window.appAddSellerExpense(amt, desc);
-                    alert("Matumizi binafsi yamehifadhiwa!");
-                    document.getElementById('sellerExpenseForm').reset();
-                    renderSellerDashboard();
+                    const success = window.appAddSellerExpense(amt, desc);
+                    if (success) {
+                        alert("Matumizi binafsi yamehifadhiwa!");
+                        document.getElementById('sellerExpenseForm').reset();
+                        renderSellerDashboard();
+                    } else {
+                        alert("Imeshindwa kuhifadhi matumizi binafsi. Hakikisha duka lako limesajiliwa.");
+                    }
                 }
             });
 
@@ -699,9 +749,13 @@
                 e.preventDefault();
                 const msg = document.getElementById('suggestionMessage').value;
                 if (window.appSubmitSuggestion) {
-                    window.appSubmitSuggestion(msg);
-                    document.getElementById('suggestionMessage').value = '';
-                    renderSuggestionsChat();
+                    const success = window.appSubmitSuggestion(msg);
+                    if (success) {
+                        document.getElementById('suggestionMessage').value = '';
+                        renderSuggestionsChat();
+                    } else {
+                        alert("Imeshindwa kutuma maoni.");
+                    }
                 }
             });
 
@@ -726,6 +780,38 @@
             const staffId = localStorage.getItem('ngae_logged_in_id') || '';
             const stats = window.appGetSellerStats(staffId);
 
+            // Handle Unregistered / Deleted Shop State
+            const warningEl = document.getElementById('unregisteredShopWarning');
+            const navEl = document.querySelector('nav');
+            const mainSections = document.querySelectorAll('main > section');
+
+            if (!stats.shop || !stats.shop.id) {
+                if (warningEl) warningEl.classList.remove('hidden');
+                if (navEl) navEl.classList.add('hidden');
+                mainSections.forEach(sec => sec.classList.add('hidden'));
+
+                // Still populate basic header seller info if elements exist
+                const hName = document.getElementById('headerSellerName');
+                const hLoc = document.getElementById('headerShopLocation');
+                const hImg = document.getElementById('headerSellerImg');
+                if (hName) hName.textContent = stats.staffInfo.name;
+                if (hLoc) hLoc.textContent = "Bila Duka / Deleted";
+                if (hImg) hImg.src = stats.staffInfo.photo;
+                return;
+            }
+
+            // Normal Registered Shop State
+            if (warningEl) warningEl.classList.add('hidden');
+            if (navEl) navEl.classList.remove('hidden');
+            
+            // Restore current tab view (switchTab will make the active one visible)
+            const activeTabBtn = document.querySelector('.nav-btn.active');
+            if (activeTabBtn) {
+                const activeTabId = activeTabBtn.id.replace('nav-', '');
+                const el = document.getElementById('view-' + activeTabId);
+                if (el) el.classList.remove('hidden');
+            }
+
             // Populate Headers & Staff Info
             document.getElementById('headerSellerName').textContent = stats.staffInfo.name;
             document.getElementById('headerShopLocation').textContent = stats.staffInfo.shopLocation;
@@ -743,6 +829,11 @@
             document.getElementById('totalCargoValue').textContent = "Tsh " + stats.totalCargoValue.toLocaleString();
             document.getElementById('totalSubmittedCash').textContent = "Tsh " + stats.totalSubmittedCash.toLocaleString();
             document.getElementById('totalDebt').textContent = "Tsh " + stats.remainingDebt.toLocaleString();
+
+            const repDebtEl = document.getElementById('reportedDebtBadge');
+            if (repDebtEl) {
+                repDebtEl.textContent = "Lililoripotiwa: Tsh " + (stats.reportedDebt || 0).toLocaleString();
+            }
 
             // Card 4: Store Status Condition
             const statusTextEl = document.getElementById('storeStatusText');
@@ -772,8 +863,8 @@
             if (overviewCargoBody) overviewCargoBody.innerHTML = '';
 
             [...stats.receivedDispatches].reverse().forEach((item, index) => {
-                const price = Number(item.unitPrice) || 1000;
-                const itemValue = Number(item.totalValue) || (price * (item.quantity || 0));
+                const price = (item.unitPrice !== undefined && item.unitPrice !== null) ? Number(item.unitPrice) : 0;
+                const itemValue = (item.totalValue !== undefined && item.totalValue !== null) ? Number(item.totalValue) : (price * (Number(item.quantity) || 0));
 
                 const tr = document.createElement('tr');
                 tr.className = "hover:bg-slate-50 transition-colors";
@@ -791,7 +882,7 @@
                     trSimple.innerHTML = `
                         <td class="p-2 text-slate-500 text-[11px]">${item.date}</td>
                         <td class="p-2 font-bold text-slate-800 text-[11px]">${item.productName}</td>
-                        <td class="p-2 text-center text-blue-600 font-bold text-[11px]">${item.quantity}</td>
+                        <td class="p-2 text-center text-blue-600 font-bold text-[11px]">${item.quantity} <span class="text-[9px] text-slate-400 uppercase">${item.unit || 'pcs'}</span></td>
                         <td class="p-2 text-right font-bold text-slate-700 text-[11px]">${itemValue.toLocaleString()}</td>
                     `;
                     overviewCargoBody.appendChild(trSimple);
@@ -976,7 +1067,9 @@
                 }
             });
 
-            chatList.scrollTop = chatList.scrollHeight;
+            setTimeout(() => {
+                chatList.scrollTop = chatList.scrollHeight;
+            }, 50);
         }
     </script>
 </body>

@@ -792,6 +792,8 @@ window.appReportDebt = function(amount, reason) {
 
     const shopId = staffRecord.shopId;
     const numAmount = Number(amount) || 0;
+    if (numAmount <= 0) return false;
+
     if (!appData.finances[shopId]) {
         appData.finances[shopId] = { submitted: 0, reportedDebt: 0, salesHistory: [], personalExpenses: [] };
     }
@@ -809,6 +811,7 @@ window.appAddSellerExpense = function(amount, description) {
 
     const shopId = staffRecord.shopId;
     const numAmount = Number(amount) || 0;
+    if (numAmount <= 0) return false;
 
     if (!appData.finances[shopId]) {
         appData.finances[shopId] = { submitted: 0, reportedDebt: 0, salesHistory: [], personalExpenses: [] };
@@ -1147,7 +1150,11 @@ window.appAddStaff = function(name, role, customId, photo) {
 };
 
 window.appDeleteStaff = function(staffId) {
-    if (appData.staff[staffId]) {
+    const staffObj = appData.staff[staffId];
+    if (staffObj) {
+        if (staffObj.role === 'seller' && staffObj.shopId) {
+            appData.shops = (appData.shops || []).filter(s => s.id !== staffObj.shopId);
+        }
         delete appData.staff[staffId];
         saveData(appData);
         window.appData = appData;
@@ -1673,20 +1680,24 @@ window.appGetSellerStats = function(sellerId) {
     const currentId = (sellerId || localStorage.getItem('ngae_logged_in_id') || '').toUpperCase();
     const staffObj = (appData.staff && appData.staff[currentId]) ? appData.staff[currentId] : { name: localStorage.getItem('ngae_logged_in_name') || 'Mfanyakazi', role: 'seller', shopId: '' };
 
-    const shop = (appData.shops || []).find(s => s.sellerId === currentId) || (appData.shops || [])[0] || { id: '', location: 'Duka Bado Halijasajiliwa', sellerName: staffObj.name || 'Mfanyakazi' };
+    // Resolve shop using staffObj.shopId first, fall back to matching sellerId, and default to mock blank shop
+    const shop = (appData.shops || []).find(s => s.id === staffObj.shopId) || 
+                 (appData.shops || []).find(s => s.sellerId === currentId) || 
+                 { id: '', location: 'Duka Bado Halijasajiliwa', sellerName: staffObj.name || 'Mfanyakazi' };
 
-    const receivedDispatches = (appData.dispatchHistory || []).filter(h => h.shopId === shop.id);
+    const receivedDispatches = shop.id ? (appData.dispatchHistory || []).filter(h => h.shopId === shop.id) : [];
     let totalCargoValue = 0;
     receivedDispatches.forEach(item => {
         const itemVal = Number(item.totalValue) || ((Number(item.unitPrice) || 0) * (Number(item.quantity) || 0));
         totalCargoValue += itemVal;
     });
 
-    const shopFinance = (appData.finances && appData.finances[shop.id]) ? appData.finances[shop.id] : { submitted: 0, salesHistory: [], personalExpenses: [] };
+    const shopFinance = (shop.id && appData.finances && appData.finances[shop.id]) ? appData.finances[shop.id] : { submitted: 0, reportedDebt: 0, salesHistory: [], personalExpenses: [] };
     const totalSubmittedCash = shopFinance.submitted || 0;
     const remainingDebt = Math.max(0, totalCargoValue - totalSubmittedCash);
 
-    const isStockSufficient = remainingDebt >= 1000000;
+    // Smart Stock indicator: sufficient if remaining is >= 1,000,000 OR if small shop and they still have >= 50% of what was received
+    const isStockSufficient = shop.id ? (remainingDebt >= 1000000 || (totalCargoValue < 1000000 && remainingDebt >= totalCargoValue * 0.5)) : false;
     const storeStatusText = isStockSufficient ? "VITU BADO VIPO DUKANI" : "VITU VINAELEKEA KUISHA";
 
     const shopRankings = (appData.shops || []).map(s => {
@@ -1725,6 +1736,7 @@ window.appGetSellerStats = function(sellerId) {
         totalCargoValue,
         totalSubmittedCash,
         remainingDebt,
+        reportedDebt: shopFinance.reportedDebt || 0,
         isStockSufficient,
         storeStatusText,
         userRank,

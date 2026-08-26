@@ -1915,6 +1915,17 @@
     <script src="firebase-config.js"></script>
     <script src="app.js"></script>
     <script>
+        window.onerror = function(message, source, lineno, colno, error) {
+            const errorMsg = "HITILAFU YA MFUMO (SYSTEM SCRIPT ERROR):\n\n" + 
+                             "Ujumbe: " + message + "\n" +
+                             "Mstari: " + lineno + ":" + colno + "\n" +
+                             "Faili: " + source.split('/').pop();
+            console.error("[NGAE Global Error]", message, "at", source, ":", lineno, ":", colno, error);
+            alert(errorMsg);
+            return false;
+        };
+    </script>
+    <script>
         document.addEventListener('DOMContentLoaded', () => {
             // Check if admin is already authenticated in session
             const isAdmin = sessionStorage.getItem('ngae_admin_auth');
@@ -1940,7 +1951,9 @@
                     }
                 } else {
                     const err = document.getElementById('loginError');
-                    err.textContent = "Kosa: Jina au nenosiri si sahihi!";
+                    const userLen = user ? user.length : 0;
+                    const passLen = pass ? pass.length : 0;
+                    err.textContent = `Kosa: Jina au nenosiri si sahihi! (Urefu wa Jina: ${userLen}, Urefu wa Nenosiri: ${passLen})`;
                     err.classList.remove('hidden');
                 }
             });

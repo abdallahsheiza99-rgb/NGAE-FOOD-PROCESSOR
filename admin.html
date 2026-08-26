@@ -4880,7 +4880,7 @@ Saini ya Mwajiriwa (${emp.name}): ____________________      Tarehe: ____________
                 </head>
                 <body>
                     <div class="max-w-4xl mx-auto">
-                        \${printContent}
+                        ${printContent}
                     </div>
                     <script>
                         // Force show printable header
@@ -5007,7 +5007,7 @@ Saini ya Mwajiriwa (${emp.name}): ____________________      Tarehe: ____________
                     addWhatsAppLog("PDF imepakiwa kwenye Firebase Storage. Inatengeneza kiungo salama...", 'info');
                     
                     const publicUrl = await snapshot.ref.getDownloadURL();
-                    addWhatsAppLog(`Kiungo salama kimetengenezwa! URL: \${publicUrl.substring(0, 50)}...`, 'info');
+                    addWhatsAppLog(`Kiungo salama kimetengenezwa! URL: ${publicUrl.substring(0, 50)}...`, 'info');
 
                     // Read financial numbers for message template
                     const profitText = document.getElementById('repEstimatedProfit').textContent;
@@ -5015,19 +5015,19 @@ Saini ya Mwajiriwa (${emp.name}): ____________________      Tarehe: ____________
                     
                     // Standard Tanzanian Date Display
                     const dateParts = dateVal.split('-');
-                    const displayDate = dateParts.length === 3 ? `\${dateParts[2]}/\${dateParts[1]}/\${dateParts[0]}` : dateVal;
+                    const displayDate = dateParts.length === 3 ? `${dateParts[2]}/${dateParts[1]}/${dateParts[0]}` : dateVal;
 
-                    const messageText = `*NGAE FOOD PROCESSORS HUB – DAILY REPORT*\n\nDaily Report for: *\${displayDate}*\n\nPlease find attached the Daily Production and Financial Report for the selected date.\n\n*Estimated Profit:* \${profitText}\n*Estimated Profit Margin:* \${marginText}`;
+                    const messageText = `*NGAE FOOD PROCESSORS HUB – DAILY REPORT*\n\nDaily Report for: *${displayDate}*\n\nPlease find attached the Daily Production and Financial Report for the selected date.\n\n*Estimated Profit:* ${profitText}\n*Estimated Profit Margin:* ${marginText}`;
 
                     const recipients = ['+255765394352', '+255776637247'];
                     
                     for (const num of recipients) {
-                        addWhatsAppLog(`Inatuma ripoti kwenda \${num}...`, 'info');
+                        addWhatsAppLog(`Inatuma ripoti kwenda ${num}...`, 'info');
                         const success = await sendToGateway(num, messageText, publicUrl, config);
                         if (success) {
-                            addWhatsAppLog(`✅ Sent Successfully kwa namba \${num}`, 'success');
+                            addWhatsAppLog(`✅ Sent Successfully kwa namba ${num}`, 'success');
                         } else {
-                            addWhatsAppLog(`❌ Failed to Send kwa namba \${num}`, 'error');
+                            addWhatsAppLog(`❌ Failed to Send kwa namba ${num}`, 'error');
                         }
                     }
                     
@@ -5035,8 +5035,8 @@ Saini ya Mwajiriwa (${emp.name}): ____________________      Tarehe: ____________
                     alert("Mchakato wa utumaji wa ripoti ya WhatsApp umekamilika. Angalia logi chini kuona matokeo.");
 
                 } catch (error) {
-                    addWhatsAppLog(`Hitilafu ya Mchakato: \${error.message}`, 'error');
-                    alert(`Hitilafu imetokea: \${error.message}`);
+                    addWhatsAppLog(`Hitilafu ya Mchakato: ${error.message}`, 'error');
+                    alert(`Hitilafu imetokea: ${error.message}`);
                 } finally {
                     btn.disabled = false;
                     btn.innerHTML = `<i class="bi bi-whatsapp"></i> TUMA WHATSAPP`;
@@ -5063,7 +5063,7 @@ Saini ya Mwajiriwa (${emp.name}): ____________________      Tarehe: ____________
                         caption: text
                     };
                 } else if (provider === 'wassenger') {
-                    headers["Authorization"] = `Bearer \${token}`;
+                    headers["Authorization"] = `Bearer ${token}`;
                     bodyObj = {
                         phone: phone,
                         message: text,
@@ -5073,12 +5073,12 @@ Saini ya Mwajiriwa (${emp.name}): ____________________      Tarehe: ____________
                         }
                     };
                 } else if (provider === 'twilio') {
-                    headers["Authorization"] = `Basic \${btoa(config.senderId + ":" + token)}`;
+                    headers["Authorization"] = `Basic ${btoa(config.senderId + ":" + token)}`;
                     headers["Content-Type"] = "application/x-www-form-urlencoded";
                     
                     const params = new URLSearchParams();
-                    params.append('To', `whatsapp:\${phone}`);
-                    params.append('From', `whatsapp:\${config.senderId}`);
+                    params.append('To', `whatsapp:${phone}`);
+                    params.append('From', `whatsapp:${config.senderId}`);
                     params.append('Body', text);
                     params.append('MediaUrl', fileUrl);
                     
@@ -5089,7 +5089,7 @@ Saini ya Mwajiriwa (${emp.name}): ____________________      Tarehe: ____________
                     });
                     return response.ok;
                 } else if (provider === 'meta') {
-                    headers["Authorization"] = `Bearer \${token}`;
+                    headers["Authorization"] = `Bearer ${token}`;
                     bodyObj = {
                         messaging_product: "whatsapp",
                         recipient_type: "individual",
@@ -5102,7 +5102,7 @@ Saini ya Mwajiriwa (${emp.name}): ____________________      Tarehe: ____________
                         }
                     };
                 } else {
-                    headers["Authorization"] = `Bearer \${token}`;
+                    headers["Authorization"] = `Bearer ${token}`;
                     bodyObj = {
                         to: phone,
                         message: text,
@@ -5120,23 +5120,21 @@ Saini ya Mwajiriwa (${emp.name}): ____________________      Tarehe: ____________
                     fetchOptions.body = JSON.stringify(bodyObj);
                 }
 
-                console.log(`Sending to \${phone} via \${provider}...`, bodyObj);
+                console.log(`Sending to ${phone} via ${provider}...`, bodyObj);
                 const response = await fetch(endpoint, fetchOptions);
                 
                 if (!response.ok) {
                     const errText = await response.text();
                     console.error(`WhatsApp Gateway response error:`, errText);
-                    addWhatsAppLog(`Gateway Error Detail: \${response.status} - \${errText.substring(0, 100)}`, 'warning');
+                    addWhatsAppLog(`Gateway Error Detail: ${response.status} - ${errText.substring(0, 100)}`, 'warning');
                 }
                 
                 return response.ok;
             } catch (e) {
                 console.error("Error communicating with WhatsApp API Gateway:", e);
-                addWhatsAppLog(`Network/CORS Error: \${e.message}`, 'warning');
+                addWhatsAppLog(`Network/CORS Error: ${e.message}`, 'warning');
                 return false;
             }
-        }
-            `;
         }
     </script>
     <!-- MODAL: REKEBISHA TAARIFA ZA BIDHA NA BEI -->

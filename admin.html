@@ -1021,6 +1021,25 @@
 
                 <!-- 2F. TAB: OVERALL STATISTICS -->
                 <section id="tab-overall-stats" class="tab-content hidden space-y-6">
+                    <!-- Reset and Baseline Control Panel -->
+                    <div class="bg-gradient-to-r from-teal-500 to-emerald-600 p-6 rounded-2xl shadow-md text-white flex flex-col md:flex-row justify-between items-center gap-4">
+                        <div>
+                            <h4 class="font-extrabold text-base flex items-center gap-2">
+                                <i class="bi bi-clock-history text-lg"></i> Kipindi cha Tathmini Kuu (Overall Statistics Period)
+                            </h4>
+                            <p class="text-xs opacity-90 mt-1">
+                                Takwimu hapa chini zinahesabiwa kuanzia: 
+                                <span id="baselineDisplayDate" class="font-black bg-teal-700/50 px-2 py-1 rounded">Muda wote (All-Time)</span>
+                            </p>
+                        </div>
+                        <div>
+                            <button onclick="handleResetOverallStats()" 
+                                class="bg-white hover:bg-red-50 text-red-600 hover:text-red-700 font-bold text-xs py-3 px-5 rounded-xl shadow-md transition-all flex items-center gap-2 border border-red-200">
+                                <i class="bi bi-arrow-counterclockwise"></i> Kuanzisha Upya Takwimu (Reset Stats)
+                            </button>
+                        </div>
+                    </div>
+
                     <!-- Summary Cards -->
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                         <div
@@ -2969,6 +2988,38 @@ Saini ya Mwajiriwa (${emp.name}): ____________________      Tarehe: ____________
                     <p class="text-sm mt-1 font-semibold">Hongera! Mfumo unaonyesha faida halisi ya Tsh ${stats.netProfit.toLocaleString()}. Endelea kusimamia mauzo na kudhibiti matumizi.</p>
                 `;
             }
+
+            // Sasisha Tarehe ya Kuanzia Baseline
+            const finances = window.appData?.finances || {};
+            const baselineObj = finances['overall_stats_baseline'];
+            const baselineDisplay = document.getElementById('baselineDisplayDate');
+            if (baselineDisplay) {
+                if (baselineObj && baselineObj.baselineDate) {
+                    const d = new Date(baselineObj.baselineDate);
+                    const formattedDate = d.toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' });
+                    const formattedTime = d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                    baselineDisplay.textContent = `${formattedDate} ${formattedTime}`;
+                } else {
+                    baselineDisplay.textContent = "Muda wote (All-Time)";
+                }
+            }
+        }
+
+        function handleResetOverallStats() {
+            const SwahiliConfirmMsg = "Je, una uhakika unataka kuanzisha upya Tathmini Kuu ya Biashara (Overall Statistics)?\n\n" +
+                                       "- Takwimu zote za Mauzo, Matumizi na Faida zitafutwa na kuanza upya kutoka 0.\n" +
+                                       "- Mabadiliko haya YATAATHIRI TU moduli ya 'Overall Statistics'.\n" +
+                                       "- Data zote za kihistoria kwenye stoo, uzalishaji, na maduka HAZITAFUTWA wala kubadilishwa.";
+            
+            if (confirm(SwahiliConfirmMsg)) {
+                if (window.appResetOverallStatsBaseline) {
+                    window.appResetOverallStatsBaseline();
+                    alert("Takwimu kuu zimeanzishwa upya kikamilifu!");
+                    renderOverallStats();
+                } else {
+                    alert("Hitilafu: Mfumo wa baseline haupatikani!");
+                }
+            }
         }
 
         function renderExpenses() {
@@ -3357,10 +3408,19 @@ Saini ya Mwajiriwa (${emp.name}): ____________________      Tarehe: ____________
                 endLimit.setHours(23, 59, 59, 999);
             }
 
-            const isFiltered = !!(startLimit || endLimit);
-
             // Fetch overall data
             const finances = window.appData.finances || {};
+
+            // Apply baseline date to the report start limit
+            const baselineObj = finances['overall_stats_baseline'];
+            if (baselineObj && baselineObj.baselineDate) {
+                const baseline = new Date(baselineObj.baselineDate);
+                if (!startLimit || startLimit < baseline) {
+                    startLimit = baseline;
+                }
+            }
+
+            const isFiltered = !!(startLimit || endLimit);
             const shops = window.appData.shops || [];
             const allExpenses = window.appGetExpensesList ? window.appGetExpensesList() : [];
 
@@ -3440,10 +3500,13 @@ Saini ya Mwajiriwa (${emp.name}): ____________________      Tarehe: ____________
 
             // Build Date Range string
             let dateRangeStr = "Kipindi: MUDA WOTE (ALL-TIME)";
-            if (startDateVal && endDateVal) {
-                dateRangeStr = `Kipindi: Kuanzia ${new Date(startDateVal).toLocaleDateString('en-GB')} Mpaka ${new Date(endDateVal).toLocaleDateString('en-GB')}`;
-            } else if (startDateVal) {
-                dateRangeStr = `Kipindi: Kuanzia ${new Date(startDateVal).toLocaleDateString('en-GB')} Mpaka Sasa`;
+            const baselineDate = finances['overall_stats_baseline']?.baselineDate;
+            const displayStart = startDateVal ? new Date(startDateVal) : (baselineDate ? new Date(baselineDate) : null);
+            
+            if (displayStart && endDateVal) {
+                dateRangeStr = `Kipindi: Kuanzia ${displayStart.toLocaleDateString('en-GB')} Mpaka ${new Date(endDateVal).toLocaleDateString('en-GB')}`;
+            } else if (displayStart) {
+                dateRangeStr = `Kipindi: Kuanzia ${displayStart.toLocaleDateString('en-GB')} Mpaka Sasa`;
             } else if (endDateVal) {
                 dateRangeStr = `Kipindi: Mpaka ${new Date(endDateVal).toLocaleDateString('en-GB')}`;
             }
@@ -4710,6 +4773,7 @@ Saini ya Mwajiriwa (${emp.name}): ____________________      Tarehe: ____________
             const shops = window.appData.shops || [];
             
             Object.keys(finances).forEach(shopId => {
+                if (shopId === 'overall_stats_baseline') return;
                 const shopFin = finances[shopId] || {};
                 const personalExpenses = shopFin.personalExpenses || [];
                 const shop = shops.find(s => s.id === shopId);

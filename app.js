@@ -175,6 +175,9 @@ function _ensureFields(data) {
     if (!data.rawMaterialsDispatchHistory) data.rawMaterialsDispatchHistory = [];
     if (!data.productionLog) data.productionLog = [];
     if (!data.finances) data.finances = {};
+    if (!data.finances['overall_stats_baseline']) {
+        data.finances['overall_stats_baseline'] = { baselineDate: "2026-08-26T11:57:58+03:00" };
+    }
     if (!data.customerOrders) data.customerOrders = [];
     if (!data.cashFlow) data.cashFlow = { balance: 0, transactions: [] };
     if (!data.suggestions) data.suggestions = [];
@@ -1662,18 +1665,60 @@ window.appGetExpensesList = function() {
     return list.sort((a,b) => new Date(b.dateRaw) - new Date(a.dateRaw));
 };
 
+window.appResetOverallStatsBaseline = function() {
+    if (!appData.finances) {
+        appData.finances = {};
+    }
+    const now = new Date();
+    appData.finances['overall_stats_baseline'] = {
+        baselineDate: now.toISOString()
+    };
+    saveData(appData);
+    window.appData = appData;
+    return true;
+};
+
 window.appGetOverallStatistics = function() {
     let totalSales = 0;
     const finances = appData.finances || {};
-    Object.values(finances).forEach(f => {
-        totalSales += f.submitted || 0;
-    });
+    const baselineDate = finances['overall_stats_baseline']?.baselineDate;
+
+    if (baselineDate) {
+        const baselineTime = new Date(baselineDate).getTime();
+        Object.keys(finances).forEach(shopId => {
+            if (shopId === 'overall_stats_baseline') return;
+            const shopFin = finances[shopId] || {};
+            const salesHistory = shopFin.salesHistory || [];
+            salesHistory.forEach(s => {
+                const sTime = new Date(s.dateRaw).getTime();
+                if (sTime >= baselineTime) {
+                    totalSales += s.amount || 0;
+                }
+            });
+        });
+    } else {
+        Object.keys(finances).forEach(shopId => {
+            if (shopId === 'overall_stats_baseline') return;
+            const shopFin = finances[shopId] || {};
+            totalSales += shopFin.submitted || 0;
+        });
+    }
 
     let totalExpenses = 0;
     const expenses = window.appGetExpensesList();
-    expenses.forEach(e => {
-        totalExpenses += e.amount;
-    });
+    if (baselineDate) {
+        const baselineTime = new Date(baselineDate).getTime();
+        expenses.forEach(e => {
+            const eTime = new Date(e.dateRaw).getTime();
+            if (eTime >= baselineTime) {
+                totalExpenses += e.amount || 0;
+            }
+        });
+    } else {
+        expenses.forEach(e => {
+            totalExpenses += e.amount || 0;
+        });
+    }
 
     const netProfit = totalSales - totalExpenses;
 

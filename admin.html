@@ -2996,9 +2996,13 @@ Saini ya Mwajiriwa (${emp.name}): ____________________      Tarehe: ____________
             if (baselineDisplay) {
                 if (baselineObj && baselineObj.baselineDate) {
                     const d = new Date(baselineObj.baselineDate);
-                    const formattedDate = d.toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' });
-                    const formattedTime = d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-                    baselineDisplay.textContent = `${formattedDate} ${formattedTime}`;
+                    if (!isNaN(d.getTime())) {
+                        const formattedDate = d.toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' });
+                        const formattedTime = d.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+                        baselineDisplay.textContent = `${formattedDate} ${formattedTime}`;
+                    } else {
+                        baselineDisplay.textContent = "Muda wote (All-Time)";
+                    }
                 } else {
                     baselineDisplay.textContent = "Muda wote (All-Time)";
                 }
@@ -3415,12 +3419,14 @@ Saini ya Mwajiriwa (${emp.name}): ____________________      Tarehe: ____________
             const baselineObj = finances['overall_stats_baseline'];
             if (baselineObj && baselineObj.baselineDate) {
                 const baseline = new Date(baselineObj.baselineDate);
-                if (!startLimit || startLimit < baseline) {
-                    startLimit = baseline;
+                if (!isNaN(baseline.getTime())) {
+                    if (!startLimit || startLimit < baseline) {
+                        startLimit = baseline;
+                    }
                 }
             }
 
-            const isFiltered = !!(startLimit || endLimit);
+            const isFiltered = !!((startLimit && !isNaN(startLimit.getTime())) || (endLimit && !isNaN(endLimit.getTime())));
             const shops = window.appData.shops || [];
             const allExpenses = window.appGetExpensesList ? window.appGetExpensesList() : [];
 
@@ -3501,14 +3507,28 @@ Saini ya Mwajiriwa (${emp.name}): ____________________      Tarehe: ____________
             // Build Date Range string
             let dateRangeStr = "Kipindi: MUDA WOTE (ALL-TIME)";
             const baselineDate = finances['overall_stats_baseline']?.baselineDate;
-            const displayStart = startDateVal ? new Date(startDateVal) : (baselineDate ? new Date(baselineDate) : null);
             
-            if (displayStart && endDateVal) {
-                dateRangeStr = `Kipindi: Kuanzia ${displayStart.toLocaleDateString('en-GB')} Mpaka ${new Date(endDateVal).toLocaleDateString('en-GB')}`;
-            } else if (displayStart) {
+            let displayStart = null;
+            if (startDateVal) {
+                displayStart = new Date(startDateVal);
+            } else if (baselineDate) {
+                const d = new Date(baselineDate);
+                if (!isNaN(d.getTime())) {
+                    displayStart = d;
+                }
+            }
+            
+            const displayEnd = endDateVal ? new Date(endDateVal) : null;
+            
+            const hasStart = displayStart && !isNaN(displayStart.getTime());
+            const hasEnd = displayEnd && !isNaN(displayEnd.getTime());
+            
+            if (hasStart && hasEnd) {
+                dateRangeStr = `Kipindi: Kuanzia ${displayStart.toLocaleDateString('en-GB')} Mpaka ${displayEnd.toLocaleDateString('en-GB')}`;
+            } else if (hasStart) {
                 dateRangeStr = `Kipindi: Kuanzia ${displayStart.toLocaleDateString('en-GB')} Mpaka Sasa`;
-            } else if (endDateVal) {
-                dateRangeStr = `Kipindi: Mpaka ${new Date(endDateVal).toLocaleDateString('en-GB')}`;
+            } else if (hasEnd) {
+                dateRangeStr = `Kipindi: Mpaka ${displayEnd.toLocaleDateString('en-GB')}`;
             }
 
             // Shop Sales table rows HTML

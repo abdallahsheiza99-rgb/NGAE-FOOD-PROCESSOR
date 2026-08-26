@@ -1662,7 +1662,13 @@ window.appGetExpensesList = function() {
         });
     });
 
-    return list.sort((a,b) => new Date(b.dateRaw) - new Date(a.dateRaw));
+    return list.sort((a,b) => {
+        const timeA = a.dateRaw ? new Date(a.dateRaw).getTime() : 0;
+        const timeB = b.dateRaw ? new Date(b.dateRaw).getTime() : 0;
+        const valA = isNaN(timeA) ? 0 : timeA;
+        const valB = isNaN(timeB) ? 0 : timeB;
+        return valB - valA;
+    });
 };
 
 window.appResetOverallStatsBaseline = function() {
@@ -1682,17 +1688,25 @@ window.appGetOverallStatistics = function() {
     let totalSales = 0;
     const finances = appData.finances || {};
     const baselineDate = finances['overall_stats_baseline']?.baselineDate;
-
+    let baselineTime = null;
     if (baselineDate) {
-        const baselineTime = new Date(baselineDate).getTime();
+        const d = new Date(baselineDate);
+        if (!isNaN(d.getTime())) {
+            baselineTime = d.getTime();
+        }
+    }
+
+    if (baselineTime !== null) {
         Object.keys(finances).forEach(shopId => {
             if (shopId === 'overall_stats_baseline') return;
             const shopFin = finances[shopId] || {};
             const salesHistory = shopFin.salesHistory || [];
             salesHistory.forEach(s => {
-                const sTime = new Date(s.dateRaw).getTime();
-                if (sTime >= baselineTime) {
-                    totalSales += s.amount || 0;
+                if (s && s.dateRaw) {
+                    const sTime = new Date(s.dateRaw).getTime();
+                    if (!isNaN(sTime) && sTime >= baselineTime) {
+                        totalSales += s.amount || 0;
+                    }
                 }
             });
         });
@@ -1706,12 +1720,13 @@ window.appGetOverallStatistics = function() {
 
     let totalExpenses = 0;
     const expenses = window.appGetExpensesList();
-    if (baselineDate) {
-        const baselineTime = new Date(baselineDate).getTime();
+    if (baselineTime !== null) {
         expenses.forEach(e => {
-            const eTime = new Date(e.dateRaw).getTime();
-            if (eTime >= baselineTime) {
-                totalExpenses += e.amount || 0;
+            if (e && e.dateRaw) {
+                const eTime = new Date(e.dateRaw).getTime();
+                if (!isNaN(eTime) && eTime >= baselineTime) {
+                    totalExpenses += e.amount || 0;
+                }
             }
         });
     } else {

@@ -1927,12 +1927,17 @@
             // Auth form submit
             document.getElementById('adminLoginForm').addEventListener('submit', (e) => {
                 e.preventDefault();
-                const user = document.getElementById('adminUser').value;
-                const pass = document.getElementById('adminPass').value;
+                const user = document.getElementById('adminUser').value.trim();
+                const pass = document.getElementById('adminPass').value.trim();
 
                 if (user.toLowerCase() === 'admin' && pass === 'sheizan27') {
-                    sessionStorage.setItem('ngae_admin_auth', 'true');
-                    showDashboard();
+                    try {
+                        sessionStorage.setItem('ngae_admin_auth', 'true');
+                        showDashboard();
+                    } catch (err) {
+                        console.error("Login showDashboard error:", err);
+                        alert("Hitilafu wakati wa kuingia: " + err.message);
+                    }
                 } else {
                     const err = document.getElementById('loginError');
                     err.textContent = "Kosa: Jina au nenosiri si sahihi!";
@@ -2297,21 +2302,33 @@ Saini ya Mwajiriwa (${emp.name}): ____________________      Tarehe: ____________
                         const raw = localStorage.getItem('ngae_app_data');
                         if (raw) window.appData = JSON.parse(raw);
                     }
-                    renderNotifications();
+                    try {
+                        renderNotifications();
+                    } catch (e) {
+                        console.error("Interval renderNotifications error:", e);
+                    }
                     const activeTab = document.querySelector('.tab-content:not(.hidden)');
                     if (activeTab) {
-                        if (activeTab.id === 'tab-home') renderOverview();
-                        else if (activeTab.id === 'tab-overall-stats') renderOverallStats();
-                        else if (activeTab.id === 'tab-expenses') renderExpenses();
-                        else if (activeTab.id === 'tab-ngaestaff') renderSalaryLedger();
-                        else if (activeTab.id === 'tab-shops-summary') renderShopsSummaryPortal();
-                        else if (activeTab.id === 'tab-daily-report') renderDailyReport();
+                        try {
+                            if (activeTab.id === 'tab-home') renderOverview();
+                            else if (activeTab.id === 'tab-overall-stats') renderOverallStats();
+                            else if (activeTab.id === 'tab-expenses') renderExpenses();
+                            else if (activeTab.id === 'tab-ngaestaff') renderSalaryLedger();
+                            else if (activeTab.id === 'tab-shops-summary') renderShopsSummaryPortal();
+                            else if (activeTab.id === 'tab-daily-report') renderDailyReport();
+                        } catch (e) {
+                            console.error(`Interval render tab ${activeTab.id} error:`, e);
+                        }
                     }
                 }
             }, 4000);
 
             // Initial load of notifications badge
-            renderNotifications();
+            try {
+                renderNotifications();
+            } catch (e) {
+                console.error("Initial renderNotifications error:", e);
+            }
 
             // Hide notifications dropdown when clicking outside
             document.addEventListener('click', (e) => {
@@ -2370,15 +2387,27 @@ Saini ya Mwajiriwa (${emp.name}): ____________________      Tarehe: ____________
             // USIIBADILISHE hapa — app.js ndiyo inayoshughulikia data sync
             // Kama appData bado haijapakia (Firebase inaendelea), subiri kidogo kisha render
             function _doRender() {
-                renderOverview();
-                renderStaff();
-                renderProducts();
-                renderCashFlow();
-                renderSuggestions();
-                renderNotifications();
-                renderOverallStats();
-                renderExpenses();
-                renderSalaryLedger();
+                const renderers = [
+                    { name: 'renderOverview', fn: renderOverview },
+                    { name: 'renderStaff', fn: renderStaff },
+                    { name: 'renderProducts', fn: renderProducts },
+                    { name: 'renderCashFlow', fn: renderCashFlow },
+                    { name: 'renderSuggestions', fn: renderSuggestions },
+                    { name: 'renderNotifications', fn: renderNotifications },
+                    { name: 'renderOverallStats', fn: renderOverallStats },
+                    { name: 'renderExpenses', fn: renderExpenses },
+                    { name: 'renderSalaryLedger', fn: renderSalaryLedger }
+                ];
+                
+                renderers.forEach(r => {
+                    try {
+                        if (typeof r.fn === 'function') {
+                            r.fn();
+                        }
+                    } catch (e) {
+                        console.error(`Error in ${r.name}:`, e);
+                    }
+                });
             }
 
             _doRender();
@@ -2391,18 +2420,36 @@ Saini ya Mwajiriwa (${emp.name}): ____________________      Tarehe: ____________
         window.addEventListener('ngae-data-updated', function() {
             if (document.getElementById('adminDashboard') &&
                 !document.getElementById('adminDashboard').classList.contains('hidden')) {
-                renderOverview();
-                renderStaff();
-                renderProducts();
-                renderCashFlow();
-                renderSuggestions();
-                renderNotifications();
-                renderOverallStats();
-                renderExpenses();
-                renderSalaryLedger();
+                
+                const renderers = [
+                    { name: 'renderOverview', fn: renderOverview },
+                    { name: 'renderStaff', fn: renderStaff },
+                    { name: 'renderProducts', fn: renderProducts },
+                    { name: 'renderCashFlow', fn: renderCashFlow },
+                    { name: 'renderSuggestions', fn: renderSuggestions },
+                    { name: 'renderNotifications', fn: renderNotifications },
+                    { name: 'renderOverallStats', fn: renderOverallStats },
+                    { name: 'renderExpenses', fn: renderExpenses },
+                    { name: 'renderSalaryLedger', fn: renderSalaryLedger }
+                ];
+                
+                renderers.forEach(r => {
+                    try {
+                        if (typeof r.fn === 'function') {
+                            r.fn();
+                        }
+                    } catch (e) {
+                        console.error(`Error in real-time ${r.name}:`, e);
+                    }
+                });
+
                 const activeTab = document.querySelector('.tab-content:not(.hidden)');
                 if (activeTab && activeTab.id === 'tab-daily-report') {
-                    renderDailyReport();
+                    try {
+                        if (typeof renderDailyReport === 'function') renderDailyReport();
+                    } catch (e) {
+                        console.error("Error in real-time renderDailyReport:", e);
+                    }
                 }
             }
         });

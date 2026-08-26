@@ -231,6 +231,10 @@
                     class="nav-tab w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left font-bold transition-all hover:bg-gray-800 text-teal-400 hover:text-teal-300">
                     <i class="bi bi-shop-window"></i> Mauzo ya Maduka
                 </button>
+                <button onclick="switchTab('tab-daily-report')" id="btn-tab-daily-report"
+                    class="nav-tab w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left font-bold transition-all hover:bg-gray-800 text-blue-400 hover:text-blue-300">
+                    <i class="bi bi-file-earmark-bar-graph"></i> Daily Report (Ripoti)
+                </button>
             </nav>
 
             <div class="p-4 border-t border-gray-800">
@@ -1491,6 +1495,277 @@
                     </div>
                 </section>
 
+                <!-- 2H. TAB: DAILY PRODUCTION & FINANCIAL REPORT -->
+                <section id="tab-daily-report" class="tab-content hidden space-y-6 flex-1 flex flex-col min-h-0">
+                    <!-- Date Picker and Header Panel -->
+                    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 flex flex-col md:flex-row justify-between items-center gap-4 flex-none">
+                        <div class="flex items-center gap-3">
+                            <div class="w-12 h-12 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center text-xl">
+                                <i class="bi bi-file-earmark-bar-graph"></i>
+                            </div>
+                            <div>
+                                <h2 class="text-sm font-extrabold text-gray-800 uppercase tracking-wider">DAILY REPORT PORTAL</h2>
+                                <p class="text-xs text-gray-500">Kagua uzalishaji wa siku, gharama halisi za malighafi na faida makadirio</p>
+                            </div>
+                        </div>
+                        <div class="flex flex-wrap items-center gap-3">
+                            <div class="flex items-center gap-2">
+                                <label for="dailyReportDatePicker" class="text-xs font-bold text-gray-700 uppercase">Tarehe:</label>
+                                <input type="date" id="dailyReportDatePicker" onchange="renderDailyReport()"
+                                    class="border border-gray-300 rounded-xl px-4 py-2 focus:ring-2 focus:ring-blue-500 outline-none text-xs font-bold text-gray-800 bg-white">
+                            </div>
+                            <button onclick="renderDailyReport()"
+                                class="bg-blue-600 hover:bg-blue-700 text-white text-xs font-extrabold px-4 py-2.5 rounded-xl shadow transition-colors flex items-center gap-1.5">
+                                <i class="bi bi-arrow-clockwise"></i> SASISHA
+                            </button>
+                            <button onclick="openWhatsAppConfigModal()"
+                                class="bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-extrabold px-3 py-2.5 rounded-xl transition-colors flex items-center gap-1.5"
+                                title="Mipangilio ya WhatsApp">
+                                <i class="bi bi-gear-fill"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Financial Summary Cards -->
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 flex-none">
+                        <!-- Card 1: Production Value -->
+                        <div class="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm hover:scale-[1.01] transition-transform duration-200">
+                            <p class="text-gray-400 font-bold uppercase text-[9px] tracking-wider">Thamani ya Uzalishaji (Production Value)</p>
+                            <h4 class="font-black text-gray-800 text-xl mt-1" id="repTotalProductionValue">Tsh 0</h4>
+                            <p class="text-[10px] text-gray-400 mt-1" id="repTotalProductsCount">0 Bidhaa Zilizozalishwa</p>
+                        </div>
+                        <!-- Card 2: Total Daily Cost -->
+                        <div class="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm hover:scale-[1.01] transition-transform duration-200">
+                            <p class="text-gray-400 font-bold uppercase text-[9px] tracking-wider">Jumla ya Gharama (Total Daily Cost)</p>
+                            <h4 class="font-black text-rose-600 text-xl mt-1" id="repTotalDailyCost">Tsh 0</h4>
+                            <p class="text-[10px] text-rose-500 mt-1 flex justify-between">
+                                <span id="repMaterialsCostShare">Malighafi: Tsh 0</span>
+                                <span id="repOperatingCostShare">Matumizi: Tsh 0</span>
+                            </p>
+                        </div>
+                        <!-- Card 3: Estimated Daily Profit -->
+                        <div class="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm hover:scale-[1.01] transition-transform duration-200" id="repProfitCard">
+                            <p class="text-gray-400 font-bold uppercase text-[9px] tracking-wider">Faida Makadirio (Estimated Profit)</p>
+                            <h4 class="font-black text-emerald-600 text-xl mt-1" id="repEstimatedProfit">Tsh 0</h4>
+                            <p class="text-[10px] text-emerald-600 mt-1" id="repProfitStatus">Faida Imekadiriwa</p>
+                        </div>
+                        <!-- Card 4: Estimated Profit Margin -->
+                        <div class="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm hover:scale-[1.01] transition-transform duration-200" id="repMarginCard">
+                            <p class="text-gray-400 font-bold uppercase text-[9px] tracking-wider">Asilimia ya Faida (Profit Margin %)</p>
+                            <h4 class="font-black text-blue-600 text-xl mt-1" id="repProfitMargin">0.00%</h4>
+                            <p class="text-[10px] text-blue-500 mt-1">Kiwango cha Uzalishaji</p>
+                        </div>
+                    </div>
+
+                    <!-- Report Tables for PDF Export -->
+                    <div class="flex-1 overflow-y-auto custom-scrollbar p-6 bg-white rounded-2xl border border-gray-100 shadow-sm space-y-8" id="dailyReportPrintableArea">
+                        
+                        <!-- Print Document Header (Hidden in Screen, Visible in Print/PDF) -->
+                        <div class="hidden print-header border-b-2 border-gray-800 pb-4 mb-6 text-center">
+                            <h1 class="text-xl font-black text-gray-900 uppercase">NGAE FOOD PROCESSORS HUB</h1>
+                            <p class="text-xs font-bold text-gray-600">Ripoti ya Kazi na Fedha ya Kila Siku (Daily Production & Financial Report)</p>
+                            <h2 class="text-md font-extrabold text-blue-700 mt-2 uppercase" id="printReportDateTitle">TAREHE: --/--/----</h2>
+                        </div>
+
+                        <!-- 1. DAILY PRODUCTION -->
+                        <div>
+                            <h3 class="text-xs font-black text-gray-800 uppercase tracking-wider mb-3 flex items-center gap-2 border-b pb-2">
+                                <i class="bi bi-box-seam text-blue-600"></i> A. Uzalishaji wa Bidhaa (Daily Production)
+                            </h3>
+                            <div class="overflow-x-auto">
+                                <table class="w-full text-left border-collapse text-xs">
+                                    <thead>
+                                        <tr class="bg-gray-50 border-b border-gray-200 text-gray-500 uppercase font-bold text-[10px]">
+                                            <th class="p-3">Jina la Bidhaa (Product Name)</th>
+                                            <th class="p-3 text-center">Kiasi Kilichozalishwa (Quantity Produced)</th>
+                                            <th class="p-3 text-right">Bei ya Kitengo (Selling Price per Unit)</th>
+                                            <th class="p-3 text-right">Jumla ya Thamani (Total Value)</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="repProductionTableBody" class="divide-y divide-gray-100 font-medium">
+                                        <!-- Loaded dynamically -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- 2. DAILY COSTS GRID -->
+                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                            <!-- 2.1 RAW MATERIALS USED -->
+                            <div>
+                                <h3 class="text-xs font-black text-gray-800 uppercase tracking-wider mb-3 flex items-center gap-2 border-b pb-2">
+                                    <i class="bi bi-cone-striped text-rose-500"></i> B. Malighafi Zilizotumika Uzalishajini (Raw Materials Used)
+                                </h3>
+                                <div class="overflow-x-auto">
+                                    <table class="w-full text-left border-collapse text-xs">
+                                        <thead>
+                                            <tr class="bg-gray-50 border-b border-gray-200 text-gray-500 uppercase font-bold text-[10px]">
+                                                <th class="p-3">Jina la Malighafi</th>
+                                                <th class="p-3 text-center">Kiasi Kilichotumika</th>
+                                                <th class="p-3 text-right">Bei ya Kitengo</th>
+                                                <th class="p-3 text-right">Jumla ya Gharama</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="repMaterialsTableBody" class="divide-y divide-gray-100 font-medium">
+                                            <!-- Loaded dynamically -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+
+                            <!-- 2.2 OTHER DAILY OPERATING COSTS -->
+                            <div>
+                                <h3 class="text-xs font-black text-gray-800 uppercase tracking-wider mb-3 flex items-center gap-2 border-b pb-2">
+                                    <i class="bi bi-wallet2 text-rose-500"></i> C. Matumizi Mengineyo ya Siku (Other Operating Costs)
+                                </h3>
+                                <div class="overflow-x-auto">
+                                    <table class="w-full text-left border-collapse text-xs">
+                                        <thead>
+                                            <tr class="bg-gray-50 border-b border-gray-200 text-gray-500 uppercase font-bold text-[10px]">
+                                                <th class="p-3">Maelezo ya Matumizi</th>
+                                                <th class="p-3">Aina</th>
+                                                <th class="p-3 text-right">Kiasi (Tsh)</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="repOperatingCostsTableBody" class="divide-y divide-gray-100 font-medium">
+                                            <!-- Loaded dynamically -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 3. DAILY REPORT SUMMARY (Bottom Box) -->
+                        <div class="bg-slate-50 rounded-2xl border border-slate-200 p-6 space-y-4">
+                            <h3 class="text-sm font-black text-slate-800 uppercase tracking-wider border-b pb-3 mb-2 text-center" id="repSummaryBoxTitle">
+                                DAILY REPORT SUMMARY – [DATE]
+                            </h3>
+                            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 text-xs">
+                                <div class="space-y-2">
+                                    <div class="flex justify-between">
+                                        <span class="text-gray-500 font-bold uppercase">Jumla Thamani ya Uzalishaji:</span>
+                                        <span class="font-extrabold text-gray-900" id="sumProductionValue">Tsh 0</span>
+                                    </div>
+                                    <div class="flex justify-between">
+                                        <span class="text-gray-500 font-bold uppercase">Jumla Bidhaa Zilizozalishwa:</span>
+                                        <span class="font-extrabold text-gray-900" id="sumProductsCount">0 pcs</span>
+                                    </div>
+                                </div>
+                                <div class="space-y-2">
+                                    <div class="flex justify-between">
+                                        <span class="text-gray-500 font-bold uppercase">Gharama ya Malighafi:</span>
+                                        <span class="font-extrabold text-gray-950" id="sumMaterialsCost">Tsh 0</span>
+                                    </div>
+                                    <div class="flex justify-between">
+                                        <span class="text-gray-500 font-bold uppercase">Gharama za Matumizi (Ops):</span>
+                                        <span class="font-extrabold text-gray-955" id="sumOperatingCost">Tsh 0</span>
+                                    </div>
+                                    <div class="flex justify-between border-t pt-1 border-slate-200">
+                                        <span class="text-rose-600 font-bold uppercase">Jumla Kuu ya Gharama:</span>
+                                        <span class="font-black text-rose-600" id="sumTotalDailyCost">Tsh 0</span>
+                                    </div>
+                                </div>
+                                <div class="space-y-2">
+                                    <div class="flex justify-between">
+                                        <span class="text-gray-500 font-bold uppercase">Makadirio ya Faida:</span>
+                                        <span class="font-black text-emerald-600" id="sumEstimatedProfit">Tsh 0</span>
+                                    </div>
+                                    <div class="flex justify-between">
+                                        <span class="text-gray-500 font-bold uppercase">Asilimia ya Faida:</span>
+                                        <span class="font-black text-blue-600" id="sumProfitMargin">0.00%</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <!-- PDF Generation Status Logging Console -->
+                    <div id="whatsappStatusConsole" class="hidden bg-slate-900 text-slate-300 rounded-xl p-4 font-mono text-[10px] shadow-inner space-y-1.5 flex-none max-h-24 overflow-y-auto">
+                        <div class="text-blue-400 font-bold border-b border-slate-800 pb-1 mb-1 flex justify-between items-center">
+                            <span>WHATSAPP DISPATCH STATUS LOG</span>
+                            <button onclick="document.getElementById('whatsappStatusConsole').classList.add('hidden')" class="text-slate-400 hover:text-white">&times;</button>
+                        </div>
+                        <div id="whatsappStatusLogs" class="space-y-0.5">
+                            <!-- Dynamic log output -->
+                        </div>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="flex flex-wrap justify-between items-center gap-3 p-4 bg-white border border-gray-100 rounded-2xl flex-none shadow-sm">
+                        <div class="text-xs text-gray-400 font-medium">
+                            * Hakikisha umechagua tarehe sahihi kabla ya kuhamisha ripoti.
+                        </div>
+                        <div class="flex gap-3">
+                            <button onclick="printDailyReportDirectly()"
+                                class="bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-black px-5 py-3 rounded-xl shadow-sm transition-all flex items-center gap-1.5">
+                                <i class="bi bi-printer"></i> CHAPA (PRINT)
+                            </button>
+                            <button onclick="downloadReportPDF()"
+                                class="bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-black px-5 py-3 rounded-xl shadow transition-all flex items-center gap-1.5">
+                                <i class="bi bi-download"></i> DOWNLOAD PDF
+                            </button>
+                            <button onclick="sendReportViaWhatsApp()" id="btnSendWhatsApp"
+                                class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-black px-5 py-3 rounded-xl shadow-lg transition-all flex items-center gap-1.5">
+                                <i class="bi bi-whatsapp"></i> TUMA WHATSAPP
+                            </button>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- MODAL: SETTINGS YA WHATSAPP API -->
+                <div id="whatsappConfigModal"
+                    class="hidden fixed inset-0 z-50 items-center justify-center bg-gray-900/60 backdrop-blur-sm p-4">
+                    <div
+                        class="bg-white rounded-2xl w-full max-w-lg overflow-hidden shadow-2xl border border-gray-100 transform transition-all flex flex-col max-h-[90vh]">
+                        <div class="bg-emerald-600 text-white p-5 flex justify-between items-center flex-none">
+                            <h3 class="font-extrabold text-base flex items-center gap-2">
+                                <i class="bi bi-whatsapp"></i> WhatsApp API Configuration
+                            </h3>
+                            <button onclick="closeWhatsAppConfigModal()"
+                                class="text-white hover:text-emerald-200 text-2xl font-bold transition-colors">&times;</button>
+                        </div>
+                        <form id="whatsappConfigForm" class="p-6 space-y-4 overflow-y-auto custom-scrollbar flex-1">
+                            <p class="text-xs text-gray-500 font-semibold mb-2">
+                                Sanidi maelezo ya WhatsApp API gateway yako ili kuruhusu utumaji wa faili za PDF otomatiki. Taarifa hizi zitahifadhiwa salama kwenye Firestore na hazitaandikwa moja kwa moja kwenye kodi.
+                            </p>
+                            <div>
+                                <label class="block text-xs font-bold text-gray-700 uppercase mb-1">Aina ya API Gateway <span class="text-red-500">*</span></label>
+                                <select id="waProvider" required class="w-full border border-gray-300 rounded-xl p-3 focus:ring-2 focus:ring-emerald-500 outline-none text-xs bg-white font-bold text-gray-800">
+                                    <option value="ultramsg">UltraMsg Gateway (Inapendekezwa - Rahisi na PDF Link)</option>
+                                    <option value="wassenger">Wassenger API (PDF link/Base64)</option>
+                                    <option value="twilio">Twilio API for WhatsApp</option>
+                                    <option value="meta">Meta Cloud API (Official)</option>
+                                    <option value="custom">Custom REST API Gateway</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-gray-700 uppercase mb-1">API Base URL / Endpoint <span class="text-red-500">*</span></label>
+                                <input type="url" id="waApiUrl" required placeholder="Mfano: https://api.ultramsg.com/instance123/messages/document"
+                                    class="w-full border border-gray-300 rounded-xl p-3 focus:ring-2 focus:ring-emerald-500 outline-none text-xs font-semibold text-gray-800">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-gray-700 uppercase mb-1">API Access Token / Authorization Key <span class="text-red-500">*</span></label>
+                                <input type="text" id="waApiKey" required placeholder="Weka Access Token au Api Key yako hapa..."
+                                    class="w-full border border-gray-300 rounded-xl p-3 focus:ring-2 focus:ring-emerald-500 outline-none text-xs font-semibold text-gray-800">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-gray-700 uppercase mb-1">Sender ID / Phone Number (Optional)</label>
+                                <input type="text" id="waSenderId" placeholder="Mfano: Twilio Number (+1415...) au UltraMsg Instance ID"
+                                    class="w-full border border-gray-300 rounded-xl p-3 focus:ring-2 focus:ring-emerald-500 outline-none text-xs font-semibold text-gray-800">
+                            </div>
+                            <div class="pt-4 border-t border-gray-100 flex justify-end gap-3 flex-none">
+                                <button type="button" onclick="closeWhatsAppConfigModal()"
+                                    class="px-4 py-2.5 text-xs font-bold text-gray-600 hover:bg-gray-100 rounded-xl">Funga</button>
+                                <button type="submit"
+                                    class="px-5 py-2.5 text-xs font-extrabold text-white bg-emerald-600 hover:bg-emerald-700 rounded-xl shadow-md transition-all flex items-center gap-1.5">
+                                    <i class="bi bi-check-circle-fill"></i> Hifadhi Mipangilio
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
             </div>
         </main>
     </div>
@@ -1616,6 +1891,8 @@
     <!-- Firebase SDK (Real-time Sync kati ya vifaa vyote) -->
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <script src="firebase-config.js"></script>
     <script src="app.js"></script>
     <script>
@@ -2009,6 +2286,7 @@ Saini ya Mwajiriwa (${emp.name}): ____________________      Tarehe: ____________
                         else if (activeTab.id === 'tab-expenses') renderExpenses();
                         else if (activeTab.id === 'tab-ngaestaff') renderSalaryLedger();
                         else if (activeTab.id === 'tab-shops-summary') renderShopsSummaryPortal();
+                        else if (activeTab.id === 'tab-daily-report') renderDailyReport();
                     }
                 }
             }, 4000);
@@ -2026,6 +2304,36 @@ Saini ya Mwajiriwa (${emp.name}): ____________________      Tarehe: ____________
                     }
                 }
             });
+
+            // WhatsApp Config form submit
+            const waConfigForm = document.getElementById('whatsappConfigForm');
+            if (waConfigForm) {
+                waConfigForm.addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    const provider = document.getElementById('waProvider').value;
+                    const apiUrl = document.getElementById('waApiUrl').value.trim();
+                    const apiKey = document.getElementById('waApiKey').value.trim();
+                    const senderId = document.getElementById('waSenderId').value.trim();
+
+                    if (window.firebaseReady !== false && firebase.apps.length > 0) {
+                        const db = firebase.firestore();
+                        db.collection('configs').doc('whatsapp').set({
+                            provider: provider,
+                            apiUrl: apiUrl,
+                            apiKey: apiKey,
+                            senderId: senderId,
+                            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                        }).then(() => {
+                            alert("✅ Mipangilio ya WhatsApp API imehifadhiwa salama kwenye Firestore!");
+                            closeWhatsAppConfigModal();
+                        }).catch(err => {
+                            alert("❌ Kosa la kuhifadhi mipangilio: " + err.message);
+                        });
+                    } else {
+                        alert("Firebase is not initialized.");
+                    }
+                });
+            }
         });
 
         function showLoginForm() {
@@ -2073,6 +2381,10 @@ Saini ya Mwajiriwa (${emp.name}): ____________________      Tarehe: ____________
                 renderOverallStats();
                 renderExpenses();
                 renderSalaryLedger();
+                const activeTab = document.querySelector('.tab-content:not(.hidden)');
+                if (activeTab && activeTab.id === 'tab-daily-report') {
+                    renderDailyReport();
+                }
             }
         });
 
@@ -2106,6 +2418,8 @@ Saini ya Mwajiriwa (${emp.name}): ____________________      Tarehe: ____________
                 activeBtn.classList.add('bg-indigo-600', 'text-white');
             } else if (tabId === 'tab-shops-summary') {
                 activeBtn.classList.add('bg-teal-500', 'text-white');
+            } else if (tabId === 'tab-daily-report') {
+                activeBtn.classList.add('bg-blue-600', 'text-white');
             } else {
                 activeBtn.classList.add('bg-orange-500', 'text-white');
             }
@@ -2143,6 +2457,18 @@ Saini ya Mwajiriwa (${emp.name}): ____________________      Tarehe: ____________
             else if (tabId === 'tab-store') {
                 titleEl.textContent = 'Stoo ya Malighafi (Store Portal)';
                 renderAdminStore();
+            }
+            else if (tabId === 'tab-daily-report') {
+                titleEl.textContent = 'Daily Report (Ripoti ya Siku)';
+                const datePicker = document.getElementById('dailyReportDatePicker');
+                if (datePicker && !datePicker.value) {
+                    const today = new Date();
+                    const yyyy = today.getFullYear();
+                    const mm = String(today.getMonth() + 1).padStart(2, '0');
+                    const dd = String(today.getDate()).padStart(2, '0');
+                    datePicker.value = `${yyyy}-${mm}-${dd}`;
+                }
+                renderDailyReport();
             }
         }
 
@@ -4164,6 +4490,652 @@ Saini ya Mwajiriwa (${emp.name}): ____________________      Tarehe: ____________
                 </div>
 
             </div>
+            `;
+        }
+
+        // ==========================================================================
+        // DAILY REPORT & WHATSAPP FUNCTIONS
+        // ==========================================================================
+
+        function openWhatsAppConfigModal() {
+            const modal = document.getElementById('whatsappConfigModal');
+            if (!modal) return;
+            
+            // Load existing configuration from Firestore if available
+            if (window.firebaseReady !== false && firebase.apps.length > 0) {
+                const db = firebase.firestore();
+                db.collection('configs').doc('whatsapp').get().then(doc => {
+                    if (doc.exists) {
+                        const data = doc.data();
+                        document.getElementById('waProvider').value = data.provider || 'ultramsg';
+                        document.getElementById('waApiUrl').value = data.apiUrl || '';
+                        document.getElementById('waApiKey').value = data.apiKey || '';
+                        document.getElementById('waSenderId').value = data.senderId || '';
+                    }
+                }).catch(err => {
+                    console.error("Error loading WhatsApp config from Firestore:", err);
+                });
+            }
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+        function closeWhatsAppConfigModal() {
+            const modal = document.getElementById('whatsappConfigModal');
+            if (modal) {
+                modal.classList.add('hidden');
+                modal.classList.remove('flex');
+            }
+        }
+
+        function getMaterialUnitCost(materialNameOrId, dateRaw) {
+            if (!window.appData || !window.appData.rawMaterialsHistory) return 0;
+            const targetDate = dateRaw ? new Date(dateRaw) : new Date();
+            
+            // Sort rawMaterialsHistory chronologically
+            const history = (window.appData.rawMaterialsHistory || [])
+                .filter(r => (r.materialId === materialNameOrId || r.materialName.toUpperCase() === materialNameOrId.toUpperCase()))
+                .map(r => ({
+                    ...r,
+                    timestamp: r.dateRaw ? new Date(r.dateRaw).getTime() : 0
+                }))
+                .filter(r => r.timestamp <= targetDate.getTime())
+                .sort((a, b) => b.timestamp - a.timestamp);
+                
+            if (history.length > 0) {
+                return Number(history[0].pricePerUnit) || 0;
+            }
+            
+            // Fallback: search all history
+            const allHistory = (window.appData.rawMaterialsHistory || [])
+                .filter(r => (r.materialId === materialNameOrId || r.materialName.toUpperCase() === materialNameOrId.toUpperCase()))
+                .sort((a, b) => {
+                    const timeA = a.dateRaw ? new Date(a.dateRaw).getTime() : 0;
+                    const timeB = b.dateRaw ? new Date(b.dateRaw).getTime() : 0;
+                    return timeB - timeA;
+                });
+                
+            if (allHistory.length > 0) {
+                return Number(allHistory[0].pricePerUnit) || 0;
+            }
+            
+            return 0;
+        }
+
+        function renderDailyReport() {
+            if (!window.appData) return;
+
+            const datePicker = document.getElementById('dailyReportDatePicker');
+            if (!datePicker) return;
+            const selectedDateVal = datePicker.value; // Format: "YYYY-MM-DD"
+            if (!selectedDateVal) return;
+
+            // Parse selected date components
+            const selectedDate = new Date(selectedDateVal);
+            const targetYear = selectedDate.getFullYear();
+            const targetMonth = selectedDate.getMonth();
+            const targetDay = selectedDate.getDate();
+
+            const day = String(selectedDate.getDate()).padStart(2, '0');
+            const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+            const month = months[selectedDate.getMonth()];
+            const year = selectedDate.getFullYear();
+            const formattedDateStr = `${day} ${month} ${year}`; // Format: "26 Aug 2026"
+
+            function matchesSelectedDate(dateRaw, dateStr) {
+                if (dateRaw) {
+                    const d = new Date(dateRaw);
+                    if (!isNaN(d.getTime())) {
+                        return d.getFullYear() === targetYear &&
+                               d.getMonth() === targetMonth &&
+                               d.getDate() === targetDay;
+                    }
+                }
+                if (dateStr) {
+                    return dateStr.includes(formattedDateStr);
+                }
+                return false;
+            }
+
+            // A. DAILY PRODUCTION
+            const productionLog = window.appData.productionLog || [];
+            const dailyProductions = productionLog.filter(log => matchesSelectedDate(log.dateRaw, log.date));
+
+            const productionMap = {};
+            dailyProductions.forEach(log => {
+                const prodId = log.productId;
+                const prodName = log.productName;
+                const qty = Number(log.quantity) || 0;
+                
+                const prodCatalog = (window.appData.products || []).find(p => p.id === prodId || p.name.toUpperCase() === prodName.toUpperCase());
+                const sellingPrice = prodCatalog ? (Number(prodCatalog.price) || 0) : 2500;
+                
+                if (!productionMap[prodName]) {
+                    productionMap[prodName] = {
+                        productName: prodName,
+                        qty: 0,
+                        price: sellingPrice,
+                        totalValue: 0
+                    };
+                }
+                productionMap[prodName].qty += qty;
+                productionMap[prodName].totalValue += (qty * sellingPrice);
+            });
+
+            let totalProductionValue = 0;
+            let totalProductsProducedCount = 0;
+            const productionRows = Object.values(productionMap);
+
+            const prodTbody = document.getElementById('repProductionTableBody');
+            if (prodTbody) {
+                prodTbody.innerHTML = '';
+                if (productionRows.length === 0) {
+                    prodTbody.innerHTML = `<tr><td colspan="4" class="p-4 text-center text-gray-400 font-medium">Hakuna uzalishaji uliosajiliwa siku hii.</td></tr>`;
+                } else {
+                    productionRows.forEach(row => {
+                        totalProductionValue += row.totalValue;
+                        totalProductsProducedCount += row.qty;
+
+                        const tr = document.createElement('tr');
+                        tr.className = "border-b border-gray-100";
+                        tr.innerHTML = `
+                            <td class="p-3 font-extrabold text-gray-800 uppercase">${row.productName}</td>
+                            <td class="p-3 text-center font-bold text-gray-900">${row.qty.toLocaleString()} pcs</td>
+                            <td class="p-3 text-right font-bold text-gray-600">Tsh ${row.price.toLocaleString()}</td>
+                            <td class="p-3 text-right font-black text-emerald-600">Tsh ${row.totalValue.toLocaleString()}</td>
+                        `;
+                        prodTbody.appendChild(tr);
+                    });
+                }
+            }
+
+            // B. RAW MATERIALS USED
+            const rawMaterialsDispatchHistory = window.appData.rawMaterialsDispatchHistory || [];
+            const dailyDispatches = rawMaterialsDispatchHistory.filter(disp => matchesSelectedDate(disp.dateRaw, disp.date));
+
+            const materialUsageMap = {};
+            dailyDispatches.forEach(disp => {
+                const matId = disp.materialId;
+                const matName = disp.materialName.toUpperCase();
+                const qty = Number(disp.qty) || 0;
+                const unit = disp.unit || 'kg';
+                
+                const unitCost = getMaterialUnitCost(matId || matName, disp.dateRaw || selectedDateVal);
+                const totalCost = qty * unitCost;
+
+                if (!materialUsageMap[matName]) {
+                    materialUsageMap[matName] = {
+                        materialName: matName,
+                        qty: 0,
+                        unit: unit,
+                        unitCost: unitCost,
+                        totalCost: 0
+                    };
+                }
+                materialUsageMap[matName].qty += qty;
+                materialUsageMap[matName].totalCost += totalCost;
+            });
+
+            let totalRawMaterialsCost = 0;
+            const materialUsageRows = Object.values(materialUsageMap);
+
+            const matTbody = document.getElementById('repMaterialsTableBody');
+            if (matTbody) {
+                matTbody.innerHTML = '';
+                if (materialUsageRows.length === 0) {
+                    matTbody.innerHTML = `<tr><td colspan="4" class="p-4 text-center text-gray-400 font-medium">Hakuna malighafi zilizotolewa/kutumika siku hii.</td></tr>`;
+                } else {
+                    materialUsageRows.forEach(row => {
+                        totalRawMaterialsCost += row.totalCost;
+
+                        const tr = document.createElement('tr');
+                        tr.className = "border-b border-gray-100";
+                        tr.innerHTML = `
+                            <td class="p-3 font-extrabold text-gray-800 uppercase">${row.materialName}</td>
+                            <td class="p-3 text-center font-bold text-gray-900">${row.qty.toFixed(1)} ${row.unit}</td>
+                            <td class="p-3 text-right font-bold text-gray-600">Tsh ${row.unitCost.toLocaleString()}</td>
+                            <td class="p-3 text-right font-black text-rose-600">Tsh ${row.totalCost.toLocaleString()}</td>
+                        `;
+                        matTbody.appendChild(tr);
+                    });
+                }
+            }
+
+            // C. OTHER DAILY OPERATING COSTS
+            const adminExpenses = window.appData.adminExpenses || [];
+            const dailyAdminExpenses = adminExpenses.filter(exp => matchesSelectedDate(exp.dateRaw, exp.date));
+
+            const shopExpenses = [];
+            const finances = window.appData.finances || {};
+            const shops = window.appData.shops || [];
+            
+            Object.keys(finances).forEach(shopId => {
+                const shopFin = finances[shopId] || {};
+                const personalExpenses = shopFin.personalExpenses || [];
+                const shop = shops.find(s => s.id === shopId);
+                const shopLoc = shop ? shop.location : 'Shop';
+
+                personalExpenses.filter(exp => matchesSelectedDate(exp.dateRaw, exp.date)).forEach(exp => {
+                    shopExpenses.push({
+                        description: `${exp.description} (${shopLoc})`,
+                        amount: Number(exp.amount) || 0,
+                        category: exp.category || 'Mengineyo',
+                        type: 'Seller'
+                    });
+                });
+            });
+
+            // Salaries paid on that day
+            const salaryPayments = [];
+            const salaryList = window.appData.salaryList || [];
+            salaryList.forEach(emp => {
+                const payments = emp.payments || [];
+                payments.filter(p => matchesSelectedDate(p.dateRaw, p.date)).forEach(p => {
+                    salaryPayments.push({
+                        description: `Mshahara: ${emp.name} (${p.notes || 'Malipo'})`,
+                        amount: Number(p.amount) || 0,
+                        category: 'Mishahara',
+                        type: 'Salary'
+                    });
+                });
+            });
+
+            const otherCostsList = [];
+            dailyAdminExpenses.forEach(e => {
+                otherCostsList.push({
+                    description: e.description,
+                    amount: e.amount,
+                    category: 'Admin',
+                    type: 'Admin'
+                });
+            });
+            shopExpenses.forEach(e => {
+                otherCostsList.push(e);
+            });
+            salaryPayments.forEach(e => {
+                otherCostsList.push(e);
+            });
+
+            let totalOtherDailyCosts = 0;
+            const opsTbody = document.getElementById('repOperatingCostsTableBody');
+            if (opsTbody) {
+                opsTbody.innerHTML = '';
+                if (otherCostsList.length === 0) {
+                    opsTbody.innerHTML = `<tr><td colspan="3" class="p-4 text-center text-gray-400 font-medium">Hakuna gharama zingine za uendeshaji siku hii.</td></tr>`;
+                } else {
+                    otherCostsList.forEach(c => {
+                        totalOtherDailyCosts += c.amount;
+
+                        const tr = document.createElement('tr');
+                        tr.className = "border-b border-gray-100";
+                        tr.innerHTML = `
+                            <td class="p-3 font-extrabold text-gray-800">${c.description}</td>
+                            <td class="p-3"><span class="bg-gray-100 text-gray-700 text-[9px] px-2 py-0.5 rounded-full font-bold uppercase">${c.category}</span></td>
+                            <td class="p-3 text-right font-black text-rose-600">Tsh ${c.amount.toLocaleString()}</td>
+                        `;
+                        opsTbody.appendChild(tr);
+                    });
+                }
+            }
+
+            const totalDailyCost = totalRawMaterialsCost + totalOtherDailyCosts;
+            const estimatedProfit = totalProductionValue - totalDailyCost;
+            const profitPercentage = totalProductionValue > 0 ? (estimatedProfit / totalProductionValue) * 100 : 0;
+
+            // Bind calculations to Top summary metrics cards
+            document.getElementById('repTotalProductionValue').textContent = `Tsh ${totalProductionValue.toLocaleString()}`;
+            document.getElementById('repTotalProductsCount').textContent = `${totalProductsProducedCount.toLocaleString()} Bidhaa Zilizozalishwa`;
+
+            document.getElementById('repTotalDailyCost').textContent = `Tsh ${totalDailyCost.toLocaleString()}`;
+            document.getElementById('repMaterialsCostShare').textContent = `Malighafi: Tsh ${totalRawMaterialsCost.toLocaleString()}`;
+            document.getElementById('repOperatingCostShare').textContent = `Matumizi: Tsh ${totalOtherDailyCosts.toLocaleString()}`;
+
+            const repProfitEl = document.getElementById('repEstimatedProfit');
+            const repProfitCard = document.getElementById('repProfitCard');
+            const repProfitStatus = document.getElementById('repProfitStatus');
+            if (repProfitEl) {
+                repProfitEl.textContent = `Tsh ${estimatedProfit.toLocaleString()}`;
+                if (estimatedProfit < 0) {
+                    repProfitEl.className = "font-black text-rose-600 text-xl mt-1";
+                    repProfitCard.className = "bg-rose-50 p-5 rounded-2xl border border-rose-100 shadow-sm hover:scale-[1.01] transition-transform duration-200";
+                    repProfitStatus.textContent = "Hasara Imekadiriwa";
+                    repProfitStatus.className = "text-[10px] text-rose-600 mt-1";
+                } else {
+                    repProfitEl.className = "font-black text-emerald-600 text-xl mt-1";
+                    repProfitCard.className = "bg-white p-5 rounded-2xl border border-gray-100 shadow-sm hover:scale-[1.01] transition-transform duration-200";
+                    repProfitStatus.textContent = "Faida Imekadiriwa";
+                    repProfitStatus.className = "text-[10px] text-emerald-600 mt-1";
+                }
+            }
+
+            const repMarginEl = document.getElementById('repProfitMargin');
+            const repMarginCard = document.getElementById('repMarginCard');
+            if (repMarginEl) {
+                repMarginEl.textContent = `${profitPercentage.toFixed(2)}%`;
+                if (estimatedProfit < 0) {
+                    repMarginEl.className = "font-black text-rose-600 text-xl mt-1";
+                    repMarginCard.className = "bg-rose-50 p-5 rounded-2xl border border-rose-100 shadow-sm hover:scale-[1.01] transition-transform duration-200";
+                } else {
+                    repMarginEl.className = "font-black text-blue-600 text-xl mt-1";
+                    repMarginCard.className = "bg-white p-5 rounded-2xl border border-gray-100 shadow-sm hover:scale-[1.01] transition-transform duration-200";
+                }
+            }
+
+            // Bind values to printable and bottom summary box
+            const displayDate = `${day}/${String(selectedDate.getMonth() + 1).padStart(2, '0')}/${year}`;
+            document.getElementById('printReportDateTitle').textContent = `TAREHE: ${displayDate}`;
+            
+            const repSummaryBoxTitle = document.getElementById('repSummaryBoxTitle');
+            if (repSummaryBoxTitle) repSummaryBoxTitle.textContent = `DAILY REPORT SUMMARY – ${displayDate}`;
+
+            document.getElementById('sumProductionValue').textContent = `Tsh ${totalProductionValue.toLocaleString()}`;
+            document.getElementById('sumProductsCount').textContent = `${totalProductsProducedCount.toLocaleString()} pcs`;
+            document.getElementById('sumMaterialsCost').textContent = `Tsh ${totalRawMaterialsCost.toLocaleString()}`;
+            document.getElementById('sumOperatingCost').textContent = `Tsh ${totalOtherDailyCosts.toLocaleString()}`;
+            document.getElementById('sumTotalDailyCost').textContent = `Tsh ${totalDailyCost.toLocaleString()}`;
+            
+            const sumEstProfitEl = document.getElementById('sumEstimatedProfit');
+            if (sumEstProfitEl) {
+                sumEstProfitEl.textContent = `Tsh ${estimatedProfit.toLocaleString()}`;
+                sumEstProfitEl.className = estimatedProfit < 0 ? "font-black text-rose-600" : "font-black text-emerald-600";
+            }
+            document.getElementById('sumProfitMargin').textContent = `${profitPercentage.toFixed(2)}%`;
+        }
+
+        function printDailyReportDirectly() {
+            const dateVal = document.getElementById('dailyReportDatePicker').value;
+            const printContent = document.getElementById('dailyReportPrintableArea').innerHTML;
+            
+            const printWindow = window.open('', '_blank');
+            if (!printWindow) {
+                alert("Tafadhali ruhusu pop-ups kwenye kivinjari chako ili uweze kuchapa.");
+                return;
+            }
+            
+            // Reformat display date
+            const dateParts = dateVal.split('-');
+            const displayDate = dateParts.length === 3 ? `${dateParts[2]}/${dateParts[1]}/${dateParts[0]}` : dateVal;
+            
+            printWindow.document.write(`
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <title>NGAE FOOD PROCESSORS - DAILY REPORT - ${displayDate}</title>
+                    <script src="https://cdn.tailwindcss.com"></script>
+                    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+                    <style>
+                        body {
+                            font-family: 'Poppins', sans-serif;
+                            padding: 20px;
+                            background-color: white;
+                        }
+                        .print-header {
+                            display: block !important;
+                        }
+                        @media print {
+                            body { padding: 0; }
+                            .no-print { display: none; }
+                        }
+                    </style>
+                </head>
+                <body>
+                    <div class="max-w-4xl mx-auto">
+                        \${printContent}
+                    </div>
+                    <script>
+                        // Force show printable header
+                        const headers = document.querySelectorAll('.print-header');
+                        headers.forEach(h => h.classList.remove('hidden'));
+                        window.onload = function() {
+                            window.print();
+                            setTimeout(function() { window.close(); }, 500);
+                        }
+                    <\/script>
+                </body>
+                </html>
+            `);
+            printWindow.document.close();
+        }
+
+        function downloadReportPDF(callback) {
+            const dateVal = document.getElementById('dailyReportDatePicker').value;
+            const element = document.getElementById('dailyReportPrintableArea');
+            if (!element) return;
+            
+            // Temporary reveal printable header
+            const printHeader = element.querySelector('.print-header');
+            if (printHeader) printHeader.classList.remove('hidden');
+
+            const opt = {
+                margin:       [10, 10, 15, 10], // top, left, bottom, right
+                filename:     `daily_report_${dateVal}.pdf`,
+                image:        { type: 'jpeg', quality: 0.98 },
+                html2canvas:  { scale: 2, useCORS: true, logging: false },
+                jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+            };
+
+            // Generate and save
+            const worker = html2pdf().from(element).set(opt);
+            
+            if (callback) {
+                // If callback is provided, we return the blob
+                worker.toPdf().get('pdf').then(function (pdf) {
+                    if (printHeader) printHeader.classList.add('hidden');
+                    const pdfBlob = pdf.output('blob');
+                    callback(pdfBlob);
+                });
+            } else {
+                worker.save().then(function() {
+                    if (printHeader) printHeader.classList.add('hidden');
+                    console.log("PDF downloaded successfully.");
+                });
+            }
+        }
+
+        function addWhatsAppLog(message, type = 'info') {
+            const logContainer = document.getElementById('whatsappStatusLogs');
+            const consoleBox = document.getElementById('whatsappStatusConsole');
+            if (!logContainer || !consoleBox) return;
+
+            consoleBox.classList.remove('hidden');
+            const div = document.createElement('div');
+            const timestamp = new Date().toLocaleTimeString();
+            
+            let color = 'text-slate-300';
+            if (type === 'success') color = 'text-emerald-400 font-bold';
+            else if (type === 'error') color = 'text-rose-400 font-bold';
+            else if (type === 'warning') color = 'text-amber-400';
+            else if (type === 'success-title') color = 'text-emerald-300 font-bold underline';
+            
+            div.className = color;
+            div.innerHTML = `[${timestamp}] ${message}`;
+            logContainer.appendChild(div);
+            consoleBox.scrollTop = consoleBox.scrollHeight;
+        }
+
+        async function sendReportViaWhatsApp() {
+            const dateVal = document.getElementById('dailyReportDatePicker').value;
+            const btn = document.getElementById('btnSendWhatsApp');
+            
+            // Fetch config from Firestore
+            if (window.firebaseReady === false || firebase.apps.length === 0) {
+                alert("Firestore is not initialized.");
+                return;
+            }
+
+            // Clear log container
+            const logContainer = document.getElementById('whatsappStatusLogs');
+            if (logContainer) logContainer.innerHTML = '';
+            
+            addWhatsAppLog("Anza ukaguzi wa mipangilio ya WhatsApp...", 'info');
+            
+            const db = firebase.firestore();
+            let config = null;
+            try {
+                const doc = await db.collection('configs').doc('whatsapp').get();
+                if (!doc.exists) {
+                    addWhatsAppLog("Hitilafu: Mipangilio ya WhatsApp API haijapatikana kwenye Firestore. Bofya alama ya gear juu kulia kuseti.", 'error');
+                    alert("Tafadhali sanidi mipangilio ya WhatsApp API kwanza kwa kubofya alama ya gear (mipangilio) karibu na tarehe.");
+                    return;
+                }
+                config = doc.data();
+            } catch (err) {
+                addWhatsAppLog(`Kosa la kupata mipangilio kwenye Firestore: ${err.message}`, 'error');
+                return;
+            }
+
+            if (!config.apiUrl || !config.apiKey) {
+                addWhatsAppLog("Hitilafu: URL au Access Token imeachwa wazi kwenye mipangilio.", 'error');
+                alert("Tafadhali kamilisha mipangilio ya WhatsApp (URL na Key zote zinahitajika).");
+                return;
+            }
+
+            btn.disabled = true;
+            btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> UTUMAJI...`;
+            addWhatsAppLog("Inatengeneza faili ya PDF ya Ripoti...", 'info');
+
+            downloadReportPDF(async function(pdfBlob) {
+                try {
+                    addWhatsAppLog("PDF imezalishwa kikamilifu! Inapakia kwenye Firebase Storage...", 'info');
+                    
+                    // Upload PDF to Firebase Storage to get a public URL
+                    const storage = firebase.storage();
+                    const storageRef = storage.ref();
+                    const reportRef = storageRef.child(`daily_reports/daily_report_${dateVal}_${Date.now()}.pdf`);
+                    
+                    const snapshot = await reportRef.put(pdfBlob);
+                    addWhatsAppLog("PDF imepakiwa kwenye Firebase Storage. Inatengeneza kiungo salama...", 'info');
+                    
+                    const publicUrl = await snapshot.ref.getDownloadURL();
+                    addWhatsAppLog(`Kiungo salama kimetengenezwa! URL: \${publicUrl.substring(0, 50)}...`, 'info');
+
+                    // Read financial numbers for message template
+                    const profitText = document.getElementById('repEstimatedProfit').textContent;
+                    const marginText = document.getElementById('repProfitMargin').textContent;
+                    
+                    // Standard Tanzanian Date Display
+                    const dateParts = dateVal.split('-');
+                    const displayDate = dateParts.length === 3 ? `\${dateParts[2]}/\${dateParts[1]}/\${dateParts[0]}` : dateVal;
+
+                    const messageText = `*NGAE FOOD PROCESSORS HUB – DAILY REPORT*\n\nDaily Report for: *\${displayDate}*\n\nPlease find attached the Daily Production and Financial Report for the selected date.\n\n*Estimated Profit:* \${profitText}\n*Estimated Profit Margin:* \${marginText}`;
+
+                    const recipients = ['+255765394352', '+255776637247'];
+                    
+                    for (const num of recipients) {
+                        addWhatsAppLog(`Inatuma ripoti kwenda \${num}...`, 'info');
+                        const success = await sendToGateway(num, messageText, publicUrl, config);
+                        if (success) {
+                            addWhatsAppLog(`✅ Sent Successfully kwa namba \${num}`, 'success');
+                        } else {
+                            addWhatsAppLog(`❌ Failed to Send kwa namba \${num}`, 'error');
+                        }
+                    }
+                    
+                    addWhatsAppLog("=== ZOEZI LA UTUMAJI LIMEMALIZIKA ===", 'success-title');
+                    alert("Mchakato wa utumaji wa ripoti ya WhatsApp umekamilika. Angalia logi chini kuona matokeo.");
+
+                } catch (error) {
+                    addWhatsAppLog(`Hitilafu ya Mchakato: \${error.message}`, 'error');
+                    alert(`Hitilafu imetokea: \${error.message}`);
+                } finally {
+                    btn.disabled = false;
+                    btn.innerHTML = `<i class="bi bi-whatsapp"></i> TUMA WHATSAPP`;
+                }
+            });
+        }
+
+        async function sendToGateway(phone, text, fileUrl, config) {
+            const provider = config.provider || 'ultramsg';
+            const endpoint = config.apiUrl;
+            const token = config.apiKey;
+            
+            try {
+                let headers = { "Content-Type": "application/json" };
+                let bodyObj = {};
+                
+                // Formulate request based on provider
+                if (provider === 'ultramsg') {
+                    bodyObj = {
+                        token: token,
+                        to: phone,
+                        filename: `daily_report.pdf`,
+                        document: fileUrl,
+                        caption: text
+                    };
+                } else if (provider === 'wassenger') {
+                    headers["Authorization"] = `Bearer \${token}`;
+                    bodyObj = {
+                        phone: phone,
+                        message: text,
+                        media: {
+                            url: fileUrl,
+                            filename: `daily_report.pdf`
+                        }
+                    };
+                } else if (provider === 'twilio') {
+                    headers["Authorization"] = `Basic \${btoa(config.senderId + ":" + token)}`;
+                    headers["Content-Type"] = "application/x-www-form-urlencoded";
+                    
+                    const params = new URLSearchParams();
+                    params.append('To', `whatsapp:\${phone}`);
+                    params.append('From', `whatsapp:\${config.senderId}`);
+                    params.append('Body', text);
+                    params.append('MediaUrl', fileUrl);
+                    
+                    const response = await fetch(endpoint, {
+                        method: 'POST',
+                        headers: headers,
+                        body: params
+                    });
+                    return response.ok;
+                } else if (provider === 'meta') {
+                    headers["Authorization"] = `Bearer \${token}`;
+                    bodyObj = {
+                        messaging_product: "whatsapp",
+                        recipient_type: "individual",
+                        to: phone,
+                        type: "document",
+                        document: {
+                            link: fileUrl,
+                            caption: text,
+                            filename: "daily_report.pdf"
+                        }
+                    };
+                } else {
+                    headers["Authorization"] = `Bearer \${token}`;
+                    bodyObj = {
+                        to: phone,
+                        message: text,
+                        fileUrl: fileUrl,
+                        filename: "daily_report.pdf",
+                        senderId: config.senderId
+                    };
+                }
+
+                const fetchOptions = {
+                    method: 'POST',
+                    headers: headers
+                };
+                if (provider !== 'twilio') {
+                    fetchOptions.body = JSON.stringify(bodyObj);
+                }
+
+                console.log(`Sending to \${phone} via \${provider}...`, bodyObj);
+                const response = await fetch(endpoint, fetchOptions);
+                
+                if (!response.ok) {
+                    const errText = await response.text();
+                    console.error(`WhatsApp Gateway response error:`, errText);
+                    addWhatsAppLog(`Gateway Error Detail: \${response.status} - \${errText.substring(0, 100)}`, 'warning');
+                }
+                
+                return response.ok;
+            } catch (e) {
+                console.error("Error communicating with WhatsApp API Gateway:", e);
+                addWhatsAppLog(`Network/CORS Error: \${e.message}`, 'warning');
+                return false;
+            }
+        }
             `;
         }
     </script>

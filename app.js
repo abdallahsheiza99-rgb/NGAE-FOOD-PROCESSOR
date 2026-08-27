@@ -952,35 +952,190 @@ window.appDispatchProduct = function(productId, shopId, qty, unit) {
     if (!product || !shop || numQty <= 0) return false;
     if ((Number(product.stock) || 0) < numQty) return false;
 
-    product.stock = (Number(product.stock) || 0) - numQty;
-
     const now = new Date();
-    const dateStr = now.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+    const dateStr = now.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) + ' ' + now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+    const staffId = (localStorage.getItem('ngae_logged_in_id') || '').toUpperCase();
+    const staffName = localStorage.getItem('ngae_logged_in_name') || 'Operator';
 
-    appData.dispatchHistory.push({
+    const dispatchRecord = {
         id: 'disp_log_' + Date.now() + '_' + Math.random().toString(36).substr(2, 6),
         date: dateStr,
         dateRaw: now.toISOString(),
+        createdAt: now.toISOString(),
         productId: product.id,
         productName: product.name,
         shopId: shop.id,
         shopLocation: shop.location,
         quantity: numQty,
+        originalQuantity: numQty,
         unitPrice: Number(product.price) || 0,
         totalValue: (Number(product.price) || 0) * numQty,
-        unit: unit || 'pcs'
-    });
+        unit: unit || 'pcs',
+        operatorId: staffId,
+        operatorName: staffName,
+        auditTrail: []
+    };
+
+    appData.dispatchHistory.push(dispatchRecord);
 
     if (!appData.finances[shop.id]) {
         appData.finances[shop.id] = { submitted: 0, reportedDebt: 0, salesHistory: [], personalExpenses: [] };
     }
 
+    _recalculateAllStocks(appData);
     saveData(appData);
     window.appData = appData;
 
     appAddNotification('Usafirishaji Mpya', `Operator amesafirisha ${numQty} ${unit || 'pcs'} ya ${product.name} kwenda duka la ${shop.location}.`);
 
     return true;
+};
+
+/**
+ * Helper to calculate authoritative 1-hour grace period status
+ * Edit Allowed = Current Time - Shipment Creation Time < 60 minutes
+ */
+window.appGetDispatchGracePeriodStatus = function(dispatch) {
+    if (!dispatch) {
+        return { isEditable: false, remainingMs: 0, remainingSeconds: 0, formattedRemaining: '00:00', statusText: 'EDIT LOCKED – 1 HOUR EXPIRED', isExpired: true };
+    }
+
+    const createdIso = dispatch.createdAt || dispatch.dateRaw;
+    const createdTime = createdIso ? new Date(createdIso).getTime() : NaN;
+
+    if (isNaN(createdTime)) {
+        return { isEditable: false, remainingMs: 0, remainingSeconds: 0, formattedRemaining: '00:00', statusText: 'EDIT LOCKED – 1 HOUR EXPIRED', isExpired: true };
+    }
+
+    const nowTime = Date.now();
+    const elapsed = nowTime - createdTime;
+    const ONE_HOUR_MS = 60 * 60 * 1000;
+    const remainingMs = ONE_HOUR_MS - elapsed;
+
+    if (remainingMs <= 0) {
+        return {
+            isEditable: false,
+            remainingMs: 0,
+            remainingSeconds: 0,
+            minutesRemaining: 0,
+            formattedRemaining: '00:00',
+            statusText: 'EDIT LOCKED – 1 HOUR EXPIRED',
+            isExpired: true
+        };
+    }
+
+    const totalSeconds = Math.floor(remainingMs / 1000);
+    const minutes = Math.floor(totalSeconds / 60);
+    const seconds = totalSeconds % 60;
+    const formatted = minutes > 0 ? `${minutes}m ${seconds < 10 ? '0' : ''}${seconds}s` : `${seconds}s`;
+
+    return {
+        isEditable: true,
+        remainingMs,
+        remainingSeconds: totalSeconds,
+        minutesRemaining: minutes,
+        formattedRemaining: formatted,
+        statusText: `Edit available for: ${formatted}`,
+        isExpired: false
+    };
+};
+
+/**
+ * Secure Server-Side/Core function to edit dispatch quantity within 1-hour grace period
+ */
+window.appEditDispatchQuantity = function(dispatchId, newQuantity, reason = 'Marekebisho ya idadi') {
+    if (!appData) appData = loadData();
+    const dispatch = (appData.dispatchHistory || []).find(d => d.id === dispatchId);
+
+    if (!dispatch) {
+        return { success: false, message: "Kumbukumbu ya mzigo haikupatikana kwenye mfumo." };
+    }
+
+    // 1. Authoritative 1-Hour Security Check (Server/Database time baseline)
+    const createdIso = dispatch.createdAt || dispatch.dateRaw;
+    const createdTime = createdIso ? new Date(createdIso).getTime() : NaN;
+    const nowTime = Date.now();
+    const ONE_HOUR_MS = 60 * 60 * 1000;
+
+    if (isNaN(createdTime) || (nowTime - createdTime) >= ONE_HOUR_MS) {
+        return {
+            success: false,
+            message: "This shipment can no longer be edited because the 1-hour grace period has expired (Muda wa dakika 60 za marekebisho umemalizika)."
+        };
+    }
+
+    // 2. Validate New Quantity
+    const numNewQty = Number(newQuantity);
+    if (isNaN(numNewQty) || numNewQty <= 0) {
+        return { success: false, message: "Tafadhali weka idadi sahihi kubwa kuliko sifuri (0)." };
+    }
+
+    const prevQty = Number(dispatch.quantity) || 0;
+    if (numNewQty === prevQty) {
+        return { success: false, message: "Idadi mpya ni sawa na idadi ya sasa. Hakuna mabadiliko yaliyofanyika." };
+    }
+
+    const product = (appData.products || []).find(p => p.id === dispatch.productId || p.name.toLowerCase() === (dispatch.productName || '').toLowerCase());
+    if (!product) {
+        return { success: false, message: "Bidhaa husika haipatikani kwenye mfumo wa stoo." };
+    }
+
+    // 3. Check stock balance when increasing shipment quantity
+    const qtyDiff = numNewQty - prevQty;
+    if (qtyDiff > 0 && (Number(product.stock) || 0) < qtyDiff) {
+        return {
+            success: false,
+            message: `Stoo haina bidhaa za kutosha kuongeza idadi hii. Zilizopo stoo kwa sasa ni ${Number(product.stock) || 0} ${dispatch.unit || 'pcs'}.`
+        };
+    }
+
+    const staffId = (localStorage.getItem('ngae_logged_in_id') || '').toUpperCase();
+    const staffName = localStorage.getItem('ngae_logged_in_name') || 'Operator';
+    const now = new Date();
+    const dateStr = now.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) + ' ' + now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+
+    // 4. Record Audit Trail
+    if (!Array.isArray(dispatch.auditTrail)) {
+        dispatch.auditTrail = [];
+    }
+
+    dispatch.auditTrail.push({
+        originalQuantity: prevQty,
+        newQuantity: numNewQty,
+        difference: qtyDiff,
+        changedBy: `${staffName} (${staffId || 'OPERATOR'})`,
+        operatorId: staffId,
+        operatorName: staffName,
+        changedAt: dateStr,
+        timestamp: now.toISOString(),
+        reason: (reason && reason.trim()) ? reason.trim() : 'Marekebisho ya idadi ya mzigo'
+    });
+
+    // 5. Update Existing Transaction Safely (No Duplicate Transactions)
+    dispatch.quantity = numNewQty;
+    const unitPrice = Number(product.price) || Number(dispatch.unitPrice) || 0;
+    dispatch.unitPrice = unitPrice;
+    dispatch.totalValue = unitPrice * numNewQty;
+    dispatch.lastModifiedAt = now.toISOString();
+
+    // 6. Recalculate all linked stocks & balances
+    _recalculateAllStocks(appData);
+
+    // 7. Save & Sync across Firebase and LocalStorage
+    saveData(appData);
+    window.appData = appData;
+
+    // 8. Add Audit Notification
+    appAddNotification(
+        'Marekebisho ya Mzigo',
+        `Operator (${staffName}) amerekebisha mzigo wa ${product.name} kwenda ${dispatch.shopLocation}: kutoka ${prevQty} hadi ${numNewQty} ${dispatch.unit || 'pcs'}. Sababu: ${reason || 'Marekebisho'}`
+    );
+
+    return {
+        success: true,
+        message: `Idadi ya mzigo imerekebishwa kikamilifu kutoka ${prevQty} hadi ${numNewQty} ${dispatch.unit || 'pcs'}.`,
+        dispatch
+    };
 };
 
 // ==========================================

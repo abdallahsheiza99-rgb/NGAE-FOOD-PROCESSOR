@@ -332,6 +332,8 @@
                                 <th class="p-3">Aina ya Bidhaa</th>
                                 <th class="p-3">Duka Lililopokea</th>
                                 <th class="p-3 text-center">Idadi</th>
+                                <th class="p-3 text-center">Hali ya Uhariri (1-Hour Grace)</th>
+                                <th class="p-3 text-right">Kitendo</th>
                             </tr>
                         </thead>
                         <tbody id="overviewRecentHistoryBody" class="divide-y divide-slate-100 font-medium">
@@ -495,6 +497,8 @@
                                 <th class="p-4">Duka Lililopokea</th>
                                 <th class="p-4 text-center">Idadi Iliyotumwa</th>
                                 <th class="p-4 text-right">Kadirio la Thamani</th>
+                                <th class="p-4 text-center">Hali ya Uhariri (Grace Period)</th>
+                                <th class="p-4 text-center">Vitendo / Marekebisho</th>
                             </tr>
                         </thead>
                         <tbody id="dispatchHistoryPortalBody" class="divide-y divide-slate-100 font-medium">
@@ -544,6 +548,169 @@
             <div class="flex gap-3 pt-2">
                 <button onclick="closeProfilePhotoModal()" class="w-1/2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-3 rounded-xl text-xs">Ghairi</button>
                 <button onclick="saveModalProfilePhoto()" class="w-1/2 bg-orange-600 hover:bg-orange-700 text-white font-extrabold py-3 rounded-xl text-xs shadow-md">Hifadhi Picha</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL YA KUREKEBISHA IDADI YA MZIGO (1-HOUR EDIT GRACE PERIOD) -->
+    <div id="editDispatchModal" class="hidden fixed inset-0 z-50 items-center justify-center bg-slate-950/70 p-4 backdrop-blur-sm">
+        <div class="bg-white rounded-3xl max-w-lg w-full p-6 md:p-8 shadow-2xl space-y-6 max-h-[90vh] overflow-y-auto custom-scrollbar border border-slate-100 animate-in fade-in zoom-in-95 duration-200">
+            
+            <!-- Modal Header -->
+            <div class="flex justify-between items-start border-b border-slate-100 pb-4">
+                <div class="flex items-center gap-3">
+                    <div class="w-11 h-11 rounded-2xl bg-amber-500/10 text-amber-600 flex items-center justify-center text-xl font-black">
+                        <i class="bi bi-pencil-square"></i>
+                    </div>
+                    <div>
+                        <div class="flex items-center gap-2">
+                            <h3 class="font-extrabold text-base text-slate-900 leading-tight">Rekebisha Idadi ya Mzigo</h3>
+                            <span class="bg-amber-100 text-amber-800 text-[10px] font-black px-2.5 py-0.5 rounded-full uppercase tracking-wider">1-Hr Grace</span>
+                        </div>
+                        <p class="text-xs text-slate-500 mt-0.5">Sahihisha kiasi cha bidhaa ulichoingiza kimakosa kabla ya muda kwisha.</p>
+                    </div>
+                </div>
+                <button onclick="closeEditDispatchModal()" class="text-slate-400 hover:text-slate-700 text-2xl font-bold leading-none p-1 rounded-lg hover:bg-slate-100 transition-colors">&times;</button>
+            </div>
+
+            <!-- Live Timer Banner inside Modal -->
+            <div id="editModalTimerBanner" class="p-3.5 rounded-2xl bg-gradient-to-r from-amber-500/10 to-orange-500/10 border border-amber-300 text-amber-950 text-xs font-bold flex items-center justify-between shadow-sm">
+                <div class="flex items-center gap-2">
+                    <i class="bi bi-stopwatch-fill text-amber-600 text-base animate-pulse"></i>
+                    <span>Muda wa Neema Uliobakia:</span>
+                </div>
+                <span id="editModalCountdownText" class="font-mono text-sm font-black bg-amber-500 text-white px-3 py-1 rounded-xl shadow-inner">00m 00s</span>
+            </div>
+
+            <!-- Protected / Read-only Fields (Restricted by Rule #4) -->
+            <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200/80 space-y-3">
+                <div class="flex items-center justify-between text-[11px] font-extrabold text-slate-400 uppercase tracking-wider pb-1 border-b border-slate-200">
+                    <span><i class="bi bi-shield-lock-fill text-slate-500 mr-1"></i>Taarifa Zilizolindwa (Protected)</span>
+                    <span class="text-[10px] bg-slate-200 text-slate-600 px-2 py-0.5 rounded-md font-bold">Haiwezi Kubadilishwa</span>
+                </div>
+                <div class="grid grid-cols-2 gap-3 text-xs">
+                    <div>
+                        <p class="text-[10px] text-slate-400 font-bold uppercase">Aina ya Bidhaa</p>
+                        <p class="font-extrabold text-slate-800 truncate mt-0.5" id="editModalProductName">---</p>
+                    </div>
+                    <div>
+                        <p class="text-[10px] text-slate-400 font-bold uppercase">Duka Lililopokea</p>
+                        <p class="font-extrabold text-slate-800 truncate mt-0.5" id="editModalShopLocation">---</p>
+                    </div>
+                    <div>
+                        <p class="text-[10px] text-slate-400 font-bold uppercase">Muda Uliotumwa</p>
+                        <p class="font-bold text-slate-700 mt-0.5" id="editModalDispatchDate">---</p>
+                    </div>
+                    <div>
+                        <p class="text-[10px] text-slate-400 font-bold uppercase">Kiasi cha Sasa</p>
+                        <p class="font-black text-orange-600 mt-0.5" id="editModalCurrentQtyDisplay">0 pcs</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Edit Form -->
+            <form id="editDispatchForm" onsubmit="submitEditDispatchQuantity(event)" class="space-y-4">
+                <input type="hidden" id="editModalDispatchId">
+
+                <!-- New Quantity Input -->
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5 flex justify-between items-center">
+                        <span>Weka Idadi Mpya na Sahihi</span>
+                        <span class="text-[11px] font-semibold text-slate-400" id="editModalUnitHint">Kipimo: pcs</span>
+                    </label>
+                    <input type="number" id="editModalNewQty" oninput="calculateEditModalDelta()" required min="1" step="1" placeholder="Weka idadi sahihi..." class="w-full border-2 border-amber-300 focus:border-orange-500 rounded-2xl p-3.5 text-base font-black text-slate-900 focus:ring-4 focus:ring-orange-500/20 outline-none bg-white shadow-sm transition-all">
+                </div>
+
+                <!-- Live Delta / Stock Impact Helper -->
+                <div id="editModalDeltaBox" class="p-3.5 rounded-2xl bg-slate-100 border border-slate-200 text-xs font-bold text-slate-700 flex items-center justify-between">
+                    <span class="flex items-center gap-1.5"><i class="bi bi-arrow-left-right text-orange-500"></i> Mabadiliko:</span>
+                    <span id="editModalDeltaText" class="font-extrabold text-slate-900">Hakuna mabadiliko bado</span>
+                </div>
+
+                <!-- Reason Selector -->
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Sababu ya Marekebisho (Audit Trail Reason)</label>
+                    <select id="editModalReasonSelect" onchange="handleEditReasonChange()" class="w-full border border-slate-300 rounded-xl p-3 text-xs font-bold text-slate-800 focus:ring-2 focus:ring-orange-500 outline-none bg-slate-50">
+                        <option value="Kukosea kuandika idadi (Typo / Data entry error)">Kukosea kuandika idadi (Typo / Data entry error)</option>
+                        <option value="Marekebisho ya kiasi kabla ya gari kuondoka">Marekebisho ya kiasi kabla ya gari kuondoka</option>
+                        <option value="Mabadiliko ya ombi la duka">Mabadiliko ya ombi la duka</option>
+                        <option value="Bidhaa zilirudishwa stoo kabla ya kusafiri">Bidhaa zilirudishwa stoo kabla ya kusafiri</option>
+                        <option value="custom">Sababu nyingine (Andika mwenyewe)...</option>
+                    </select>
+                </div>
+
+                <!-- Custom Reason Input (Hidden by default) -->
+                <div id="editModalCustomReasonContainer" class="hidden">
+                    <input type="text" id="editModalCustomReasonInput" placeholder="Andika maelezo mafupi ya sababu ya marekebisho..." class="w-full border border-slate-300 rounded-xl p-2.5 text-xs text-slate-800 focus:ring-2 focus:ring-orange-500 outline-none bg-white">
+                </div>
+
+                <!-- Error / Status Alert -->
+                <div id="editModalAlert" class="hidden p-3.5 rounded-2xl text-xs font-bold border"></div>
+
+                <!-- Action Buttons -->
+                <div class="flex gap-3 pt-2">
+                    <button type="button" onclick="closeEditDispatchModal()" class="w-1/3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-3.5 rounded-2xl text-xs transition-colors">
+                        Ghairi
+                    </button>
+                    <button type="submit" id="btnSubmitDispatchEdit" class="w-2/3 bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-700 hover:to-amber-700 text-white font-extrabold py-3.5 rounded-2xl text-xs shadow-lg transition-all flex items-center justify-center gap-2 transform hover:-translate-y-0.5">
+                        <i class="bi bi-check2-circle text-base"></i> Thibitisha Marekebisho Sasa
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL YA HISTORIA YA MAREKEBISHO (AUDIT TRAIL MODAL) -->
+    <div id="auditTrailModal" class="hidden fixed inset-0 z-50 items-center justify-center bg-slate-950/70 p-4 backdrop-blur-sm">
+        <div class="bg-white rounded-3xl max-w-lg w-full p-6 md:p-8 shadow-2xl space-y-6 max-h-[85vh] overflow-y-auto custom-scrollbar border border-slate-100 animate-in fade-in zoom-in-95 duration-200">
+            
+            <div class="flex justify-between items-start border-b border-slate-100 pb-3">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-2xl bg-blue-500/10 text-blue-600 flex items-center justify-center text-lg font-black">
+                        <i class="bi bi-journal-text"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-extrabold text-base text-slate-900 leading-tight">Historia ya Marekebisho (Audit Trail)</h3>
+                        <p class="text-xs text-slate-500" id="auditModalSubtitle">Kumbukumbu rasmi ya mabadiliko ya mzigo huu.</p>
+                    </div>
+                </div>
+                <button onclick="closeAuditTrailModal()" class="text-slate-400 hover:text-slate-700 text-2xl font-bold leading-none p-1 rounded-lg hover:bg-slate-100">&times;</button>
+            </div>
+
+            <!-- Shipment Snapshot Summary -->
+            <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200 grid grid-cols-2 gap-3 text-xs">
+                <div>
+                    <p class="text-[10px] text-slate-400 font-bold uppercase">Bidhaa</p>
+                    <p class="font-extrabold text-slate-800 truncate" id="auditModalProductName">---</p>
+                </div>
+                <div>
+                    <p class="text-[10px] text-slate-400 font-bold uppercase">Duka Lililopokea</p>
+                    <p class="font-extrabold text-slate-800 truncate" id="auditModalShopLocation">---</p>
+                </div>
+                <div>
+                    <p class="text-[10px] text-slate-400 font-bold uppercase">Kiasi cha Awali</p>
+                    <p class="font-bold text-slate-600" id="auditModalInitialQty">---</p>
+                </div>
+                <div>
+                    <p class="text-[10px] text-slate-400 font-bold uppercase">Kiasi cha Sasa</p>
+                    <p class="font-black text-emerald-600" id="auditModalCurrentQty">---</p>
+                </div>
+            </div>
+
+            <!-- Timeline of Revisions -->
+            <div class="space-y-3">
+                <h4 class="text-xs font-extrabold text-slate-700 uppercase tracking-wider flex items-center gap-1.5">
+                    <i class="bi bi-clock-history text-orange-500"></i> Orodha ya Mabadiliko Yaliyofanyika
+                </h4>
+                <div id="auditTrailListContainer" class="space-y-3">
+                    <!-- Populated dynamically -->
+                </div>
+            </div>
+
+            <div class="pt-2">
+                <button onclick="closeAuditTrailModal()" class="w-full bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-3 rounded-2xl text-xs transition-colors">
+                    Funga Dirisha
+                </button>
             </div>
         </div>
     </div>
@@ -740,9 +907,37 @@
             const history = (window.appData.dispatchHistory || []).slice().reverse().slice(0, 4);
 
             if (history.length === 0) {
-                recentBody.innerHTML = `<tr><td colspan="4" class="text-center p-4 text-slate-400">Hakuna mzigo uliotumwa bado.</td></tr>`;
+                recentBody.innerHTML = `<tr><td colspan="6" class="text-center p-4 text-slate-400">Hakuna mzigo uliotumwa bado.</td></tr>`;
             } else {
                 history.forEach(h => {
+                    const grace = window.appGetDispatchGracePeriodStatus ? window.appGetDispatchGracePeriodStatus(h) : { isEditable: false, formattedRemaining: '00:00' };
+                    let graceHtml = '';
+                    let actionHtml = '';
+
+                    if (grace.isEditable) {
+                        graceHtml = `
+                            <span class="grace-timer-badge inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-extrabold bg-amber-100 text-amber-900 border border-amber-300" data-dispatch-id="${h.id}">
+                                <i class="bi bi-stopwatch text-amber-600 animate-pulse"></i> <span class="timer-text">${grace.formattedRemaining}</span>
+                            </span>
+                        `;
+                        actionHtml = `
+                            <button onclick="openEditDispatchModal('${h.id}')" class="bg-amber-500 hover:bg-amber-600 text-white font-extrabold px-2.5 py-1 rounded-xl text-[10px] shadow-sm transition-all flex items-center gap-1 ml-auto">
+                                <i class="bi bi-pencil-square"></i> Rekebisha
+                            </button>
+                        `;
+                    } else {
+                        graceHtml = `
+                            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 text-slate-400 border border-slate-200">
+                                <i class="bi bi-lock-fill"></i> Locked
+                            </span>
+                        `;
+                        actionHtml = `
+                            <span class="text-[10px] text-slate-400 font-bold flex items-center gap-1 justify-end">
+                                <i class="bi bi-lock"></i> Imefungwa
+                            </span>
+                        `;
+                    }
+
                     const tr = document.createElement('tr');
                     tr.className = "hover:bg-slate-50 transition-colors";
                     tr.innerHTML = `
@@ -754,6 +949,8 @@
                                 ${h.quantity} ${h.unit}
                             </span>
                         </td>
+                        <td class="p-3 text-center">${graceHtml}</td>
+                        <td class="p-3 text-right">${actionHtml}</td>
                     `;
                     recentBody.appendChild(tr);
                 });
@@ -852,7 +1049,7 @@
 
                 if (success) {
                     toast.className = "p-4 rounded-2xl font-bold text-xs bg-emerald-100 text-emerald-800 border border-emerald-200 flex items-center gap-2";
-                    toast.innerHTML = `<i class="bi bi-check-circle-fill text-lg"></i> Mzigo umetumwa kikamilifu kwa duka!`;
+                    toast.innerHTML = `<i class="bi bi-check-circle-fill text-lg"></i> Mzigo umetumwa kikamilifu! Dakika 60 za neema ya kurekebisha idadi zimeanza.`;
                     document.getElementById('dispatchForm').reset();
                     updateEstimatedValue();
 
@@ -877,14 +1074,56 @@
             document.getElementById('historyTotalCountBadge').textContent = `Mizigo Zilizotumwa: ${history.length}`;
 
             if (history.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="5" class="text-center p-8 text-slate-400">Hakuna kumbukumbu ya mzigo uliotumwa bado.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="7" class="text-center p-8 text-slate-400">Hakuna kumbukumbu ya mzigo uliotumwa bado.</td></tr>`;
                 return;
             }
 
             [...history].reverse().forEach(h => {
                 const prod = (window.appData.products || []).find(p => p.id === h.productId || p.name.toLowerCase() === (h.productName || '').toLowerCase());
-                const unitPrice = prod ? prod.price : 1000;
+                const unitPrice = prod ? prod.price : (h.unitPrice || 1000);
                 const estValue = (h.quantity * unitPrice).toLocaleString();
+
+                const grace = window.appGetDispatchGracePeriodStatus ? window.appGetDispatchGracePeriodStatus(h) : { isEditable: false, statusText: 'EDIT LOCKED – 1 HOUR EXPIRED' };
+
+                let statusBadge = '';
+                let actionButtons = '';
+                const auditCount = (h.auditTrail && Array.isArray(h.auditTrail)) ? h.auditTrail.length : 0;
+                const auditBtnHtml = auditCount > 0 ? `
+                    <button onclick="openAuditTrailModal('${h.id}')" class="bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 font-extrabold px-2.5 py-1.5 rounded-xl text-[11px] flex items-center gap-1 transition-colors" title="Tazama historia ya marekebisho (${auditCount})">
+                        <i class="bi bi-journal-text"></i> Audit (${auditCount})
+                    </button>
+                ` : '';
+
+                if (grace.isEditable) {
+                    statusBadge = `
+                        <span class="grace-timer-badge inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-black bg-amber-100 text-amber-900 border border-amber-300 shadow-sm" data-dispatch-id="${h.id}">
+                            <i class="bi bi-stopwatch-fill text-amber-600 animate-pulse"></i>
+                            <span class="timer-text">${grace.statusText}</span>
+                        </span>
+                    `;
+                    actionButtons = `
+                        <div class="flex items-center justify-center gap-2">
+                            <button onclick="openEditDispatchModal('${h.id}')" class="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-extrabold px-3 py-1.5 rounded-xl text-xs flex items-center gap-1 shadow-sm transition-all transform hover:scale-105">
+                                <i class="bi bi-pencil-square"></i> Rekebisha Idadi
+                            </button>
+                            ${auditBtnHtml}
+                        </div>
+                    `;
+                } else {
+                    statusBadge = `
+                        <span class="inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-[10px] font-extrabold bg-slate-100 text-slate-500 border border-slate-200 uppercase tracking-wider">
+                            <i class="bi bi-lock-fill text-slate-400"></i> EDIT LOCKED – 1 HOUR EXPIRED
+                        </span>
+                    `;
+                    actionButtons = `
+                        <div class="flex items-center justify-center gap-2">
+                            <button disabled class="bg-slate-100 text-slate-400 font-bold px-3 py-1.5 rounded-xl text-xs flex items-center gap-1 cursor-not-allowed">
+                                <i class="bi bi-lock"></i> Imefungwa
+                            </button>
+                            ${auditBtnHtml}
+                        </div>
+                    `;
+                }
 
                 const tr = document.createElement('tr');
                 tr.className = "hover:bg-slate-50 transition-colors";
@@ -898,9 +1137,327 @@
                         </span>
                     </td>
                     <td class="p-4 text-right font-black text-slate-900">Tsh ${estValue}</td>
+                    <td class="p-4 text-center">${statusBadge}</td>
+                    <td class="p-4 text-center">${actionButtons}</td>
                 `;
                 tbody.appendChild(tr);
             });
+        }
+
+        // =========================================================================
+        // REAL-TIME 1-SECOND TIMER TICKER
+        // =========================================================================
+        let _liveTimerInterval = setInterval(updateLiveGraceTimers, 1000);
+
+        function updateLiveGraceTimers() {
+            if (!window.appData || !window.appData.dispatchHistory || !window.appGetDispatchGracePeriodStatus) return;
+
+            // 1. Update any visible badges in tables
+            const badges = document.querySelectorAll('.grace-timer-badge');
+            let needsReRender = false;
+
+            badges.forEach(badge => {
+                const dispId = badge.getAttribute('data-dispatch-id');
+                const dispatch = (window.appData.dispatchHistory || []).find(d => d.id === dispId);
+                if (!dispatch) return;
+
+                const status = window.appGetDispatchGracePeriodStatus(dispatch);
+                const timerSpan = badge.querySelector('.timer-text');
+
+                if (status.isEditable) {
+                    if (timerSpan) {
+                        // Check if compact (overview) or full (history)
+                        if (badge.closest('#overviewRecentHistoryBody')) {
+                            timerSpan.textContent = status.formattedRemaining;
+                        } else {
+                            timerSpan.textContent = status.statusText;
+                        }
+                    }
+                } else {
+                    // Transitioned from active to expired!
+                    needsReRender = true;
+                }
+            });
+
+            if (needsReRender) {
+                renderDispatchHistory();
+                renderOverviewCards();
+            }
+
+            // 2. Update open edit modal countdown if modal is currently displayed
+            const editModal = document.getElementById('editDispatchModal');
+            if (editModal && !editModal.classList.contains('hidden')) {
+                const dispId = document.getElementById('editModalDispatchId').value;
+                const dispatch = (window.appData.dispatchHistory || []).find(d => d.id === dispId);
+                if (dispatch) {
+                    const status = window.appGetDispatchGracePeriodStatus(dispatch);
+                    const countdownEl = document.getElementById('editModalCountdownText');
+                    if (status.isEditable) {
+                        if (countdownEl) countdownEl.textContent = status.formattedRemaining;
+                    } else {
+                        if (countdownEl) {
+                            countdownEl.textContent = 'EXPIRED (00:00)';
+                            countdownEl.className = 'font-mono text-sm font-black bg-red-600 text-white px-3 py-1 rounded-xl shadow-inner';
+                        }
+                        const alertBox = document.getElementById('editModalAlert');
+                        if (alertBox) {
+                            alertBox.className = 'p-3.5 rounded-2xl text-xs font-bold border bg-red-100 text-red-800 border-red-200 block';
+                            alertBox.textContent = 'Muda wa dakika 60 za uhariri umemalizika. Mzigo huu umefungwa rasmi na hauwezi kubadilishwa tena.';
+                        }
+                        const submitBtn = document.getElementById('btnSubmitDispatchEdit');
+                        if (submitBtn) {
+                            submitBtn.disabled = true;
+                            submitBtn.className = 'w-2/3 bg-slate-300 text-slate-500 font-extrabold py-3.5 rounded-2xl text-xs cursor-not-allowed flex items-center justify-center gap-2';
+                        }
+                    }
+                }
+            }
+        }
+
+        // =========================================================================
+        // EDIT DISPATCH MODAL HANDLERS
+        // =========================================================================
+        let _activeEditingDispatch = null;
+
+        function openEditDispatchModal(dispatchId) {
+            if (!window.appData || !window.appData.dispatchHistory) return;
+            const dispatch = window.appData.dispatchHistory.find(d => d.id === dispatchId);
+            if (!dispatch) {
+                alert("Kumbukumbu ya mzigo haikupatikana.");
+                return;
+            }
+
+            const grace = window.appGetDispatchGracePeriodStatus(dispatch);
+            if (!grace.isEditable) {
+                alert("Muda wa dakika 60 za neema (1-hour grace period) umekwisha. Mzigo huu umefungwa rasmi.");
+                renderDispatchHistory();
+                return;
+            }
+
+            _activeEditingDispatch = dispatch;
+
+            // Fill readonly metadata
+            document.getElementById('editModalDispatchId').value = dispatch.id;
+            document.getElementById('editModalProductName').textContent = dispatch.productName;
+            document.getElementById('editModalShopLocation').textContent = dispatch.shopLocation;
+            document.getElementById('editModalDispatchDate').textContent = dispatch.date;
+            document.getElementById('editModalCurrentQtyDisplay').textContent = `${dispatch.quantity} ${dispatch.unit || 'pcs'}`;
+            document.getElementById('editModalUnitHint').textContent = `Kipimo: ${dispatch.unit || 'pcs'}`;
+
+            // Reset form fields
+            const newQtyInput = document.getElementById('editModalNewQty');
+            newQtyInput.value = dispatch.quantity;
+            newQtyInput.max = ""; // Dynamic check
+
+            document.getElementById('editModalReasonSelect').value = "Kukosea kuandika idadi (Typo / Data entry error)";
+            document.getElementById('editModalCustomReasonContainer').classList.add('hidden');
+            document.getElementById('editModalCustomReasonInput').value = "";
+
+            const alertBox = document.getElementById('editModalAlert');
+            alertBox.classList.add('hidden');
+            alertBox.textContent = '';
+
+            const submitBtn = document.getElementById('btnSubmitDispatchEdit');
+            submitBtn.disabled = false;
+            submitBtn.className = 'w-2/3 bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-700 hover:to-amber-700 text-white font-extrabold py-3.5 rounded-2xl text-xs shadow-lg transition-all flex items-center justify-center gap-2 transform hover:-translate-y-0.5';
+
+            const countdownEl = document.getElementById('editModalCountdownText');
+            countdownEl.textContent = grace.formattedRemaining;
+            countdownEl.className = 'font-mono text-sm font-black bg-amber-500 text-white px-3 py-1 rounded-xl shadow-inner';
+
+            calculateEditModalDelta();
+
+            const modal = document.getElementById('editDispatchModal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+
+            setTimeout(() => newQtyInput.focus(), 100);
+        }
+
+        function closeEditDispatchModal() {
+            const modal = document.getElementById('editDispatchModal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+            _activeEditingDispatch = null;
+        }
+
+        function handleEditReasonChange() {
+            const select = document.getElementById('editModalReasonSelect');
+            const customContainer = document.getElementById('editModalCustomReasonContainer');
+            if (select.value === 'custom') {
+                customContainer.classList.remove('hidden');
+                document.getElementById('editModalCustomReasonInput').focus();
+            } else {
+                customContainer.classList.add('hidden');
+            }
+        }
+
+        function calculateEditModalDelta() {
+            if (!_activeEditingDispatch) return;
+
+            const originalQty = Number(_activeEditingDispatch.quantity) || 0;
+            const newQty = parseInt(document.getElementById('editModalNewQty').value);
+            const deltaBox = document.getElementById('editModalDeltaBox');
+            const deltaText = document.getElementById('editModalDeltaText');
+            const alertBox = document.getElementById('editModalAlert');
+
+            if (isNaN(newQty) || newQty <= 0) {
+                deltaText.textContent = "Weka idadi halali (kubwa kuliko 0)";
+                deltaBox.className = "p-3.5 rounded-2xl bg-red-50 border border-red-200 text-xs font-bold text-red-700 flex items-center justify-between";
+                return;
+            }
+
+            const diff = newQty - originalQty;
+            const unit = _activeEditingDispatch.unit || 'pcs';
+
+            if (diff === 0) {
+                deltaText.innerHTML = `<span class="text-slate-600 font-bold">Hakuna mabadiliko (${originalQty} ${unit})</span>`;
+                deltaBox.className = "p-3.5 rounded-2xl bg-slate-100 border border-slate-200 text-xs font-bold text-slate-700 flex items-center justify-between";
+            } else if (diff < 0) {
+                const returned = Math.abs(diff);
+                deltaText.innerHTML = `
+                    <span class="text-emerald-700 font-black">
+                        ${originalQty} &rarr; ${newQty} ${unit} (Itarudisha +${returned} ${unit} stoo ya kiwanda)
+                    </span>
+                `;
+                deltaBox.className = "p-3.5 rounded-2xl bg-emerald-50 border border-emerald-200 text-xs font-bold text-emerald-800 flex items-center justify-between";
+                alertBox.classList.add('hidden');
+            } else {
+                // Increasing quantity: check available stock in product
+                const product = (window.appData.products || []).find(p => p.id === _activeEditingDispatch.productId);
+                const currentStock = product ? (Number(product.stock) || 0) : 0;
+
+                if (diff > currentStock) {
+                    deltaText.innerHTML = `
+                        <span class="text-red-700 font-black">
+                            ${originalQty} &rarr; ${newQty} ${unit} (Inahitaji +${diff} ${unit}, lakini stoo ina ${currentStock} tu!)
+                        </span>
+                    `;
+                    deltaBox.className = "p-3.5 rounded-2xl bg-red-50 border border-red-300 text-xs font-bold text-red-800 flex items-center justify-between";
+                } else {
+                    deltaText.innerHTML = `
+                        <span class="text-amber-800 font-black">
+                            ${originalQty} &rarr; ${newQty} ${unit} (Itatoa -${diff} ${unit} zaidi kutoka stoo)
+                        </span>
+                    `;
+                    deltaBox.className = "p-3.5 rounded-2xl bg-amber-50 border border-amber-200 text-xs font-bold text-amber-900 flex items-center justify-between";
+                    alertBox.classList.add('hidden');
+                }
+            }
+        }
+
+        function submitEditDispatchQuantity(e) {
+            e.preventDefault();
+            const dispatchId = document.getElementById('editModalDispatchId').value;
+            const newQty = parseInt(document.getElementById('editModalNewQty').value);
+            const selectReason = document.getElementById('editModalReasonSelect').value;
+            const customReason = document.getElementById('editModalCustomReasonInput').value.trim();
+            const reason = selectReason === 'custom' ? (customReason || 'Marekebisho maalum') : selectReason;
+
+            const alertBox = document.getElementById('editModalAlert');
+            const submitBtn = document.getElementById('btnSubmitDispatchEdit');
+
+            if (isNaN(newQty) || newQty <= 0) {
+                alertBox.className = 'p-3.5 rounded-2xl text-xs font-bold border bg-red-100 text-red-800 border-red-200 block';
+                alertBox.textContent = 'Tafadhali weka idadi sahihi ya bidhaa.';
+                return;
+            }
+
+            // Call secure backend/core function
+            if (window.appEditDispatchQuantity) {
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = `<i class="bi bi-arrow-repeat animate-spin"></i> Inasasisha taarifa...`;
+
+                const result = window.appEditDispatchQuantity(dispatchId, newQty, reason);
+
+                if (result.success) {
+                    alertBox.className = 'p-3.5 rounded-2xl text-xs font-bold border bg-emerald-100 text-emerald-800 border-emerald-200 block';
+                    alertBox.innerHTML = `<i class="bi bi-check-circle-fill"></i> ${result.message}`;
+
+                    setTimeout(() => {
+                        closeEditDispatchModal();
+                        initializeOperatorPortal();
+                    }, 1200);
+                } else {
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = `<i class="bi bi-check2-circle text-base"></i> Thibitisha Marekebisho Sasa`;
+                    alertBox.className = 'p-3.5 rounded-2xl text-xs font-bold border bg-red-100 text-red-800 border-red-200 block';
+                    alertBox.innerHTML = `<i class="bi bi-exclamation-triangle-fill"></i> ${result.message}`;
+                }
+            }
+        }
+
+        // =========================================================================
+        // AUDIT TRAIL MODAL HANDLERS
+        // =========================================================================
+        function openAuditTrailModal(dispatchId) {
+            if (!window.appData || !window.appData.dispatchHistory) return;
+            const dispatch = window.appData.dispatchHistory.find(d => d.id === dispatchId);
+            if (!dispatch) return;
+
+            document.getElementById('auditModalProductName').textContent = dispatch.productName;
+            document.getElementById('auditModalShopLocation').textContent = dispatch.shopLocation;
+            document.getElementById('auditModalInitialQty').textContent = `${dispatch.originalQuantity || (dispatch.auditTrail && dispatch.auditTrail[0] ? dispatch.auditTrail[0].originalQuantity : dispatch.quantity)} ${dispatch.unit || 'pcs'}`;
+            document.getElementById('auditModalCurrentQty').textContent = `${dispatch.quantity} ${dispatch.unit || 'pcs'}`;
+
+            const container = document.getElementById('auditTrailListContainer');
+            container.innerHTML = '';
+
+            const logs = dispatch.auditTrail || [];
+            if (logs.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-6 text-slate-400 text-xs font-bold bg-slate-50 rounded-2xl border border-slate-100">
+                        <i class="bi bi-info-circle text-lg"></i>
+                        <p class="mt-1">Hakuna marekebisho yaliyowahi kufanyika kwenye mzigo huu.</p>
+                    </div>
+                `;
+            } else {
+                logs.forEach((log, idx) => {
+                    const diffBadge = log.difference < 0 
+                        ? `<span class="bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-md font-black text-[10px]">${log.difference} ${dispatch.unit || 'pcs'} (Stoo +${Math.abs(log.difference)})</span>`
+                        : `<span class="bg-amber-100 text-amber-900 px-2 py-0.5 rounded-md font-black text-[10px]">+${log.difference} ${dispatch.unit || 'pcs'}</span>`;
+
+                    const item = document.createElement('div');
+                    item.className = "bg-white p-4 rounded-2xl border border-slate-200 shadow-sm space-y-2 relative";
+                    item.innerHTML = `
+                        <div class="flex items-center justify-between">
+                            <span class="text-xs font-black text-slate-800 flex items-center gap-1.5">
+                                <span class="w-5 h-5 rounded-full bg-slate-800 text-white text-[10px] flex items-center justify-center font-bold">#${idx + 1}</span>
+                                Marekebisho ya Idadi
+                            </span>
+                            ${diffBadge}
+                        </div>
+                        <div class="grid grid-cols-2 gap-2 text-xs bg-slate-50 p-2.5 rounded-xl border border-slate-100">
+                            <div>
+                                <span class="text-[10px] text-slate-400 font-bold uppercase block">Kiasi cha Awali</span>
+                                <span class="font-extrabold text-slate-700">${log.originalQuantity} ${dispatch.unit || 'pcs'}</span>
+                            </div>
+                            <div>
+                                <span class="text-[10px] text-slate-400 font-bold uppercase block">Kiasi Kipya</span>
+                                <span class="font-black text-orange-600">${log.newQuantity} ${dispatch.unit || 'pcs'}</span>
+                            </div>
+                        </div>
+                        <div class="text-[11px] text-slate-600">
+                            <span class="font-bold text-slate-500">Sababu:</span> <span class="font-semibold">${log.reason || 'Marekebisho ya idadi'}</span>
+                        </div>
+                        <div class="pt-1.5 border-t border-slate-100 flex items-center justify-between text-[10px] text-slate-400 font-semibold">
+                            <span><i class="bi bi-person-fill text-slate-500 mr-1"></i>Aliyebadilisha: <strong class="text-slate-700">${log.changedBy || 'Operator'}</strong></span>
+                            <span><i class="bi bi-calendar3 mr-1"></i>${log.changedAt || ''}</span>
+                        </div>
+                    `;
+                    container.appendChild(item);
+                });
+            }
+
+            const modal = document.getElementById('auditTrailModal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+        function closeAuditTrailModal() {
+            const modal = document.getElementById('auditTrailModal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
         }
 
         // Render Suggestions Chat (Portal 3)

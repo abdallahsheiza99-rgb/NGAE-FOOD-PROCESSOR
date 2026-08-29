@@ -8,6 +8,8 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <!-- PDF Generation Library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 
     <style>
         body {
@@ -1548,31 +1550,43 @@
                     <!-- Financial Summary Cards -->
                     <div class="grid grid-cols-1 md:grid-cols-4 gap-4 flex-none">
                         <!-- Card 1: Production Value -->
-                        <div class="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm hover:scale-[1.01] transition-transform duration-200">
-                            <p class="text-gray-400 font-bold uppercase text-[9px] tracking-wider">Thamani ya Uzalishaji (Production Value)</p>
-                            <h4 class="font-black text-gray-800 text-xl mt-1" id="repTotalProductionValue">Tsh 0</h4>
-                            <p class="text-[10px] text-gray-400 mt-1" id="repTotalProductsCount">0 Bidhaa Zilizozalishwa</p>
+                        <div class="bg-gradient-to-br from-blue-50 to-white p-5 rounded-2xl border border-blue-100 shadow-sm hover:shadow-md transition-shadow duration-200 flex flex-col justify-between">
+                            <div class="flex items-center gap-2 mb-2">
+                                <div class="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center"><i class="bi bi-box-seam"></i></div>
+                                <p class="text-blue-800 font-bold uppercase text-[9px] tracking-wider">Thamani ya Uzalishaji</p>
+                            </div>
+                            <h4 class="font-black text-gray-900 text-2xl" id="repTotalProductionValue">Tsh 0</h4>
+                            <p class="text-[10px] text-gray-500 mt-2 font-semibold" id="repTotalProductsCount">0 Bidhaa Zilizozalishwa</p>
                         </div>
                         <!-- Card 2: Total Daily Cost -->
-                        <div class="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm hover:scale-[1.01] transition-transform duration-200">
-                            <p class="text-gray-400 font-bold uppercase text-[9px] tracking-wider">Jumla ya Gharama (Total Daily Cost)</p>
-                            <h4 class="font-black text-rose-600 text-xl mt-1" id="repTotalDailyCost">Tsh 0</h4>
-                            <p class="text-[10px] text-rose-500 mt-1 flex justify-between">
+                        <div class="bg-gradient-to-br from-rose-50 to-white p-5 rounded-2xl border border-rose-100 shadow-sm hover:shadow-md transition-shadow duration-200 flex flex-col justify-between">
+                            <div class="flex items-center gap-2 mb-2">
+                                <div class="w-8 h-8 rounded-full bg-rose-100 text-rose-600 flex items-center justify-center"><i class="bi bi-cash-stack"></i></div>
+                                <p class="text-rose-800 font-bold uppercase text-[9px] tracking-wider">Jumla ya Gharama</p>
+                            </div>
+                            <h4 class="font-black text-rose-700 text-2xl" id="repTotalDailyCost">Tsh 0</h4>
+                            <div class="text-[9px] font-bold text-rose-500 mt-2 flex flex-col gap-1">
                                 <span id="repMaterialsCostShare">Malighafi: Tsh 0</span>
                                 <span id="repOperatingCostShare">Matumizi: Tsh 0</span>
-                            </p>
+                            </div>
                         </div>
                         <!-- Card 3: Estimated Daily Profit -->
-                        <div class="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm hover:scale-[1.01] transition-transform duration-200" id="repProfitCard">
-                            <p class="text-gray-400 font-bold uppercase text-[9px] tracking-wider">Faida Makadirio (Estimated Profit)</p>
-                            <h4 class="font-black text-emerald-600 text-xl mt-1" id="repEstimatedProfit">Tsh 0</h4>
-                            <p class="text-[10px] text-emerald-600 mt-1" id="repProfitStatus">Faida Imekadiriwa</p>
+                        <div class="bg-gradient-to-br from-emerald-50 to-white p-5 rounded-2xl border border-emerald-100 shadow-sm hover:shadow-md transition-shadow duration-200 flex flex-col justify-between" id="repProfitCard">
+                            <div class="flex items-center gap-2 mb-2">
+                                <div class="w-8 h-8 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center"><i class="bi bi-graph-up-arrow"></i></div>
+                                <p class="text-emerald-800 font-bold uppercase text-[9px] tracking-wider">Faida Makadirio</p>
+                            </div>
+                            <h4 class="font-black text-emerald-700 text-2xl" id="repEstimatedProfit">Tsh 0</h4>
+                            <p class="text-[10px] font-bold text-emerald-600 mt-2" id="repProfitStatus">Faida Imekadiriwa</p>
                         </div>
                         <!-- Card 4: Estimated Profit Margin -->
-                        <div class="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm hover:scale-[1.01] transition-transform duration-200" id="repMarginCard">
-                            <p class="text-gray-400 font-bold uppercase text-[9px] tracking-wider">Asilimia ya Faida (Profit Margin %)</p>
-                            <h4 class="font-black text-blue-600 text-xl mt-1" id="repProfitMargin">0.00%</h4>
-                            <p class="text-[10px] text-blue-500 mt-1">Kiwango cha Uzalishaji</p>
+                        <div class="bg-gradient-to-br from-indigo-50 to-white p-5 rounded-2xl border border-indigo-100 shadow-sm hover:shadow-md transition-shadow duration-200 flex flex-col justify-between" id="repMarginCard">
+                            <div class="flex items-center gap-2 mb-2">
+                                <div class="w-8 h-8 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center"><i class="bi bi-percent"></i></div>
+                                <p class="text-indigo-800 font-bold uppercase text-[9px] tracking-wider">Asilimia ya Faida</p>
+                            </div>
+                            <h4 class="font-black text-indigo-700 text-2xl" id="repProfitMargin">0.00%</h4>
+                            <p class="text-[10px] font-bold text-indigo-500 mt-2">Kiwango cha Uzalishaji</p>
                         </div>
                     </div>
 
@@ -1580,25 +1594,35 @@
                     <div class="flex-1 overflow-y-auto custom-scrollbar p-6 bg-white rounded-2xl border border-gray-100 shadow-sm space-y-8" id="dailyReportPrintableArea">
                         
                         <!-- Print Document Header (Hidden in Screen, Visible in Print/PDF) -->
-                        <div class="hidden print-header border-b-2 border-gray-800 pb-4 mb-6 text-center">
-                            <h1 class="text-xl font-black text-gray-900 uppercase">NGAE FOOD PROCESSORS HUB</h1>
-                            <p class="text-xs font-bold text-gray-600">Ripoti ya Kazi na Fedha ya Kila Siku (Daily Production & Financial Report)</p>
-                            <h2 class="text-md font-extrabold text-blue-700 mt-2 uppercase" id="printReportDateTitle">TAREHE: --/--/----</h2>
+                        <div class="hidden print-header border-b-4 border-blue-900 pb-6 mb-8 text-center bg-gray-50/50 p-6 rounded-t-xl">
+                            <div class="flex justify-center items-center gap-3 mb-2">
+                                <div class="w-12 h-12 bg-blue-900 rounded-full flex items-center justify-center text-white">
+                                    <i class="bi bi-buildings-fill text-2xl"></i>
+                                </div>
+                                <h1 class="text-2xl font-black text-gray-900 uppercase tracking-widest">NGAE FOOD PROCESSORS HUB</h1>
+                            </div>
+                            <p class="text-sm font-bold text-gray-600 tracking-wide uppercase">Ripoti ya Kazi na Fedha ya Kila Siku (Daily Production & Financial Report)</p>
+                            <div class="mt-4 inline-block bg-blue-100 text-blue-800 px-6 py-2 rounded-full shadow-sm">
+                                <h2 class="text-sm font-extrabold uppercase" id="printReportDateTitle">TAREHE: --/--/----</h2>
+                            </div>
                         </div>
 
                         <!-- 1. DAILY PRODUCTION -->
-                        <div>
-                            <h3 class="text-xs font-black text-gray-800 uppercase tracking-wider mb-3 flex items-center gap-2 border-b pb-2">
-                                <i class="bi bi-box-seam text-blue-600"></i> A. Uzalishaji wa Bidhaa (Daily Production)
-                            </h3>
+                        <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden mb-8">
+                            <div class="bg-gray-50/80 px-4 py-3 border-b border-gray-200">
+                                <h3 class="text-xs font-black text-gray-800 uppercase tracking-wider flex items-center gap-2">
+                                    <div class="w-6 h-6 rounded bg-blue-100 text-blue-600 flex items-center justify-center"><i class="bi bi-box-seam"></i></div> 
+                                    A. Uzalishaji wa Bidhaa (Daily Production)
+                                </h3>
+                            </div>
                             <div class="overflow-x-auto">
                                 <table class="w-full text-left border-collapse text-xs">
                                     <thead>
-                                        <tr class="bg-gray-50 border-b border-gray-200 text-gray-500 uppercase font-bold text-[10px]">
-                                            <th class="p-3">Jina la Bidhaa (Product Name)</th>
-                                            <th class="p-3 text-center">Kiasi Kilichozalishwa (Quantity Produced)</th>
-                                            <th class="p-3 text-right">Bei ya Kitengo (Selling Price per Unit)</th>
-                                            <th class="p-3 text-right">Jumla ya Thamani (Total Value)</th>
+                                        <tr class="bg-gray-100/50 border-b border-gray-200 text-gray-600 uppercase font-bold text-[10px]">
+                                            <th class="p-3 pl-4">Jina la Bidhaa (Product Name)</th>
+                                            <th class="p-3 text-center">Kiasi Kilichozalishwa</th>
+                                            <th class="p-3 text-right">Bei ya Kitengo (Tsh)</th>
+                                            <th class="p-3 text-right pr-4">Jumla ya Thamani (Tsh)</th>
                                         </tr>
                                     </thead>
                                     <tbody id="repProductionTableBody" class="divide-y divide-gray-100 font-medium">
@@ -1609,20 +1633,23 @@
                         </div>
 
                         <!-- 2. DAILY COSTS GRID -->
-                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
                             <!-- 2.1 RAW MATERIALS USED -->
-                            <div>
-                                <h3 class="text-xs font-black text-gray-800 uppercase tracking-wider mb-3 flex items-center gap-2 border-b pb-2">
-                                    <i class="bi bi-cone-striped text-rose-500"></i> B. Malighafi Zilizotumika Uzalishajini (Raw Materials Used)
-                                </h3>
+                            <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+                                <div class="bg-rose-50/50 px-4 py-3 border-b border-rose-100">
+                                    <h3 class="text-xs font-black text-gray-800 uppercase tracking-wider flex items-center gap-2">
+                                        <div class="w-6 h-6 rounded bg-rose-100 text-rose-600 flex items-center justify-center"><i class="bi bi-cone-striped"></i></div> 
+                                        B. Malighafi Zilizotumika Uzalishajini
+                                    </h3>
+                                </div>
                                 <div class="overflow-x-auto">
                                     <table class="w-full text-left border-collapse text-xs">
                                         <thead>
-                                            <tr class="bg-gray-50 border-b border-gray-200 text-gray-500 uppercase font-bold text-[10px]">
-                                                <th class="p-3">Jina la Malighafi</th>
-                                                <th class="p-3 text-center">Kiasi Kilichotumika</th>
+                                            <tr class="bg-gray-50 border-b border-gray-200 text-gray-600 uppercase font-bold text-[10px]">
+                                                <th class="p-3 pl-4">Jina la Malighafi</th>
+                                                <th class="p-3 text-center">Kiasi</th>
                                                 <th class="p-3 text-right">Bei ya Kitengo</th>
-                                                <th class="p-3 text-right">Jumla ya Gharama</th>
+                                                <th class="p-3 text-right pr-4">Jumla (Tsh)</th>
                                             </tr>
                                         </thead>
                                         <tbody id="repMaterialsTableBody" class="divide-y divide-gray-100 font-medium">
@@ -1633,17 +1660,20 @@
                             </div>
 
                             <!-- 2.2 OTHER DAILY OPERATING COSTS -->
-                            <div>
-                                <h3 class="text-xs font-black text-gray-800 uppercase tracking-wider mb-3 flex items-center gap-2 border-b pb-2">
-                                    <i class="bi bi-wallet2 text-rose-500"></i> C. Matumizi Mengineyo ya Siku (Other Operating Costs)
-                                </h3>
+                            <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+                                <div class="bg-orange-50/50 px-4 py-3 border-b border-orange-100">
+                                    <h3 class="text-xs font-black text-gray-800 uppercase tracking-wider flex items-center gap-2">
+                                        <div class="w-6 h-6 rounded bg-orange-100 text-orange-600 flex items-center justify-center"><i class="bi bi-wallet2"></i></div> 
+                                        C. Matumizi Mengineyo ya Siku
+                                    </h3>
+                                </div>
                                 <div class="overflow-x-auto">
                                     <table class="w-full text-left border-collapse text-xs">
                                         <thead>
-                                            <tr class="bg-gray-50 border-b border-gray-200 text-gray-500 uppercase font-bold text-[10px]">
-                                                <th class="p-3">Maelezo ya Matumizi</th>
+                                            <tr class="bg-gray-50 border-b border-gray-200 text-gray-600 uppercase font-bold text-[10px]">
+                                                <th class="p-3 pl-4">Maelezo ya Matumizi</th>
                                                 <th class="p-3">Aina</th>
-                                                <th class="p-3 text-right">Kiasi (Tsh)</th>
+                                                <th class="p-3 text-right pr-4">Kiasi (Tsh)</th>
                                             </tr>
                                         </thead>
                                         <tbody id="repOperatingCostsTableBody" class="divide-y divide-gray-100 font-medium">
@@ -1717,15 +1747,15 @@
                         </div>
                         <div class="flex gap-3">
                             <button onclick="printDailyReportDirectly()"
-                                class="bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-black px-5 py-3 rounded-xl shadow-sm transition-all flex items-center gap-1.5">
+                                class="bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-black px-5 py-3 rounded-xl shadow-sm transition-all flex items-center gap-1.5 focus:ring-2 focus:ring-gray-300">
                                 <i class="bi bi-printer"></i> CHAPA (PRINT)
                             </button>
-                            <button onclick="downloadReportPDF()"
-                                class="bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-black px-5 py-3 rounded-xl shadow transition-all flex items-center gap-1.5">
+                            <button onclick="downloadReportPDF()" id="btnDownloadReport"
+                                class="bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-black px-5 py-3 rounded-xl shadow transition-all flex items-center gap-1.5 focus:ring-2 focus:ring-indigo-500 disabled:opacity-75 disabled:cursor-not-allowed">
                                 <i class="bi bi-download"></i> DOWNLOAD PDF
                             </button>
                             <button onclick="sendReportViaWhatsApp()" id="btnSendWhatsApp"
-                                class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-black px-5 py-3 rounded-xl shadow-lg transition-all flex items-center gap-1.5">
+                                class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-black px-5 py-3 rounded-xl shadow-lg transition-all flex items-center gap-1.5 focus:ring-2 focus:ring-emerald-500 disabled:opacity-75 disabled:cursor-not-allowed">
                                 <i class="bi bi-whatsapp"></i> TUMA WHATSAPP
                             </button>
                         </div>
@@ -4780,12 +4810,12 @@ Saini ya Mwajiriwa (${emp.name}): ____________________      Tarehe: ____________
                         totalProductsProducedCount += row.qty;
 
                         const tr = document.createElement('tr');
-                        tr.className = "border-b border-gray-100";
+                        tr.className = "border-b border-gray-100 hover:bg-gray-50/50 transition-colors";
                         tr.innerHTML = `
-                            <td class="p-3 font-extrabold text-gray-800 uppercase">${row.productName}</td>
+                            <td class="p-3 pl-4 font-extrabold text-gray-800 uppercase">${row.productName}</td>
                             <td class="p-3 text-center font-bold text-gray-900">${row.qty.toLocaleString()} pcs</td>
-                            <td class="p-3 text-right font-bold text-gray-600">Tsh ${row.price.toLocaleString()}</td>
-                            <td class="p-3 text-right font-black text-emerald-600">Tsh ${row.totalValue.toLocaleString()}</td>
+                            <td class="p-3 text-right font-bold text-gray-600">${row.price.toLocaleString()}</td>
+                            <td class="p-3 pr-4 text-right font-black text-emerald-600">${row.totalValue.toLocaleString()}</td>
                         `;
                         prodTbody.appendChild(tr);
                     });
@@ -4832,12 +4862,12 @@ Saini ya Mwajiriwa (${emp.name}): ____________________      Tarehe: ____________
                         totalRawMaterialsCost += row.totalCost;
 
                         const tr = document.createElement('tr');
-                        tr.className = "border-b border-gray-100";
+                        tr.className = "border-b border-gray-100 hover:bg-rose-50/30 transition-colors";
                         tr.innerHTML = `
-                            <td class="p-3 font-extrabold text-gray-800 uppercase">${row.materialName}</td>
+                            <td class="p-3 pl-4 font-extrabold text-gray-800 uppercase">${row.materialName}</td>
                             <td class="p-3 text-center font-bold text-gray-900">${row.qty.toFixed(1)} ${row.unit}</td>
-                            <td class="p-3 text-right font-bold text-gray-600">Tsh ${row.unitCost.toLocaleString()}</td>
-                            <td class="p-3 text-right font-black text-rose-600">Tsh ${row.totalCost.toLocaleString()}</td>
+                            <td class="p-3 text-right font-bold text-gray-600">${row.unitCost.toLocaleString()}</td>
+                            <td class="p-3 pr-4 text-right font-black text-rose-600">${row.totalCost.toLocaleString()}</td>
                         `;
                         matTbody.appendChild(tr);
                     });
@@ -4911,11 +4941,11 @@ Saini ya Mwajiriwa (${emp.name}): ____________________      Tarehe: ____________
                         totalOtherDailyCosts += c.amount;
 
                         const tr = document.createElement('tr');
-                        tr.className = "border-b border-gray-100";
+                        tr.className = "border-b border-gray-100 hover:bg-orange-50/30 transition-colors";
                         tr.innerHTML = `
-                            <td class="p-3 font-extrabold text-gray-800">${c.description}</td>
+                            <td class="p-3 pl-4 font-extrabold text-gray-800">${c.description}</td>
                             <td class="p-3"><span class="bg-gray-100 text-gray-700 text-[9px] px-2 py-0.5 rounded-full font-bold uppercase">${c.category}</span></td>
-                            <td class="p-3 text-right font-black text-rose-600">Tsh ${c.amount.toLocaleString()}</td>
+                            <td class="p-3 pr-4 text-right font-black text-rose-600">${c.amount.toLocaleString()}</td>
                         `;
                         opsTbody.appendChild(tr);
                     });
@@ -5046,33 +5076,77 @@ Saini ya Mwajiriwa (${emp.name}): ____________________      Tarehe: ____________
             const element = document.getElementById('dailyReportPrintableArea');
             if (!element) return;
             
+            const btn = document.getElementById('btnDownloadReport');
+            if (btn && !callback) {
+                btn.disabled = true;
+                btn.innerHTML = `<i class="bi bi-hourglass-split animate-spin"></i> INAPAKUA...`;
+            }
+            
             // Temporary reveal printable header
             const printHeader = element.querySelector('.print-header');
             if (printHeader) printHeader.classList.remove('hidden');
 
             const opt = {
                 margin:       [10, 10, 15, 10], // top, left, bottom, right
-                filename:     `daily_report_${dateVal}.pdf`,
+                filename:     `Daily_Report_${dateVal}.pdf`,
+                pagebreak:    { mode: ['css', 'legacy'] },
                 image:        { type: 'jpeg', quality: 0.98 },
                 html2canvas:  { scale: 2, useCORS: true, logging: false },
                 jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
             };
 
-            // Generate and save
-            const worker = html2pdf().from(element).set(opt);
-            
-            if (callback) {
-                // If callback is provided, we return the blob
-                worker.toPdf().get('pdf').then(function (pdf) {
-                    if (printHeader) printHeader.classList.add('hidden');
-                    const pdfBlob = pdf.output('blob');
-                    callback(pdfBlob);
-                });
-            } else {
-                worker.save().then(function() {
-                    if (printHeader) printHeader.classList.add('hidden');
-                    console.log("PDF downloaded successfully.");
-                });
+            try {
+                if (typeof html2pdf === 'undefined') {
+                    throw new Error("Maktaba ya PDF haijapatikana (html2pdf is missing). Tafadhali refresh ukurasa.");
+                }
+
+                // Generate and save
+                const worker = html2pdf().from(element).set(opt);
+                
+                if (callback) {
+                    // If callback is provided, we return the blob
+                    worker.toPdf().get('pdf').then(function (pdf) {
+                        if (printHeader) printHeader.classList.add('hidden');
+                        const pdfBlob = pdf.output('blob');
+                        callback(pdfBlob, null);
+                    }).catch(err => {
+                        if (printHeader) printHeader.classList.add('hidden');
+                        callback(null, err);
+                    });
+                } else {
+                    worker.save().then(function() {
+                        if (printHeader) printHeader.classList.add('hidden');
+                        console.log("PDF downloaded successfully.");
+                        if (btn) {
+                            btn.disabled = false;
+                            btn.innerHTML = `<i class="bi bi-check-circle"></i> IMEPAKULIWA!`;
+                            setTimeout(() => {
+                                btn.innerHTML = `<i class="bi bi-download"></i> DOWNLOAD PDF`;
+                            }, 3000);
+                        }
+                    }).catch(err => {
+                        console.error(err);
+                        if (printHeader) printHeader.classList.add('hidden');
+                        if (btn) {
+                            btn.disabled = false;
+                            btn.innerHTML = `<i class="bi bi-download"></i> DOWNLOAD PDF`;
+                        }
+                        alert("Hitilafu wakati wa kupakua PDF: " + err.message);
+                    });
+                }
+            } catch (error) {
+                console.error("PDF generation error:", error);
+                if (printHeader) printHeader.classList.add('hidden');
+                if (btn && !callback) {
+                    btn.disabled = false;
+                    btn.innerHTML = `<i class="bi bi-download"></i> DOWNLOAD PDF`;
+                }
+                
+                if (callback) {
+                    callback(null, error);
+                } else {
+                    alert("Hitilafu imetokea wakati wa kuandaa PDF. " + error.message);
+                }
             }
         }
 
@@ -5135,10 +5209,18 @@ Saini ya Mwajiriwa (${emp.name}): ____________________      Tarehe: ____________
             }
 
             btn.disabled = true;
-            btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> UTUMAJI...`;
+            btn.innerHTML = `<i class="bi bi-hourglass-split animate-spin"></i> UTUMAJI...`;
             addWhatsAppLog("Inatengeneza faili ya PDF ya Ripoti...", 'info');
 
-            downloadReportPDF(async function(pdfBlob) {
+            downloadReportPDF(async function(pdfBlob, error) {
+                if (error) {
+                    addWhatsAppLog(`Hitilafu ya kutengeneza PDF: ${error.message}`, 'error');
+                    alert(`Hitilafu imetokea: ${error.message}`);
+                    btn.disabled = false;
+                    btn.innerHTML = `<i class="bi bi-whatsapp"></i> TUMA WHATSAPP`;
+                    return;
+                }
+                
                 try {
                     addWhatsAppLog("PDF imezalishwa kikamilifu! Inapakia kwenye Firebase Storage...", 'info');
                     

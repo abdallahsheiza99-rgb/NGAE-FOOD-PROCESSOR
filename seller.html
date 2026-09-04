@@ -4,9 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Seller Dashboard - NGAE Food Processors Hub</title>
+    <link rel="icon" type="image/x-icon" href="favicon.ico">
+    <link rel="icon" type="image/png" sizes="32x32" href="assets/branding/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="assets/branding/favicon-16x16.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="assets/branding/apple-touch-icon.png">
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="branding.js"></script>
     <style>
         * {
             font-family: 'Plus Jakarta Sans', sans-serif;
@@ -96,12 +101,10 @@
                 
                 <!-- Logo & Brand -->
                 <div class="flex items-center gap-3">
-                    <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-500 to-teal-400 flex items-center justify-center shadow-md">
-                        <i class="bi bi-shop text-white text-xl"></i>
-                    </div>
+                    <img src="assets/branding/ngae-bakery-logo.png" alt="NGAE Bakery" class="w-10 h-10 object-contain rounded-xl bg-white/10 p-1 border border-white/20 shadow-md">
                     <div>
-                        <h1 class="font-extrabold text-base tracking-wide text-white leading-tight">NGAE <span class="text-emerald-400">FOOD</span></h1>
-                        <p class="text-[10px] text-slate-400 font-semibold tracking-wider uppercase">Portal ya Muuzaji Dukani (Seller)</p>
+                        <h1 class="font-extrabold text-base tracking-wide text-white leading-tight">NGAE <span class="text-amber-400">BAKERY</span></h1>
+                        <p class="text-[10px] text-amber-200/80 font-semibold tracking-wider uppercase">Portal ya Muuzaji Dukani (Seller)</p>
                     </div>
                 </div>
 
@@ -998,66 +1001,183 @@
                 return;
             }
 
+            const bLogo = (window.NGAE_BRANDING && window.NGAE_BRANDING.LOGO_DATA_URL) ? window.NGAE_BRANDING.LOGO_DATA_URL : 'assets/branding/ngae-bakery-logo.png';
+            const bWatermark = (window.NGAE_BRANDING && window.NGAE_BRANDING.WATERMARK_DATA_URL) ? window.NGAE_BRANDING.WATERMARK_DATA_URL : 'assets/branding/ngae-bakery-logo-watermark.png';
+
             let rowsHtml = '';
-            [...stats.salesHistory].reverse().forEach(h => {
+            [...stats.salesHistory].reverse().forEach((h, idx) => {
+                const bg = idx % 2 === 1 ? 'background-color: #f8fafc;' : 'background-color: #ffffff;';
                 rowsHtml += `
-                    <tr style="border-bottom: 1px solid #e2e8f0;">
-                        <td style="padding: 12px; font-size: 13px;">${h.date}</td>
-                        <td style="padding: 12px; font-size: 13px;">${h.notes || 'Mauzo'}</td>
-                        <td style="padding: 12px; font-size: 13px; text-align: right; font-weight: bold; color: #16a34a;">Tsh ${h.amount.toLocaleString()}</td>
+                    <tr style="${bg} border-bottom: 1px solid #e2e8f0; page-break-inside: avoid;">
+                        <td style="padding: 10px 12px; font-size: 12px; color: #334155; font-weight: 500;">${h.date}</td>
+                        <td style="padding: 10px 12px; font-size: 12px; color: #0f172a; font-weight: 600;">${h.notes || 'Mauzo ya Kawaida'}</td>
+                        <td style="padding: 10px 12px; font-size: 12px; text-align: right; font-weight: bold; color: #15803d;">Tsh ${(Number(h.amount) || 0).toLocaleString()}</td>
                     </tr>
                 `;
             });
 
             printWindow.document.write(`
+                <!DOCTYPE html>
                 <html>
                 <head>
-                    <title>Ripoti ya Mauzo Yaliyowasilishwa - ${stats.shop.location}</title>
+                    <title>Ripoti ya Mauzo - ${stats.shop.location} - Ngae Bakery</title>
+                    <link rel="icon" type="image/x-icon" href="favicon.ico">
                     <style>
-                        body { font-family: sans-serif; padding: 40px; color: #333; }
-                        .header { text-align: center; border-bottom: 2px solid #16a34a; padding-bottom: 15px; margin-bottom: 30px; }
-                        .header h1 { color: #16a34a; margin: 0; font-size: 24px; }
-                        .header p { color: #666; margin: 5px 0 0; }
-                        .total-box { background-color: #f0fdf4; border: 1px solid #bbf7d0; padding: 15px; border-radius: 8px; margin-bottom: 25px; text-align: center; }
-                        .total-box p { margin: 0; font-size: 12px; font-weight: bold; color: #166534; text-transform: uppercase; }
-                        .total-box h2 { margin: 5px 0 0; font-size: 28px; color: #16a34a; font-weight: 800; }
-                        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
-                        th { background-color: #f8fafc; color: #475569; padding: 10px; text-align: left; font-size: 12px; text-transform: uppercase; border-bottom: 2px solid #e2e8f0; }
+                        @page { size: A4 portrait; margin: 12mm; }
+                        body {
+                            font-family: 'Plus Jakarta Sans', Tahoma, 'Segoe UI', Arial, sans-serif;
+                            margin: 0;
+                            padding: 20px;
+                            color: #1e293b;
+                            background-color: #ffffff;
+                            -webkit-print-color-adjust: exact;
+                            print-color-adjust: exact;
+                        }
+                        .ngae-watermark-fixed {
+                            position: fixed;
+                            top: 50%;
+                            left: 50%;
+                            transform: translate(-50%, -50%) rotate(-25deg);
+                            width: 440px;
+                            height: 440px;
+                            opacity: 0.11;
+                            pointer-events: none;
+                            z-index: 0;
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                        }
+                        .ngae-watermark-fixed img {
+                            width: 100%;
+                            height: 100%;
+                            object-fit: contain;
+                        }
                         @media print {
-                            .no-print { display: none; }
+                            body { padding: 0; }
+                            .no-print { display: none !important; }
+                            .ngae-watermark-fixed {
+                                position: fixed;
+                                top: 50%;
+                                left: 50%;
+                                transform: translate(-50%, -50%) rotate(-25deg);
+                                width: 440px;
+                                height: 440px;
+                                opacity: 0.11;
+                                z-index: 0;
+                            }
                         }
                     </style>
                 </head>
                 <body>
-                    <div class="header">
-                        <h1>NGAE FOOD PROCESSING HUB</h1>
-                        <p>Ripoti ya Mauzo Yaliyowasilishwa - ${stats.shop.location}</p>
-                        <p style="font-size: 12px; color: #999;">Muuzaji: ${stats.staffInfo.name} (ID: ${stats.staffInfo.id})</p>
-                        <p style="font-size: 11px; color: #aaa; margin-top: 5px;">Imezalishwa tarehe: ${new Date().toLocaleString()}</p>
+                    <!-- FIXED WATERMARK -->
+                    <div class="ngae-watermark-fixed">
+                        <img src="${bWatermark}" alt="Watermark" />
                     </div>
 
-                    <div class="total-box">
-                        <p>Jumla ya Mauzo Yaliyowasilishwa (Total Submitted Cash)</p>
-                        <h2>Tsh ${stats.totalSubmittedCash.toLocaleString()}</h2>
-                    </div>
+                    <div style="position: relative; z-index: 1; max-width: 760px; margin: 0 auto;">
+                        <!-- HEADER -->
+                        <div style="border-bottom: 2px solid #b91c1c; padding-bottom: 14px; margin-bottom: 16px;">
+                            <table style="width: 100%; border-collapse: collapse;">
+                                <tr>
+                                    <td style="width: 60px; vertical-align: middle;">
+                                        <img src="${bLogo}" alt="NGAE Logo" style="width: 52px; height: 52px; object-fit: contain; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));" />
+                                    </td>
+                                    <td style="vertical-align: middle; padding-left: 12px;">
+                                        <h1 style="margin: 0; font-size: 18px; font-weight: 800; color: #b91c1c; text-transform: uppercase; letter-spacing: 0.5px;">NGAE FOOD PROCESSORS HUB</h1>
+                                        <p style="margin: 2px 0 0; font-size: 11px; color: #d97706; font-weight: bold; text-transform: uppercase;">NGAE BAKERY &bull; Ripoti ya Mauzo Dukani</p>
+                                    </td>
+                                    <td style="text-align: right; vertical-align: middle;">
+                                        <div style="display: inline-block; background: #fffbeb; border: 1px solid #fef3c7; padding: 6px 14px; border-radius: 8px; text-align: right;">
+                                            <span style="display: block; font-size: 10px; color: #b91c1c; font-weight: bold; text-transform: uppercase;">DUKA / TAWI</span>
+                                            <span style="font-size: 13px; font-weight: 800; color: #0f172a;">${stats.shop.location || stats.shop.name}</span>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </table>
+                            <table style="width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 11px; color: #64748b;">
+                                <tr>
+                                    <td style="text-align: left;"><strong>Muuzaji:</strong> ${stats.staffInfo.name} (ID: ${stats.staffInfo.id})</td>
+                                    <td style="text-align: right;"><strong>Tarehe ya Ripoti:</strong> ${new Date().toLocaleString('en-GB')}</td>
+                                </tr>
+                            </table>
+                        </div>
 
-                    <h3 style="font-size: 14px; color: #334155; margin-bottom: 10px; text-transform: uppercase;">Mtiririko wa Mauzo (Sales History)</h3>
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Tarehe & Muda</th>
-                                <th>Maelezo / Notes</th>
-                                <th style="text-align: right;">Kiasi cha Mauzo (Tsh)</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            ${rowsHtml}
-                        </tbody>
-                    </table>
+                        <!-- KPI SUMMARY BOX -->
+                        <div style="background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%); border: 1px solid #86efac; border-radius: 10px; padding: 14px 18px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center;">
+                            <div>
+                                <p style="margin: 0; font-size: 11px; font-weight: bold; color: #166534; text-transform: uppercase; letter-spacing: 0.5px;">Jumla ya Mauzo Yaliyowasilishwa</p>
+                                <p style="margin: 2px 0 0; font-size: 10px; color: #475569;">Total Cash Submitted from Shop Counter</p>
+                            </div>
+                            <div style="text-align: right;">
+                                <h2 style="margin: 0; font-size: 24px; color: #15803d; font-weight: 900;">Tsh ${stats.totalSubmittedCash.toLocaleString()}</h2>
+                                <p style="margin: 2px 0 0; font-size: 10px; color: #166534; font-weight: bold;">${stats.salesHistory.length} Miamala Yote</p>
+                            </div>
+                        </div>
 
-                    <div style="margin-top: 40px; text-align: center;" class="no-print">
-                        <button onclick="window.print()" style="background-color: #16a34a; color: white; border: none; padding: 10px 25px; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 14px;">Print Ripoti</button>
+                        <!-- SALES TABLE -->
+                        <div style="margin-bottom: 20px;">
+                            <div style="background: #15803d; color: #ffffff; padding: 6px 12px; font-weight: bold; font-size: 11px; text-transform: uppercase; border-radius: 6px 6px 0 0;">
+                                Orodha ya Miamala ya Mauzo (Sales Transaction Ledger)
+                            </div>
+                            <table style="width: 100%; border-collapse: collapse; border: 1px solid #cbd5e1;">
+                                <thead>
+                                    <tr style="background: #f1f5f9; border-bottom: 1px solid #cbd5e1;">
+                                        <th style="padding: 8px 12px; text-align: left; font-size: 11px; text-transform: uppercase; color: #475569; width: 150px;">Tarehe & Muda</th>
+                                        <th style="padding: 8px 12px; text-align: left; font-size: 11px; text-transform: uppercase; color: #475569;">Maelezo / Notes</th>
+                                        <th style="padding: 8px 12px; text-align: right; font-size: 11px; text-transform: uppercase; color: #475569; width: 140px;">Kiasi cha Mauzo</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${rowsHtml || '<tr><td colspan="3" style="padding: 15px; text-align: center; color: #94a3b8;">Hakuna kumbukumbu za mauzo bado.</td></tr>'}
+                                </tbody>
+                                <tfoot>
+                                    <tr style="background: #f8fafc; font-weight: bold; border-top: 2px solid #cbd5e1;">
+                                        <td colspan="2" style="padding: 10px 12px; text-align: right; font-size: 12px; color: #0f172a;">JUMLA KUU:</td>
+                                        <td style="padding: 10px 12px; text-align: right; font-size: 13px; color: #15803d;">Tsh ${stats.totalSubmittedCash.toLocaleString()}</td>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+
+                        <!-- SIGNATURES -->
+                        <div style="margin-top: 25px; page-break-inside: avoid;">
+                            <table style="width: 100%; border-collapse: collapse; font-size: 11px;">
+                                <tr>
+                                    <td style="width: 45%; border-top: 1px solid #94a3b8; padding-top: 5px;">
+                                        <strong>Muuzaji / Mpokeaji:</strong><br>
+                                        Jina: ${stats.staffInfo.name}<br>
+                                        Sahihi: _______________________<br>
+                                        Tarehe: ________________________
+                                    </td>
+                                    <td style="width: 10%;"></td>
+                                    <td style="width: 45%; border-top: 1px solid #94a3b8; padding-top: 5px; text-align: right;">
+                                        <strong>Mhasibu / Admin (Mhakiki):</strong><br>
+                                        Jina: Msimamizi Mkuu<br>
+                                        Sahihi: _______________________<br>
+                                        Tarehe: ________________________
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+
+                        <!-- CORPORATE FOOTER -->
+                        <div style="margin-top: 30px; padding-top: 10px; border-top: 1px solid #e2e8f0; text-align: center; font-size: 10px; color: #64748b; page-break-inside: avoid;">
+                            <p style="margin: 0; font-weight: bold; color: #b91c1c;">NGAE FOOD PROCESSORS HUB &bull; NGAE BAKERY</p>
+                            <p style="margin: 2px 0 0;">Generated from Ngae Food Processing System | Simu: +255 765 394 352 / +255 776 637 247 | Mwananyamala, Dar es Salaam</p>
+                        </div>
+
+                        <!-- PRINT BUTTON (NO-PRINT) -->
+                        <div style="margin-top: 25px; text-align: center;" class="no-print">
+                            <button onclick="window.print()" style="background-color: #b91c1c; color: white; border: none; padding: 9px 24px; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 13px; box-shadow: 0 4px 12px rgba(185, 28, 28, 0.3);">
+                                Print Ripoti
+                            </button>
+                        </div>
                     </div>
+                    <script>
+                        window.onload = function() {
+                            setTimeout(function() { window.print(); }, 400);
+                        }
+                    <\/script>
                 </body>
                 </html>
             `);

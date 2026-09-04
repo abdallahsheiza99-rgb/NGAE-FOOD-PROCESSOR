@@ -828,6 +828,39 @@
 
                 <!-- 2D. TAB: CASH FLOWING (Personal Ledger) -->
                 <section id="tab-cashflow" class="tab-content hidden space-y-6">
+                    <!-- Cash Flow Header Panel -->
+                    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 flex flex-col md:flex-row justify-between items-center gap-4">
+                        <div class="flex items-center gap-3">
+                            <div class="w-12 h-12 rounded-xl bg-red-50 text-red-600 flex items-center justify-center text-xl">
+                                <i class="bi bi-wallet2"></i>
+                            </div>
+                            <div>
+                                <h2 class="text-sm font-extrabold text-gray-800 uppercase tracking-wider">CASH FLOWING & LEDGER PORTAL</h2>
+                                <p class="text-xs text-gray-500">Fuatilia mtiririko halisi wa fedha taslimu (Cash In & Out) na salio linalotembea</p>
+                            </div>
+                        </div>
+                        <div class="flex flex-wrap items-center gap-3">
+                            <button onclick="openCashFlowResetModal()" id="btnResetCashFlow"
+                                class="bg-red-600 hover:bg-red-700 text-white text-xs font-black px-4 py-2.5 rounded-xl shadow-md transition-all flex items-center gap-1.5 focus:ring-2 focus:ring-red-400">
+                                <i class="bi bi-arrow-repeat text-sm"></i> START NEW CASH FLOW
+                            </button>
+                            <button onclick="openResetAuditModal('CASH_FLOW')"
+                                class="bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-extrabold px-3 py-2.5 rounded-xl transition-colors flex items-center gap-1.5"
+                                title="Historia ya Reset (Audit Trail)">
+                                <i class="bi bi-clock-history"></i> AUDIT
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Cash Flow Period Indicator Banner -->
+                    <div id="cashFlowPeriodBanner" class="bg-red-50/80 border border-red-200 rounded-xl px-4 py-2.5 flex flex-wrap justify-between items-center text-xs text-red-900 font-semibold gap-2">
+                        <div class="flex items-center gap-2">
+                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-red-600 text-white uppercase" id="cashFlowPeriodBadge">Kipindi Hai</span>
+                            <span id="cashFlowPeriodText">Inaonyesha miamala kuanzia mwanzo wa mfumo.</span>
+                        </div>
+                        <div id="cashFlowResetInfoText" class="text-[11px] text-red-700 font-medium"></div>
+                    </div>
+
                     <!-- Stat Cards (Personal Inflows) -->
                     <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
                         <div
@@ -928,14 +961,22 @@
                         <!-- Ledger Table & Printing -->
                         <div
                             class="lg:col-span-2 bg-white p-6 rounded-2xl shadow-sm border border-red-100 flex flex-col min-h-[400px]">
-                            <div class="flex justify-between items-center border-b border-red-100 pb-3 mb-4">
+                            <div class="flex flex-wrap justify-between items-center border-b border-red-100 pb-3 mb-4 gap-2">
                                 <h3 class="text-md font-bold text-red-600 flex items-center gap-2">
                                     <i class="bi bi-journals"></i> Kitabu cha Mahesabu (Ledger)
                                 </h3>
-                                <button onclick="printPersonalReport()"
-                                    class="bg-red-600 hover:bg-red-700 text-white text-xs font-bold px-3 py-2 rounded-xl transition-all shadow-sm flex items-center gap-2">
-                                    <i class="bi bi-printer-fill"></i> Print Ripoti
-                                </button>
+                                <div class="flex items-center gap-2">
+                                    <div class="inline-flex bg-red-50 p-1 rounded-xl text-xs font-bold border border-red-100">
+                                        <button type="button" id="btnCfViewCurrent" onclick="setCashFlowViewMode('current')"
+                                            class="px-3 py-1.5 rounded-lg bg-red-600 text-white shadow-sm transition-all">Kipindi Hai</button>
+                                        <button type="button" id="btnCfViewAll" onclick="setCashFlowViewMode('all')"
+                                            class="px-3 py-1.5 rounded-lg text-red-700 hover:text-red-900 transition-all">Historia Yote</button>
+                                    </div>
+                                    <button onclick="printPersonalReport()"
+                                        class="bg-red-600 hover:bg-red-700 text-white text-xs font-bold px-3 py-2 rounded-xl transition-all shadow-sm flex items-center gap-2">
+                                        <i class="bi bi-printer-fill"></i> Print Ripoti
+                                    </button>
+                                </div>
                             </div>
 
                             <div class="flex-1 overflow-auto custom-scrollbar">
@@ -1528,7 +1569,7 @@
                             </div>
                             <div>
                                 <h2 class="text-sm font-extrabold text-gray-800 uppercase tracking-wider">DAILY REPORT PORTAL</h2>
-                                <p class="text-xs text-gray-500">Kagua uzalishaji wa siku, gharama halisi za malighafi na faida makadirio</p>
+                                <p class="text-xs text-gray-500">Kagua uzalishaji wa siku, gharama halisi za malighafi, mauzo ya madukani na faida</p>
                             </div>
                         </div>
                         <div class="flex flex-wrap items-center gap-3">
@@ -1541,6 +1582,16 @@
                                 class="bg-blue-600 hover:bg-blue-700 text-white text-xs font-extrabold px-4 py-2.5 rounded-xl shadow transition-colors flex items-center gap-1.5">
                                 <i class="bi bi-arrow-clockwise"></i> SASISHA
                             </button>
+                            <button onclick="openDailyReportResetModal()" id="btnResetDailyReport"
+                                class="bg-rose-600 hover:bg-rose-700 text-white text-xs font-black px-4 py-2.5 rounded-xl shadow-md transition-all flex items-center gap-1.5 focus:ring-2 focus:ring-rose-400"
+                                title="Anzisha Ripoti Mpya ya Siku (Mahesabu yataanza 0)">
+                                <i class="bi bi-arrow-repeat text-sm"></i> START NEW REPORT
+                            </button>
+                            <button onclick="openResetAuditModal('DAILY_REPORT')"
+                                class="bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-extrabold px-3 py-2.5 rounded-xl transition-colors flex items-center gap-1.5"
+                                title="Historia ya Reset (Audit Trail)">
+                                <i class="bi bi-clock-history"></i> AUDIT
+                            </button>
                             <button onclick="openWhatsAppConfigModal()"
                                 class="bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-extrabold px-3 py-2.5 rounded-xl transition-colors flex items-center gap-1.5"
                                 title="Mipangilio ya WhatsApp">
@@ -1549,8 +1600,17 @@
                         </div>
                     </div>
 
+                    <!-- Daily Report Period Indicator Banner -->
+                    <div id="dailyReportPeriodBanner" class="bg-blue-50/80 border border-blue-200 rounded-xl px-4 py-2.5 flex flex-wrap justify-between items-center text-xs text-blue-900 font-semibold gap-2 flex-none">
+                        <div class="flex items-center gap-2">
+                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-blue-600 text-white uppercase" id="dailyReportPeriodBadge">Kipindi Hai</span>
+                            <span id="dailyReportPeriodText">Inaonyesha data kuanzia mwanzo wa siku.</span>
+                        </div>
+                        <div id="dailyReportResetInfoText" class="text-[11px] text-blue-700 font-medium"></div>
+                    </div>
+
                     <!-- Financial Summary Cards -->
-                    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 flex-none">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 flex-none">
                         <!-- Card 1: Production Value -->
                         <div class="bg-gradient-to-br from-blue-50 to-white p-5 rounded-2xl border border-blue-100 shadow-sm hover:shadow-md transition-shadow duration-200 flex flex-col justify-between">
                             <div class="flex items-center gap-2 mb-2">
@@ -1572,23 +1632,26 @@
                                 <span id="repOperatingCostShare">Matumizi: Tsh 0</span>
                             </div>
                         </div>
-                        <!-- Card 3: Estimated Daily Profit -->
-                        <div class="bg-gradient-to-br from-emerald-50 to-white p-5 rounded-2xl border border-emerald-100 shadow-sm hover:shadow-md transition-shadow duration-200 flex flex-col justify-between" id="repProfitCard">
+                        <!-- Card 3: Shop Sales & Revenue -->
+                        <div class="bg-gradient-to-br from-emerald-50 to-white p-5 rounded-2xl border border-emerald-100 shadow-sm hover:shadow-md transition-shadow duration-200 flex flex-col justify-between">
                             <div class="flex items-center gap-2 mb-2">
-                                <div class="w-8 h-8 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center"><i class="bi bi-graph-up-arrow"></i></div>
-                                <p class="text-emerald-800 font-bold uppercase text-[9px] tracking-wider">Faida Makadirio</p>
+                                <div class="w-8 h-8 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center"><i class="bi bi-cart-check"></i></div>
+                                <p class="text-emerald-800 font-bold uppercase text-[9px] tracking-wider">Mauzo ya Madukani</p>
+                            </div>
+                            <h4 class="font-black text-emerald-700 text-2xl" id="repTotalShopSales">Tsh 0</h4>
+                            <p class="text-[10px] font-bold text-emerald-600 mt-2" id="repShopSalesCount">0 Miamala ya Mauzo</p>
+                        </div>
+                        <!-- Card 4: Estimated Profit & Margin -->
+                        <div class="bg-gradient-to-br from-indigo-50 to-white p-5 rounded-2xl border border-indigo-100 shadow-sm hover:shadow-md transition-shadow duration-200 flex flex-col justify-between" id="repProfitCard">
+                            <div class="flex items-center gap-2 mb-2">
+                                <div class="w-8 h-8 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center"><i class="bi bi-graph-up-arrow"></i></div>
+                                <p class="text-indigo-800 font-bold uppercase text-[9px] tracking-wider">Faida & Asilimia</p>
                             </div>
                             <h4 class="font-black text-emerald-700 text-2xl" id="repEstimatedProfit">Tsh 0</h4>
-                            <p class="text-[10px] font-bold text-emerald-600 mt-2" id="repProfitStatus">Faida Imekadiriwa</p>
-                        </div>
-                        <!-- Card 4: Estimated Profit Margin -->
-                        <div class="bg-gradient-to-br from-indigo-50 to-white p-5 rounded-2xl border border-indigo-100 shadow-sm hover:shadow-md transition-shadow duration-200 flex flex-col justify-between" id="repMarginCard">
-                            <div class="flex items-center gap-2 mb-2">
-                                <div class="w-8 h-8 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center"><i class="bi bi-percent"></i></div>
-                                <p class="text-indigo-800 font-bold uppercase text-[9px] tracking-wider">Asilimia ya Faida</p>
+                            <div class="text-[10px] font-bold text-indigo-600 mt-2 flex justify-between items-center">
+                                <span id="repProfitStatus">Faida Imekadiriwa</span>
+                                <span id="repProfitMargin" class="font-black text-sm text-indigo-700">0.00%</span>
                             </div>
-                            <h4 class="font-black text-indigo-700 text-2xl" id="repProfitMargin">0.00%</h4>
-                            <p class="text-[10px] font-bold text-indigo-500 mt-2">Kiwango cha Uzalishaji</p>
                         </div>
                     </div>
 
@@ -1686,6 +1749,32 @@
                             </div>
                         </div>
 
+                        <!-- 2.3 SHOP SALES & REVENUE (SECTION D) -->
+                        <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden mb-8">
+                            <div class="bg-emerald-50/80 px-4 py-3 border-b border-emerald-100 flex flex-wrap justify-between items-center gap-2">
+                                <h3 class="text-xs font-black text-gray-800 uppercase tracking-wider flex items-center gap-2">
+                                    <div class="w-6 h-6 rounded bg-emerald-100 text-emerald-600 flex items-center justify-center"><i class="bi bi-cart-check"></i></div> 
+                                    D. Mauzo na Mapato ya Madukani (Shop Sales & Revenue)
+                                </h3>
+                                <span class="text-xs font-black text-emerald-700 bg-emerald-100/60 px-3 py-1 rounded-full" id="repShopSalesTotalHeader">Jumla: Tsh 0</span>
+                            </div>
+                            <div class="overflow-x-auto">
+                                <table class="w-full text-left border-collapse text-xs">
+                                    <thead>
+                                        <tr class="bg-gray-50 border-b border-gray-200 text-gray-600 uppercase font-bold text-[10px]">
+                                            <th class="p-3 pl-4">Duka (Shop / Location)</th>
+                                            <th class="p-3">Maelezo ya Mauzo</th>
+                                            <th class="p-3">Muda / Tarehe</th>
+                                            <th class="p-3 text-right pr-4">Kiasi cha Mauzo (Tsh)</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="repShopSalesTableBody" class="divide-y divide-gray-100 font-medium">
+                                        <!-- Loaded dynamically -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
                         <!-- 3. DAILY REPORT SUMMARY (Bottom Box) -->
                         <div class="bg-slate-50 rounded-2xl border border-slate-200 p-6 space-y-4">
                             <h3 class="text-sm font-black text-slate-800 uppercase tracking-wider border-b pb-3 mb-2 text-center" id="repSummaryBoxTitle">
@@ -1700,6 +1789,10 @@
                                     <div class="flex justify-between">
                                         <span class="text-gray-500 font-bold uppercase">Jumla Bidhaa Zilizozalishwa:</span>
                                         <span class="font-extrabold text-gray-900" id="sumProductsCount">0 pcs</span>
+                                    </div>
+                                    <div class="flex justify-between border-t pt-1 border-slate-200">
+                                        <span class="text-emerald-700 font-bold uppercase">Jumla Mauzo ya Madukani:</span>
+                                        <span class="font-extrabold text-emerald-700" id="sumShopSalesValue">Tsh 0</span>
                                     </div>
                                 </div>
                                 <div class="space-y-2">
@@ -1718,12 +1811,16 @@
                                 </div>
                                 <div class="space-y-2">
                                     <div class="flex justify-between">
-                                        <span class="text-gray-500 font-bold uppercase">Makadirio ya Faida:</span>
+                                        <span class="text-gray-500 font-bold uppercase">Makadirio ya Faida (Uzalishaji):</span>
                                         <span class="font-black text-emerald-600" id="sumEstimatedProfit">Tsh 0</span>
                                     </div>
                                     <div class="flex justify-between">
                                         <span class="text-gray-500 font-bold uppercase">Asilimia ya Faida:</span>
                                         <span class="font-black text-blue-600" id="sumProfitMargin">0.00%</span>
+                                    </div>
+                                    <div class="flex justify-between border-t pt-1 border-slate-200">
+                                        <span class="text-emerald-800 font-bold uppercase">Faida Halisi ya Fedha (Sales - Costs):</span>
+                                        <span class="font-black text-emerald-700" id="sumNetCashProfit">Tsh 0</span>
                                     </div>
                                 </div>
                             </div>
@@ -1763,6 +1860,115 @@
                         </div>
                     </div>
                 </section>
+
+                <!-- MODAL: CONFIRM DAILY REPORT RESET -->
+                <div id="modalDailyReportReset" class="hidden fixed inset-0 z-50 items-center justify-center bg-gray-900/60 backdrop-blur-sm p-4">
+                    <div class="bg-white rounded-2xl w-full max-w-md overflow-hidden shadow-2xl border border-gray-100 transform transition-all flex flex-col">
+                        <div class="bg-blue-600 text-white p-5 flex items-center justify-between">
+                            <h3 class="font-extrabold text-base flex items-center gap-2">
+                                <i class="bi bi-arrow-repeat text-xl"></i> Anzisha Ripoti Mpya ya Siku
+                            </h3>
+                            <button onclick="closeDailyReportResetModal()" class="text-white hover:text-blue-200 text-2xl font-bold">&times;</button>
+                        </div>
+                        <div class="p-6 space-y-4">
+                            <div class="flex items-start gap-3 bg-blue-50 p-4 rounded-xl border border-blue-200">
+                                <i class="bi bi-info-circle-fill text-blue-600 text-xl flex-none mt-0.5"></i>
+                                <p class="text-xs text-blue-950 font-bold leading-relaxed">
+                                    Are you sure you want to start a new Daily Report? This will reset the Daily Report calculations only. All other system data will remain unchanged.
+                                </p>
+                            </div>
+                            <div class="text-[11px] text-gray-500 space-y-1.5 bg-gray-50 p-3.5 rounded-xl border border-gray-200">
+                                <p class="font-bold text-gray-700 uppercase tracking-wider text-[10px]">Ulinzi wa Takwimu (Data Safety Guarantee):</p>
+                                <p class="flex items-center gap-2 text-emerald-700 font-semibold"><i class="bi bi-check-circle-fill text-emerald-600"></i> Rekodi zote za uzalishaji, maduka, na stoo hazitafutwa.</p>
+                                <p class="flex items-center gap-2 text-emerald-700 font-semibold"><i class="bi bi-check-circle-fill text-emerald-600"></i> Mahesabu ya ripoti hii tu yataanza sifuri kuanzia wakati huu.</p>
+                                <p class="flex items-center gap-2 text-emerald-700 font-semibold"><i class="bi bi-check-circle-fill text-emerald-600"></i> Mabadiliko yatasawazishwa kwenye simu na kompyuta zote.</p>
+                            </div>
+                            <div class="flex gap-3 justify-end pt-2 border-t border-gray-100">
+                                <button type="button" onclick="closeDailyReportResetModal()"
+                                    class="px-4 py-2.5 rounded-xl border border-gray-300 text-gray-700 hover:bg-gray-100 font-bold text-xs transition-colors">
+                                    CANCEL
+                                </button>
+                                <button type="button" onclick="executeDailyReportReset()" id="btnConfirmDailyReset"
+                                    class="px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-black text-xs shadow-md transition-all flex items-center gap-1.5">
+                                    <i class="bi bi-arrow-repeat"></i> START NEW REPORT
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- MODAL: CONFIRM CASH FLOW RESET -->
+                <div id="modalCashFlowReset" class="hidden fixed inset-0 z-50 items-center justify-center bg-gray-900/60 backdrop-blur-sm p-4">
+                    <div class="bg-white rounded-2xl w-full max-w-md overflow-hidden shadow-2xl border border-gray-100 transform transition-all flex flex-col">
+                        <div class="bg-red-600 text-white p-5 flex items-center justify-between">
+                            <h3 class="font-extrabold text-base flex items-center gap-2">
+                                <i class="bi bi-arrow-repeat text-xl"></i> Anzisha Kipindi Kipya cha Cash Flow
+                            </h3>
+                            <button onclick="closeCashFlowResetModal()" class="text-white hover:text-red-200 text-2xl font-bold">&times;</button>
+                        </div>
+                        <div class="p-6 space-y-4">
+                            <div class="flex items-start gap-3 bg-red-50 p-4 rounded-xl border border-red-200">
+                                <i class="bi bi-info-circle-fill text-red-600 text-xl flex-none mt-0.5"></i>
+                                <p class="text-xs text-red-950 font-bold leading-relaxed">
+                                    Are you sure you want to start a new Cash Flow period? This will reset Cash Flow calculations only. All other system data will remain unchanged.
+                                </p>
+                            </div>
+                            <div class="text-[11px] text-gray-500 space-y-1.5 bg-gray-50 p-3.5 rounded-xl border border-gray-200">
+                                <p class="font-bold text-gray-700 uppercase tracking-wider text-[10px]">Ulinzi wa Takwimu (Data Safety Guarantee):</p>
+                                <p class="flex items-center gap-2 text-emerald-700 font-semibold"><i class="bi bi-check-circle-fill text-emerald-600"></i> Miamala ya awali ya Cash In / Out haitafutwa kamwe.</p>
+                                <p class="flex items-center gap-2 text-emerald-700 font-semibold"><i class="bi bi-check-circle-fill text-emerald-600"></i> Running balance itaanza 0 kuanzia wakati huu mpya.</p>
+                                <p class="flex items-center gap-2 text-emerald-700 font-semibold"><i class="bi bi-check-circle-fill text-emerald-600"></i> Unaweza kuona historia yote ya nyuma kupitia kitufe cha 'Historia Yote'.</p>
+                            </div>
+                            <div class="flex gap-3 justify-end pt-2 border-t border-gray-100">
+                                <button type="button" onclick="closeCashFlowResetModal()"
+                                    class="px-4 py-2.5 rounded-xl border border-gray-300 text-gray-700 hover:bg-gray-100 font-bold text-xs transition-colors">
+                                    CANCEL
+                                </button>
+                                <button type="button" onclick="executeCashFlowReset()" id="btnConfirmCashFlowReset"
+                                    class="px-5 py-2.5 rounded-xl bg-red-600 hover:bg-red-700 text-white font-black text-xs shadow-md transition-all flex items-center gap-1.5">
+                                    <i class="bi bi-arrow-repeat"></i> START NEW CASH FLOW
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- MODAL: AUDIT TRAIL MODAL -->
+                <div id="modalResetAuditTrail" class="hidden fixed inset-0 z-50 items-center justify-center bg-gray-900/60 backdrop-blur-sm p-4">
+                    <div class="bg-white rounded-2xl w-full max-w-2xl overflow-hidden shadow-2xl border border-gray-100 transform transition-all flex flex-col max-h-[85vh]">
+                        <div class="bg-slate-800 text-white p-5 flex items-center justify-between">
+                            <h3 class="font-extrabold text-base flex items-center gap-2">
+                                <i class="bi bi-shield-check text-xl text-emerald-400"></i> Historia ya Reset & Audit Trail
+                            </h3>
+                            <button onclick="closeResetAuditModal()" class="text-white hover:text-gray-300 text-2xl font-bold">&times;</button>
+                        </div>
+                        <div class="p-6 overflow-y-auto custom-scrollbar space-y-4">
+                            <p class="text-xs text-gray-500 font-medium">
+                                Rekodi zote za kuanzisha vipindi vipya vya Daily Report na Cash Flow zinazofanywa na Admin kwa ajili ya uwajibikaji (Accountability).
+                            </p>
+                            <div class="overflow-x-auto border border-gray-200 rounded-xl">
+                                <table class="w-full text-left text-xs border-collapse">
+                                    <thead class="bg-gray-100 text-gray-700 uppercase font-bold text-[10px]">
+                                        <tr>
+                                            <th class="p-3">Tarehe & Saa</th>
+                                            <th class="p-3">Moduli</th>
+                                            <th class="p-3">Admin</th>
+                                            <th class="p-3">Starting Point Mpya</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="resetAuditTableBody" class="divide-y divide-gray-100">
+                                        <!-- Loaded dynamically -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        <div class="p-4 bg-gray-50 border-t border-gray-100 flex justify-end">
+                            <button type="button" onclick="closeResetAuditModal()" class="px-5 py-2 bg-slate-800 hover:bg-slate-900 text-white text-xs font-bold rounded-xl transition-colors">
+                                Funga
+                            </button>
+                        </div>
+                    </div>
+                </div>
 
                 <!-- MODAL: SETTINGS YA WHATSAPP API -->
                 <div id="whatsappConfigModal"
@@ -3189,13 +3395,187 @@ Saini ya Mwajiriwa (${emp.name}): ____________________      Tarehe: ____________
         }
 
 
-        // --- CASH FLOW RENDER & PRINT ---
+        // --- CASH FLOW RENDER, RESET & AUDIT TRAIL CONTROLLERS ---
+
+        let currentCashFlowViewMode = 'current'; // 'current' | 'all'
+
+        function setCashFlowViewMode(mode) {
+            currentCashFlowViewMode = mode;
+            renderCashFlow();
+        }
+
+        // DAILY REPORT RESET MODAL CONTROLS
+        function openDailyReportResetModal() {
+            if (sessionStorage.getItem('ngae_admin_auth') !== 'true') {
+                alert("Ruhusa imezuiwa. Lazima uwe umeingia kama Admin.");
+                return;
+            }
+            const modal = document.getElementById('modalDailyReportReset');
+            if (modal) modal.classList.remove('hidden');
+        }
+
+        function closeDailyReportResetModal() {
+            const modal = document.getElementById('modalDailyReportReset');
+            if (modal) modal.classList.add('hidden');
+        }
+
+        async function executeDailyReportReset() {
+            if (sessionStorage.getItem('ngae_admin_auth') !== 'true') return;
+
+            const btn = document.getElementById('btnConfirmDailyReset');
+            if (btn) {
+                btn.disabled = true;
+                btn.innerHTML = `<i class="bi bi-hourglass-split animate-spin"></i> INAWEKA UPYA...`;
+            }
+
+            try {
+                if (window.appResetDailyReport) {
+                    window.appResetDailyReport('Admin');
+                }
+                closeDailyReportResetModal();
+                renderDailyReport();
+                alert("✅ Daily Report imeanzishwa upya kikamilifu! Mahesabu yataanza sifuri kuanzia wakati huu bila kufuta rekodi zozote za nyuma.");
+            } catch (err) {
+                console.error("Daily report reset error:", err);
+                alert("Hitilafu wakati wa kuweka upya Daily Report: " + err.message);
+            } finally {
+                if (btn) {
+                    btn.disabled = false;
+                    btn.innerHTML = `<i class="bi bi-arrow-repeat"></i> START NEW REPORT`;
+                }
+            }
+        }
+
+        // CASH FLOW RESET MODAL CONTROLS
+        function openCashFlowResetModal() {
+            if (sessionStorage.getItem('ngae_admin_auth') !== 'true') {
+                alert("Ruhusa imezuiwa. Lazima uwe umeingia kama Admin.");
+                return;
+            }
+            const modal = document.getElementById('modalCashFlowReset');
+            if (modal) modal.classList.remove('hidden');
+        }
+
+        function closeCashFlowResetModal() {
+            const modal = document.getElementById('modalCashFlowReset');
+            if (modal) modal.classList.add('hidden');
+        }
+
+        async function executeCashFlowReset() {
+            if (sessionStorage.getItem('ngae_admin_auth') !== 'true') return;
+
+            const btn = document.getElementById('btnConfirmCashFlowReset');
+            if (btn) {
+                btn.disabled = true;
+                btn.innerHTML = `<i class="bi bi-hourglass-split animate-spin"></i> INAWEKA UPYA...`;
+            }
+
+            try {
+                if (window.appResetCashFlow) {
+                    window.appResetCashFlow('Admin');
+                }
+                currentCashFlowViewMode = 'current';
+                closeCashFlowResetModal();
+                renderCashFlow();
+                alert("✅ Kipindi kipya cha Cash Flow kimeanzishwa kikamilifu! Salio na mahesabu yataanza sifuri kuanzia sasa bila kufuta miamala ya awali.");
+            } catch (err) {
+                console.error("Cash flow reset error:", err);
+                alert("Hitilafu wakati wa kuanzisha Cash Flow mpya: " + err.message);
+            } finally {
+                if (btn) {
+                    btn.disabled = false;
+                    btn.innerHTML = `<i class="bi bi-arrow-repeat"></i> START NEW CASH FLOW`;
+                }
+            }
+        }
+
+        // RESET AUDIT TRAIL MODAL CONTROLS
+        function openResetAuditModal(filterModule) {
+            const modal = document.getElementById('modalResetAuditTrail');
+            const tbody = document.getElementById('resetAuditTableBody');
+            if (!modal || !tbody) return;
+
+            tbody.innerHTML = '';
+            const logs = window.appGetResetAuditLogs ? window.appGetResetAuditLogs() : [];
+            const filteredLogs = filterModule ? logs.filter(l => l.module === filterModule) : logs;
+
+            if (filteredLogs.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="4" class="p-4 text-center text-gray-400 font-medium">Hakuna kumbukumbu za reset zilizosajiliwa bado.</td></tr>`;
+            } else {
+                [...filteredLogs].reverse().forEach(log => {
+                    const tr = document.createElement('tr');
+                    tr.className = "border-b border-gray-100 hover:bg-gray-50/50 transition-colors";
+                    const badgeClass = log.module === 'DAILY_REPORT' ? 'bg-blue-100 text-blue-800' : 'bg-red-100 text-red-800';
+                    tr.innerHTML = `
+                        <td class="p-3 text-gray-700 font-semibold">${log.formattedDate || new Date(log.timestamp).toLocaleString()}</td>
+                        <td class="p-3"><span class="px-2 py-0.5 rounded-full text-[9px] font-bold uppercase ${badgeClass}">${log.moduleName || log.module}</span></td>
+                        <td class="p-3 font-extrabold text-gray-800">${log.adminUser || 'Admin'}</td>
+                        <td class="p-3 text-gray-600 font-mono text-[10px]">${log.newResetAt || '-'}</td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+            }
+
+            modal.classList.remove('hidden');
+        }
+
+        function closeResetAuditModal() {
+            const modal = document.getElementById('modalResetAuditTrail');
+            if (modal) modal.classList.add('hidden');
+        }
 
         function renderCashFlow() {
             if (!window.appData || !window.appData.cashFlow) return;
 
             const cf = window.appData.cashFlow;
-            document.getElementById('cfBalance').textContent = "Tsh " + (cf.balance || 0).toLocaleString();
+            const resetPoint = window.appGetCashFlowResetPoint ? window.appGetCashFlowResetPoint() : null;
+            const resetTime = (resetPoint && resetPoint.resetAt) ? new Date(resetPoint.resetAt).getTime() : null;
+
+            // Update Period Indicator Banner
+            const badgeEl = document.getElementById('cashFlowPeriodBadge');
+            const periodTextEl = document.getElementById('cashFlowPeriodText');
+            const resetInfoEl = document.getElementById('cashFlowResetInfoText');
+
+            if (badgeEl && periodTextEl) {
+                if (currentCashFlowViewMode === 'current') {
+                    if (resetPoint && resetTime !== null) {
+                        badgeEl.textContent = "KIPINDI KIPYA";
+                        badgeEl.className = "inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-red-600 text-white uppercase";
+                        periodTextEl.textContent = `Mahesabu yanaanza 0 kuanzia ${resetPoint.resetDateStr || ''} saa ${resetPoint.resetTimeStr || ''}.`;
+                        if (resetInfoEl) resetInfoEl.textContent = `Iliwekwa na: ${resetPoint.resetBy || 'Admin'}`;
+                    } else {
+                        badgeEl.textContent = "KIPINDI KIPYA";
+                        badgeEl.className = "inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-red-600 text-white uppercase";
+                        periodTextEl.textContent = "Inaonyesha data kuanzia mwanzo wa mfumo.";
+                        if (resetInfoEl) resetInfoEl.textContent = "";
+                    }
+                } else {
+                    badgeEl.textContent = "HISTORIA YOTE";
+                    badgeEl.className = "inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-gray-800 text-white uppercase";
+                    periodTextEl.textContent = "Inaonyesha miamala yote ya awali iliyohifadhiwa kwenye database.";
+                    if (resetInfoEl) resetInfoEl.textContent = resetPoint ? `(Kipindi kipya cha sasa kilianza: ${resetPoint.resetDateStr} ${resetPoint.resetTimeStr})` : "";
+                }
+            }
+
+            // Highlight View Mode Toggle Buttons
+            const btnCurrent = document.getElementById('btnCfViewCurrent');
+            const btnAll = document.getElementById('btnCfViewAll');
+            if (btnCurrent && btnAll) {
+                if (currentCashFlowViewMode === 'current') {
+                    btnCurrent.className = "px-3 py-1.5 rounded-lg bg-red-600 text-white shadow-sm transition-all";
+                    btnAll.className = "px-3 py-1.5 rounded-lg text-red-700 hover:text-red-900 transition-all";
+                } else {
+                    btnCurrent.className = "px-3 py-1.5 rounded-lg text-red-700 hover:text-red-900 transition-all";
+                    btnAll.className = "px-3 py-1.5 rounded-lg bg-gray-800 text-white shadow-sm transition-all";
+                }
+            }
+
+            // Running Balance and Stats
+            const activeBalance = currentCashFlowViewMode === 'current'
+                ? (window.appGetPersonalCashFlowBalance ? window.appGetPersonalCashFlowBalance() : (cf.balance || 0))
+                : (cf.balance || 0);
+
+            document.getElementById('cfBalance').textContent = "Tsh " + activeBalance.toLocaleString();
 
             if (window.appGetPersonalCashFlowStats) {
                 const stats = window.appGetPersonalCashFlowStats();
@@ -3205,36 +3585,79 @@ Saini ya Mwajiriwa (${emp.name}): ____________________      Tarehe: ____________
                 document.getElementById('cfYear').textContent = "Tsh " + stats.year.toLocaleString();
             }
 
+            // Filter transactions for display
+            const allTxs = cf.transactions || [];
+            let displayTxs = [];
+
+            if (currentCashFlowViewMode === 'current' && resetTime !== null) {
+                displayTxs = allTxs.filter(t => {
+                    const tTime = t.dateRaw ? new Date(t.dateRaw).getTime() : 0;
+                    return !isNaN(tTime) && tTime >= resetTime;
+                });
+            } else {
+                displayTxs = [...allTxs];
+            }
+
+            // Calculate active running balance for rows in current period
+            let runningCalc = 0;
+            const rowsWithRunningBalance = displayTxs.map(t => {
+                if (currentCashFlowViewMode === 'current' && resetTime !== null) {
+                    if (t.type === 'IN') runningCalc += (Number(t.amount) || 0);
+                    else if (t.type === 'OUT') runningCalc -= (Number(t.amount) || 0);
+                    return { ...t, computedBalance: runningCalc };
+                } else {
+                    return { ...t, computedBalance: t.runningBalance || 0 };
+                }
+            });
+
             const tbody = document.getElementById('cashFlowHistoryBody');
             tbody.innerHTML = '';
 
-            const txs = cf.transactions || [];
-            [...txs].reverse().forEach(t => {
-                const tr = document.createElement('tr');
-                tr.className = "hover:bg-red-50/50 transition-colors";
-
-                const typeBadge = t.type === 'IN'
-                    ? '<span class="text-green-600 font-bold"><i class="bi bi-arrow-down-left-circle-fill"></i> IN</span>'
-                    : '<span class="text-red-600 font-bold"><i class="bi bi-arrow-up-right-circle-fill"></i> OUT</span>';
-
-                const amtColor = t.type === 'IN' ? 'text-green-600' : 'text-red-600';
-                const amtPrefix = t.type === 'IN' ? '+' : '-';
-
-                tr.innerHTML = `
-                    <td class="p-3 text-gray-500 text-xs">${t.date}</td>
-                    <td class="p-3">${typeBadge}</td>
-                    <td class="p-3 font-semibold text-gray-700">${t.description}</td>
-                    <td class="p-3 text-right font-bold ${amtColor}">${amtPrefix}Tsh ${t.amount.toLocaleString()}</td>
-                    <td class="p-3 text-right font-bold text-gray-700">Tsh ${(t.runningBalance || 0).toLocaleString()}</td>
+            if (rowsWithRunningBalance.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="5" class="p-8 text-center text-gray-400 font-medium">
+                            ${currentCashFlowViewMode === 'current'
+                                ? 'Kipindi kipya cha Cash Flow kimeanza. Hakuna miamala bado katika kipindi hiki.'
+                                : 'Hakuna miamala ya Cash Flow iliyosajiliwa bado.'}
+                        </td>
+                    </tr>
                 `;
-                tbody.appendChild(tr);
-            });
+            } else {
+                [...rowsWithRunningBalance].reverse().forEach(t => {
+                    const tr = document.createElement('tr');
+                    tr.className = "hover:bg-red-50/50 transition-colors";
+
+                    const typeBadge = t.type === 'IN'
+                        ? '<span class="text-green-600 font-bold"><i class="bi bi-arrow-down-left-circle-fill"></i> IN</span>'
+                        : '<span class="text-red-600 font-bold"><i class="bi bi-arrow-up-right-circle-fill"></i> OUT</span>';
+
+                    const amtColor = t.type === 'IN' ? 'text-green-600' : 'text-red-600';
+                    const amtPrefix = t.type === 'IN' ? '+' : '-';
+
+                    tr.innerHTML = `
+                        <td class="p-3 text-gray-500 text-xs">${t.date}</td>
+                        <td class="p-3">${typeBadge}</td>
+                        <td class="p-3 font-semibold text-gray-700">${t.description}</td>
+                        <td class="p-3 text-right font-bold ${amtColor}">${amtPrefix}Tsh ${(Number(t.amount) || 0).toLocaleString()}</td>
+                        <td class="p-3 text-right font-bold text-gray-700">Tsh ${(Number(t.computedBalance) || 0).toLocaleString()}</td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+            }
         }
 
         function printPersonalReport() {
             if (!window.appData || !window.appData.cashFlow) return;
 
             const cf = window.appData.cashFlow;
+            const resetPoint = window.appGetCashFlowResetPoint ? window.appGetCashFlowResetPoint() : null;
+            const resetTime = (resetPoint && resetPoint.resetAt) ? new Date(resetPoint.resetAt).getTime() : null;
+
+            const activeBalance = currentCashFlowViewMode === 'current'
+                ? (window.appGetPersonalCashFlowBalance ? window.appGetPersonalCashFlowBalance() : (cf.balance || 0))
+                : (cf.balance || 0);
+
             const stats = window.appGetPersonalCashFlowStats ? window.appGetPersonalCashFlowStats() : { today: 0, week: 0, month: 0, year: 0 };
 
             const printWindow = window.open('', '_blank');
@@ -3243,53 +3666,85 @@ Saini ya Mwajiriwa (${emp.name}): ____________________      Tarehe: ____________
                 return;
             }
 
+            const allTxs = cf.transactions || [];
+            let displayTxs = [];
+            if (currentCashFlowViewMode === 'current' && resetTime !== null) {
+                displayTxs = allTxs.filter(t => {
+                    const tTime = t.dateRaw ? new Date(t.dateRaw).getTime() : 0;
+                    return !isNaN(tTime) && tTime >= resetTime;
+                });
+            } else {
+                displayTxs = [...allTxs];
+            }
+
+            let runningCalc = 0;
             let rowsHtml = '';
-            const txs = cf.transactions || [];
-            [...txs].reverse().forEach(t => {
-                rowsHtml += `
-                    <tr style="border-bottom: 1px solid #fee2e2;">
-                        <td style="padding: 10px; font-size: 12px; color: #555;">${t.date}</td>
-                        <td style="padding: 10px; font-weight: bold; color: ${t.type === 'IN' ? '#16a34a' : '#dc2626'};">${t.type}</td>
-                        <td style="padding: 10px; font-weight: 500;">${t.description}</td>
-                        <td style="padding: 10px; text-align: right; font-weight: bold; color: ${t.type === 'IN' ? '#16a34a' : '#dc2626'};">${t.type === 'IN' ? '+' : '-'} Tsh ${t.amount.toLocaleString()}</td>
-                        <td style="padding: 10px; text-align: right; font-weight: bold; color: #333;">Tsh ${(t.runningBalance || 0).toLocaleString()}</td>
-                    </tr>
-                `;
+            const rowsMapped = displayTxs.map(t => {
+                if (currentCashFlowViewMode === 'current' && resetTime !== null) {
+                    if (t.type === 'IN') runningCalc += (Number(t.amount) || 0);
+                    else if (t.type === 'OUT') runningCalc -= (Number(t.amount) || 0);
+                    return { ...t, computedBalance: runningCalc };
+                } else {
+                    return { ...t, computedBalance: t.runningBalance || 0 };
+                }
             });
 
+            if (rowsMapped.length === 0) {
+                rowsHtml = `<tr><td colspan="5" style="text-align: center; padding: 20px; color: #94a3b8;">Hakuna miamala katika kipindi hiki.</td></tr>`;
+            } else {
+                [...rowsMapped].reverse().forEach(t => {
+                    rowsHtml += `
+                        <tr style="border-bottom: 1px solid #fee2e2;">
+                            <td style="padding: 9px 10px; font-size: 12px; color: #475569;">${t.date}</td>
+                            <td style="padding: 9px 10px; font-weight: bold; color: ${t.type === 'IN' ? '#16a34a' : '#dc2626'};">${t.type}</td>
+                            <td style="padding: 9px 10px; font-weight: 500; color: #1e293b;">${t.description}</td>
+                            <td style="padding: 9px 10px; text-align: right; font-weight: bold; color: ${t.type === 'IN' ? '#16a34a' : '#dc2626'};">${t.type === 'IN' ? '+' : '-'} Tsh ${(Number(t.amount) || 0).toLocaleString()}</td>
+                            <td style="padding: 9px 10px; text-align: right; font-weight: bold; color: #0f172a;">Tsh ${(Number(t.computedBalance) || 0).toLocaleString()}</td>
+                        </tr>
+                    `;
+                });
+            }
+
+            const periodLabel = currentCashFlowViewMode === 'current'
+                ? (resetPoint ? `Kipindi Kipya: Kuanzia ${resetPoint.resetDateStr} ${resetPoint.resetTimeStr || ''}` : 'Kipindi cha Sasa')
+                : 'Historia Yote ya Mfumo (All-Time Ledger)';
+
             printWindow.document.write(`
+                <!DOCTYPE html>
                 <html>
                 <head>
-                    <title>Ripoti ya Cash Flowing - NGAE Food</title>
+                    <title>NGAE FOOD - RIPOTI YA CASH FLOW</title>
                     <style>
-                        body { font-family: 'Poppins', sans-serif; padding: 40px; color: #333; }
-                        .header { text-align: center; border-bottom: 3px double #dc2626; padding-bottom: 20px; margin-bottom: 30px; }
-                        .header h1 { color: #dc2626; margin: 0; font-size: 28px; }
-                        .header p { color: #666; margin: 5px 0 0; font-size: 14px; }
-                        .summary-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-bottom: 30px; }
-                        .card { border: 1px solid #fee2e2; background-color: #fef2f2; padding: 15px; border-radius: 10px; text-align: center; }
-                        .card p { margin: 0; font-size: 11px; font-weight: bold; color: #991b1b; text-transform: uppercase; }
-                        .card h3 { margin: 5px 0 0; font-size: 16px; color: #dc2626; font-weight: 900; }
-                        .balance-box { background-color: #dc2626; color: white; padding: 20px; border-radius: 12px; text-align: center; margin-bottom: 30px; }
-                        .balance-box p { margin: 0; font-size: 12px; text-transform: uppercase; font-weight: bold; }
-                        .balance-box h2 { margin: 5px 0 0; font-size: 32px; font-weight: 900; }
-                        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-                        th { background-color: #fef2f2; color: #991b1b; padding: 12px 10px; text-align: left; font-size: 12px; text-transform: uppercase; border-bottom: 2px solid #fee2e2; }
+                        @page { size: A4 portrait; margin: 10mm; }
+                        body { font-family: 'Tahoma', 'Segoe UI', Arial, sans-serif; font-size: 12px; padding: 20px; color: #1e293b; background: #fff; margin: 0; line-height: 1.45; }
+                        .header { text-align: center; border-bottom: 2px solid #dc2626; padding-bottom: 15px; margin-bottom: 20px; }
+                        .header h1 { color: #dc2626; margin: 0; font-size: 20px; text-transform: uppercase; font-weight: bold; }
+                        .header p { color: #475569; margin: 4px 0 0; font-size: 12px; }
+                        .summary-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 20px; }
+                        .card { border: 1px solid #fecdd3; background-color: #fff1f2; padding: 10px; border-radius: 6px; text-align: center; }
+                        .card p { margin: 0; font-size: 10px; font-weight: bold; color: #9f1239; text-transform: uppercase; }
+                        .card h3 { margin: 4px 0 0; font-size: 14px; color: #dc2626; font-weight: bold; }
+                        .balance-box { background-color: #dc2626; color: white; padding: 15px; border-radius: 8px; text-align: center; margin-bottom: 20px; }
+                        .balance-box p { margin: 0; font-size: 11px; text-transform: uppercase; font-weight: bold; }
+                        .balance-box h2 { margin: 4px 0 0; font-size: 24px; font-weight: bold; }
+                        table { width: 100%; border-collapse: collapse; margin-top: 15px; border: 1px solid #fee2e2; }
+                        th { background-color: #fff1f2; color: #9f1239; padding: 9px 10px; text-align: left; font-size: 11px; text-transform: uppercase; border-bottom: 2px solid #fecdd3; }
                         @media print {
                             .no-print { display: none; }
+                            body { padding: 0; }
                         }
                     </style>
                 </head>
                 <body>
                     <div class="header">
-                        <h1>NGAE FOOD PROCESSING HUB</h1>
-                        <p>Ripoti Binafsi ya Cash Flowing & Matumizi ya Admin</p>
-                        <p style="font-size: 11px; color: #999; margin-top: 5px;">Imezalishwa tarehe: ${new Date().toLocaleString()}</p>
+                        <h1>NGAE FOOD PROCESSORS HUB</h1>
+                        <p style="font-weight: bold;">Kitabu cha Fedha Taslimu (Cash Flow Ledger Report)</p>
+                        <p style="font-size: 11px; color: #64748b;">${periodLabel} | Imetolewa: ${new Date().toLocaleString()}</p>
                     </div>
 
                     <div class="balance-box">
-                        <p>Bakaa ya Cash Iliyopo (Current Running Balance)</p>
-                        <h2>Tsh ${cf.balance.toLocaleString()}</h2>
+                        <p>Bakaa ya Cash Iliyopo (Running Balance)</p>
+                        <h2>Tsh ${activeBalance.toLocaleString()}</h2>
                     </div>
 
                     <div class="summary-grid">
@@ -3311,11 +3766,13 @@ Saini ya Mwajiriwa (${emp.name}): ____________________      Tarehe: ____________
                         </div>
                     </div>
 
-                    <h2 style="font-size: 16px; border-bottom: 1px solid #ccc; padding-bottom: 5px; color: #dc2626; text-transform: uppercase;">Kitabu cha Mahesabu (Transaction Ledger)</h2>
+                    <div style="font-size: 12px; font-weight: bold; color: #dc2626; text-transform: uppercase; margin-bottom: 8px;">
+                        Miamala Iliyorekodiwa (Transaction History)
+                    </div>
                     <table>
                         <thead>
                             <tr>
-                                <th>Tarehe</th>
+                                <th>Tarehe & Saa</th>
                                 <th>Aina</th>
                                 <th>Maelezo</th>
                                 <th style="text-align: right;">Kiasi (Tsh)</th>
@@ -3327,8 +3784,8 @@ Saini ya Mwajiriwa (${emp.name}): ____________________      Tarehe: ____________
                         </tbody>
                     </table>
 
-                    <div style="margin-top: 50px; text-align: center;" class="no-print">
-                        <button onclick="window.print()" style="background-color: #dc2626; color: white; border: none; padding: 12px 30px; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 14px;">Print Ripoti Hii</button>
+                    <div style="margin-top: 30px; text-align: center;" class="no-print">
+                        <button onclick="window.print()" style="background-color: #dc2626; color: white; border: none; padding: 10px 25px; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 12px;">Print Ripoti Hii</button>
                     </div>
                 </body>
                 </html>
@@ -4737,6 +5194,8 @@ Saini ya Mwajiriwa (${emp.name}): ____________________      Tarehe: ____________
             return 0;
         }
 
+        // --- DAILY REPORT RENDER, TAHOMA 12PX EXPORT & PRINT CONTROLLERS ---
+
         function renderDailyReport() {
             if (!window.appData) return;
 
@@ -4755,21 +5214,66 @@ Saini ya Mwajiriwa (${emp.name}): ____________________      Tarehe: ____________
             const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
             const month = months[selectedDate.getMonth()];
             const year = selectedDate.getFullYear();
-            const formattedDateStr = `${day} ${month} ${year}`; // Format: "26 Aug 2026"
+            const formattedDateStr = `${day} ${month} ${year}`; // Format: "04 Sep 2026"
+            const displayDate = `${day}/${String(selectedDate.getMonth() + 1).padStart(2, '0')}/${year}`;
+
+            // Check Reset Point for Daily Report
+            const resetPoint = window.appGetDailyReportResetPoint ? window.appGetDailyReportResetPoint() : null;
+            const resetTime = (resetPoint && resetPoint.resetAt) ? new Date(resetPoint.resetAt).getTime() : null;
+
+            // Check if selected date is on or after the reset point date
+            let isResetActiveForSelectedDate = false;
+            if (resetTime !== null && !isNaN(resetTime)) {
+                const resetDate = new Date(resetPoint.resetAt);
+                const resetDateOnly = new Date(resetDate.getFullYear(), resetDate.getMonth(), resetDate.getDate()).getTime();
+                const selectedDateOnly = new Date(targetYear, targetMonth, targetDay).getTime();
+                if (selectedDateOnly >= resetDateOnly) {
+                    isResetActiveForSelectedDate = true;
+                }
+            }
+
+            // Update Period Indicator Banner UI
+            const periodBadgeEl = document.getElementById('dailyReportPeriodBadge');
+            const periodTextEl = document.getElementById('dailyReportPeriodText');
+            const resetInfoEl = document.getElementById('dailyReportResetInfoText');
+
+            if (periodBadgeEl && periodTextEl) {
+                if (isResetActiveForSelectedDate && resetPoint) {
+                    periodBadgeEl.textContent = "KIPINDI KIPYA";
+                    periodBadgeEl.className = "inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-emerald-600 text-white uppercase";
+                    periodTextEl.textContent = `Mahesabu yanahesabiwa kuanzia reset ya ${resetPoint.resetDateStr || ''} saa ${resetPoint.resetTimeStr || ''}.`;
+                    if (resetInfoEl) resetInfoEl.textContent = `Iliwekwa na: ${resetPoint.resetBy || 'Admin'}`;
+                } else {
+                    periodBadgeEl.textContent = "HISTORIA YA SIKU";
+                    periodBadgeEl.className = "inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-blue-600 text-white uppercase";
+                    periodTextEl.textContent = `Inaonyesha rekodi zote zilizosajiliwa tarehe ${displayDate}.`;
+                    if (resetInfoEl) resetInfoEl.textContent = resetPoint ? `(Kipindi kipya kilianza: ${resetPoint.resetDateStr} ${resetPoint.resetTimeStr})` : '';
+                }
+            }
 
             function matchesSelectedDate(dateRaw, dateStr) {
+                let matchesDate = false;
+                let recordTime = 0;
                 if (dateRaw) {
                     const d = new Date(dateRaw);
                     if (!isNaN(d.getTime())) {
-                        return d.getFullYear() === targetYear &&
-                               d.getMonth() === targetMonth &&
-                               d.getDate() === targetDay;
+                        recordTime = d.getTime();
+                        matchesDate = d.getFullYear() === targetYear &&
+                                      d.getMonth() === targetMonth &&
+                                      d.getDate() === targetDay;
                     }
                 }
-                if (dateStr) {
-                    return dateStr.includes(formattedDateStr);
+                if (!matchesDate && dateStr) {
+                    matchesDate = dateStr.includes(formattedDateStr);
                 }
-                return false;
+
+                if (!matchesDate) return false;
+
+                // If reset is active for this selected date, filter out records created before resetTime
+                if (isResetActiveForSelectedDate && resetTime !== null && recordTime > 0) {
+                    return recordTime >= resetTime;
+                }
+                return true;
             }
 
             // A. DAILY PRODUCTION
@@ -4782,7 +5286,7 @@ Saini ya Mwajiriwa (${emp.name}): ____________________      Tarehe: ____________
                 const prodName = log.productName;
                 const qty = Number(log.quantity) || 0;
                 
-                const prodCatalog = (window.appData.products || []).find(p => p.id === prodId || p.name.toUpperCase() === prodName.toUpperCase());
+                const prodCatalog = (window.appData.products || []).find(p => p.id === prodId || (p.name && p.name.toUpperCase() === (prodName || '').toUpperCase()));
                 const sellingPrice = prodCatalog ? (Number(prodCatalog.price) || 0) : 2500;
                 
                 if (!productionMap[prodName]) {
@@ -4805,7 +5309,7 @@ Saini ya Mwajiriwa (${emp.name}): ____________________      Tarehe: ____________
             if (prodTbody) {
                 prodTbody.innerHTML = '';
                 if (productionRows.length === 0) {
-                    prodTbody.innerHTML = `<tr><td colspan="4" class="p-4 text-center text-gray-400 font-medium">Hakuna uzalishaji uliosajiliwa siku hii.</td></tr>`;
+                    prodTbody.innerHTML = `<tr><td colspan="4" class="p-4 text-center text-gray-400 font-medium">Hakuna uzalishaji uliosajiliwa katika kipindi/siku hii.</td></tr>`;
                 } else {
                     productionRows.forEach(row => {
                         totalProductionValue += row.totalValue;
@@ -4831,7 +5335,7 @@ Saini ya Mwajiriwa (${emp.name}): ____________________      Tarehe: ____________
             const materialUsageMap = {};
             dailyDispatches.forEach(disp => {
                 const matId = disp.materialId;
-                const matName = disp.materialName.toUpperCase();
+                const matName = (disp.materialName || '').toUpperCase();
                 const qty = Number(disp.qty) || 0;
                 const unit = disp.unit || 'kg';
                 
@@ -4858,7 +5362,7 @@ Saini ya Mwajiriwa (${emp.name}): ____________________      Tarehe: ____________
             if (matTbody) {
                 matTbody.innerHTML = '';
                 if (materialUsageRows.length === 0) {
-                    matTbody.innerHTML = `<tr><td colspan="4" class="p-4 text-center text-gray-400 font-medium">Hakuna malighafi zilizotolewa/kutumika siku hii.</td></tr>`;
+                    matTbody.innerHTML = `<tr><td colspan="4" class="p-4 text-center text-gray-400 font-medium">Hakuna malighafi zilizotolewa/kutumika katika kipindi/siku hii.</td></tr>`;
                 } else {
                     materialUsageRows.forEach(row => {
                         totalRawMaterialsCost += row.totalCost;
@@ -4889,7 +5393,7 @@ Saini ya Mwajiriwa (${emp.name}): ____________________      Tarehe: ____________
                 const shopFin = finances[shopId] || {};
                 const personalExpenses = shopFin.personalExpenses || [];
                 const shop = shops.find(s => s.id === shopId);
-                const shopLoc = shop ? shop.location : 'Shop';
+                const shopLoc = shop ? (shop.location || shop.name) : 'Duka';
 
                 personalExpenses.filter(exp => matchesSelectedDate(exp.dateRaw, exp.date)).forEach(exp => {
                     shopExpenses.push({
@@ -4901,7 +5405,7 @@ Saini ya Mwajiriwa (${emp.name}): ____________________      Tarehe: ____________
                 });
             });
 
-            // Salaries paid on that day
+            // Salaries paid on that day/period
             const salaryPayments = [];
             const salaryList = window.appData.salaryList || [];
             salaryList.forEach(emp => {
@@ -4920,7 +5424,7 @@ Saini ya Mwajiriwa (${emp.name}): ____________________      Tarehe: ____________
             dailyAdminExpenses.forEach(e => {
                 otherCostsList.push({
                     description: e.description,
-                    amount: e.amount,
+                    amount: Number(e.amount) || 0,
                     category: 'Admin',
                     type: 'Admin'
                 });
@@ -4937,7 +5441,7 @@ Saini ya Mwajiriwa (${emp.name}): ____________________      Tarehe: ____________
             if (opsTbody) {
                 opsTbody.innerHTML = '';
                 if (otherCostsList.length === 0) {
-                    opsTbody.innerHTML = `<tr><td colspan="3" class="p-4 text-center text-gray-400 font-medium">Hakuna gharama zingine za uendeshaji siku hii.</td></tr>`;
+                    opsTbody.innerHTML = `<tr><td colspan="3" class="p-4 text-center text-gray-400 font-medium">Hakuna gharama zingine za uendeshaji siku/kipindi hiki.</td></tr>`;
                 } else {
                     otherCostsList.forEach(c => {
                         totalOtherDailyCosts += c.amount;
@@ -4954,11 +5458,61 @@ Saini ya Mwajiriwa (${emp.name}): ____________________      Tarehe: ____________
                 }
             }
 
+            // D. SHOP SALES & REVENUE
+            const shopSalesList = [];
+            let totalShopSales = 0;
+
+            Object.keys(finances).forEach(shopId => {
+                if (shopId === 'overall_stats_baseline') return;
+                const shopFin = finances[shopId] || {};
+                const salesHistory = shopFin.salesHistory || [];
+                const shop = shops.find(s => s.id === shopId);
+                const shopLoc = shop ? (shop.location || shop.name) : 'Duka';
+
+                salesHistory.filter(s => matchesSelectedDate(s.dateRaw, s.date)).forEach(s => {
+                    const amt = Number(s.amount) || 0;
+                    totalShopSales += amt;
+                    shopSalesList.push({
+                        shopLocation: shopLoc,
+                        notes: s.notes || 'Mauzo ya Kawaida',
+                        date: s.date || formattedDateStr,
+                        amount: amt
+                    });
+                });
+            });
+
+            const salesTbody = document.getElementById('repShopSalesTableBody');
+            if (salesTbody) {
+                salesTbody.innerHTML = '';
+                if (shopSalesList.length === 0) {
+                    salesTbody.innerHTML = `<tr><td colspan="4" class="p-4 text-center text-gray-400 font-medium">Hakuna mauzo yaliyowasilishwa na maduka katika kipindi/siku hii.</td></tr>`;
+                } else {
+                    shopSalesList.forEach(s => {
+                        const tr = document.createElement('tr');
+                        tr.className = "border-b border-gray-100 hover:bg-emerald-50/30 transition-colors";
+                        tr.innerHTML = `
+                            <td class="p-3 pl-4 font-extrabold text-gray-800 uppercase">${s.shopLocation}</td>
+                            <td class="p-3 font-medium text-gray-700">${s.notes}</td>
+                            <td class="p-3 font-semibold text-gray-500">${s.date}</td>
+                            <td class="p-3 pr-4 text-right font-black text-emerald-600">Tsh ${s.amount.toLocaleString()}</td>
+                        `;
+                        salesTbody.appendChild(tr);
+                    });
+                }
+            }
+
+            const headerShopSalesTotal = document.getElementById('repShopSalesTotalHeader');
+            if (headerShopSalesTotal) {
+                headerShopSalesTotal.textContent = `Jumla: Tsh ${totalShopSales.toLocaleString()}`;
+            }
+
+            // Calculations
             const totalDailyCost = totalRawMaterialsCost + totalOtherDailyCosts;
             const estimatedProfit = totalProductionValue - totalDailyCost;
             const profitPercentage = totalProductionValue > 0 ? (estimatedProfit / totalProductionValue) * 100 : 0;
+            const netCashProfit = totalShopSales - totalDailyCost;
 
-            // Bind calculations to Top summary metrics cards
+            // Bind Top Summary KPI Cards
             document.getElementById('repTotalProductionValue').textContent = `Tsh ${totalProductionValue.toLocaleString()}`;
             document.getElementById('repTotalProductsCount').textContent = `${totalProductsProducedCount.toLocaleString()} Bidhaa Zilizozalishwa`;
 
@@ -4966,46 +5520,53 @@ Saini ya Mwajiriwa (${emp.name}): ____________________      Tarehe: ____________
             document.getElementById('repMaterialsCostShare').textContent = `Malighafi: Tsh ${totalRawMaterialsCost.toLocaleString()}`;
             document.getElementById('repOperatingCostShare').textContent = `Matumizi: Tsh ${totalOtherDailyCosts.toLocaleString()}`;
 
+            const repTotalShopSalesEl = document.getElementById('repTotalShopSales');
+            if (repTotalShopSalesEl) repTotalShopSalesEl.textContent = `Tsh ${totalShopSales.toLocaleString()}`;
+
+            const repShopSalesCountEl = document.getElementById('repShopSalesCount');
+            if (repShopSalesCountEl) repShopSalesCountEl.textContent = `${shopSalesList.length} Miamala ya Mauzo`;
+
             const repProfitEl = document.getElementById('repEstimatedProfit');
             const repProfitCard = document.getElementById('repProfitCard');
             const repProfitStatus = document.getElementById('repProfitStatus');
             if (repProfitEl) {
                 repProfitEl.textContent = `Tsh ${estimatedProfit.toLocaleString()}`;
                 if (estimatedProfit < 0) {
-                    repProfitEl.className = "font-black text-rose-600 text-xl mt-1";
-                    repProfitCard.className = "bg-rose-50 p-5 rounded-2xl border border-rose-100 shadow-sm hover:scale-[1.01] transition-transform duration-200";
-                    repProfitStatus.textContent = "Hasara Imekadiriwa";
-                    repProfitStatus.className = "text-[10px] text-rose-600 mt-1";
+                    repProfitEl.className = "font-black text-rose-600 text-2xl mt-1";
+                    if (repProfitCard) repProfitCard.className = "bg-rose-50 p-5 rounded-2xl border border-rose-100 shadow-sm flex flex-col justify-between";
+                    if (repProfitStatus) {
+                        repProfitStatus.textContent = "Hasara Imekadiriwa";
+                        repProfitStatus.className = "text-[10px] font-bold text-rose-600";
+                    }
                 } else {
-                    repProfitEl.className = "font-black text-emerald-600 text-xl mt-1";
-                    repProfitCard.className = "bg-white p-5 rounded-2xl border border-gray-100 shadow-sm hover:scale-[1.01] transition-transform duration-200";
-                    repProfitStatus.textContent = "Faida Imekadiriwa";
-                    repProfitStatus.className = "text-[10px] text-emerald-600 mt-1";
+                    repProfitEl.className = "font-black text-emerald-700 text-2xl mt-1";
+                    if (repProfitCard) repProfitCard.className = "bg-gradient-to-br from-indigo-50 to-white p-5 rounded-2xl border border-indigo-100 shadow-sm flex flex-col justify-between";
+                    if (repProfitStatus) {
+                        repProfitStatus.textContent = "Faida Imekadiriwa";
+                        repProfitStatus.className = "text-[10px] font-bold text-emerald-600";
+                    }
                 }
             }
 
             const repMarginEl = document.getElementById('repProfitMargin');
-            const repMarginCard = document.getElementById('repMarginCard');
             if (repMarginEl) {
                 repMarginEl.textContent = `${profitPercentage.toFixed(2)}%`;
-                if (estimatedProfit < 0) {
-                    repMarginEl.className = "font-black text-rose-600 text-xl mt-1";
-                    repMarginCard.className = "bg-rose-50 p-5 rounded-2xl border border-rose-100 shadow-sm hover:scale-[1.01] transition-transform duration-200";
-                } else {
-                    repMarginEl.className = "font-black text-blue-600 text-xl mt-1";
-                    repMarginCard.className = "bg-white p-5 rounded-2xl border border-gray-100 shadow-sm hover:scale-[1.01] transition-transform duration-200";
-                }
+                repMarginEl.className = estimatedProfit < 0 ? "font-black text-sm text-rose-600" : "font-black text-sm text-indigo-700";
             }
 
-            // Bind values to printable and bottom summary box
-            const displayDate = `${day}/${String(selectedDate.getMonth() + 1).padStart(2, '0')}/${year}`;
-            document.getElementById('printReportDateTitle').textContent = `TAREHE: ${displayDate}`;
+            // Bind Bottom Summary Box
+            const printReportDateTitle = document.getElementById('printReportDateTitle');
+            if (printReportDateTitle) printReportDateTitle.textContent = `TAREHE: ${displayDate}`;
             
             const repSummaryBoxTitle = document.getElementById('repSummaryBoxTitle');
             if (repSummaryBoxTitle) repSummaryBoxTitle.textContent = `DAILY REPORT SUMMARY – ${displayDate}`;
 
             document.getElementById('sumProductionValue').textContent = `Tsh ${totalProductionValue.toLocaleString()}`;
             document.getElementById('sumProductsCount').textContent = `${totalProductsProducedCount.toLocaleString()} pcs`;
+            
+            const sumShopSalesEl = document.getElementById('sumShopSalesValue');
+            if (sumShopSalesEl) sumShopSalesEl.textContent = `Tsh ${totalShopSales.toLocaleString()}`;
+
             document.getElementById('sumMaterialsCost').textContent = `Tsh ${totalRawMaterialsCost.toLocaleString()}`;
             document.getElementById('sumOperatingCost').textContent = `Tsh ${totalOtherDailyCosts.toLocaleString()}`;
             document.getElementById('sumTotalDailyCost').textContent = `Tsh ${totalDailyCost.toLocaleString()}`;
@@ -5016,37 +5577,487 @@ Saini ya Mwajiriwa (${emp.name}): ____________________      Tarehe: ____________
                 sumEstProfitEl.className = estimatedProfit < 0 ? "font-black text-rose-600" : "font-black text-emerald-600";
             }
             document.getElementById('sumProfitMargin').textContent = `${profitPercentage.toFixed(2)}%`;
+
+            const sumNetCashProfitEl = document.getElementById('sumNetCashProfit');
+            if (sumNetCashProfitEl) {
+                sumNetCashProfitEl.textContent = `Tsh ${netCashProfit.toLocaleString()}`;
+                sumNetCashProfitEl.className = netCashProfit < 0 ? "font-black text-rose-600" : "font-black text-emerald-700";
+            }
+        }
+
+        /**
+         * Generates a dedicated, pixel-perfect A4 printable HTML document
+         * strictly adhering to:
+         * - Font: Tahoma, sans-serif
+         * - Font size: 12px
+         * - Clean table alignments, explicit widths, and page-break avoidance.
+         */
+        function generateDailyReportDocumentHtml(selectedDateVal) {
+            if (!window.appData) return '';
+
+            const selectedDate = selectedDateVal ? new Date(selectedDateVal) : new Date();
+            const targetYear = selectedDate.getFullYear();
+            const targetMonth = selectedDate.getMonth();
+            const targetDay = selectedDate.getDate();
+
+            const day = String(selectedDate.getDate()).padStart(2, '0');
+            const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+            const month = months[selectedDate.getMonth()];
+            const year = selectedDate.getFullYear();
+            const formattedDateStr = `${day} ${month} ${year}`;
+            const displayDate = `${day}/${String(selectedDate.getMonth() + 1).padStart(2, '0')}/${year}`;
+
+            const resetPoint = window.appGetDailyReportResetPoint ? window.appGetDailyReportResetPoint() : null;
+            const resetTime = (resetPoint && resetPoint.resetAt) ? new Date(resetPoint.resetAt).getTime() : null;
+
+            let isResetActiveForSelectedDate = false;
+            if (resetTime !== null && !isNaN(resetTime)) {
+                const resetDate = new Date(resetPoint.resetAt);
+                const resetDateOnly = new Date(resetDate.getFullYear(), resetDate.getMonth(), resetDate.getDate()).getTime();
+                const selectedDateOnly = new Date(targetYear, targetMonth, targetDay).getTime();
+                if (selectedDateOnly >= resetDateOnly) {
+                    isResetActiveForSelectedDate = true;
+                }
+            }
+
+            function matchesSelectedDate(dateRaw, dateStr) {
+                let matchesDate = false;
+                let recordTime = 0;
+                if (dateRaw) {
+                    const d = new Date(dateRaw);
+                    if (!isNaN(d.getTime())) {
+                        recordTime = d.getTime();
+                        matchesDate = d.getFullYear() === targetYear &&
+                                      d.getMonth() === targetMonth &&
+                                      d.getDate() === targetDay;
+                    }
+                }
+                if (!matchesDate && dateStr) {
+                    matchesDate = dateStr.includes(formattedDateStr);
+                }
+                if (!matchesDate) return false;
+                if (isResetActiveForSelectedDate && resetTime !== null && recordTime > 0) {
+                    return recordTime >= resetTime;
+                }
+                return true;
+            }
+
+            // 1. Production Data
+            const productionLog = window.appData.productionLog || [];
+            const dailyProductions = productionLog.filter(log => matchesSelectedDate(log.dateRaw, log.date));
+            const productionMap = {};
+            dailyProductions.forEach(log => {
+                const prodId = log.productId;
+                const prodName = log.productName;
+                const qty = Number(log.quantity) || 0;
+                const prodCatalog = (window.appData.products || []).find(p => p.id === prodId || (p.name && p.name.toUpperCase() === (prodName || '').toUpperCase()));
+                const sellingPrice = prodCatalog ? (Number(prodCatalog.price) || 0) : 2500;
+                if (!productionMap[prodName]) {
+                    productionMap[prodName] = { productName: prodName, qty: 0, price: sellingPrice, totalValue: 0 };
+                }
+                productionMap[prodName].qty += qty;
+                productionMap[prodName].totalValue += (qty * sellingPrice);
+            });
+
+            let totalProductionValue = 0;
+            let totalProductsCount = 0;
+            const productionRows = Object.values(productionMap);
+            let productionRowsHtml = '';
+            if (productionRows.length === 0) {
+                productionRowsHtml = `<tr><td colspan="4" style="padding: 10px; text-align: center; color: #64748b; font-style: italic;">Hakuna uzalishaji uliosajiliwa katika kipindi hiki.</td></tr>`;
+            } else {
+                productionRows.forEach((r, idx) => {
+                    totalProductionValue += r.totalValue;
+                    totalProductsCount += r.qty;
+                    const bg = idx % 2 === 1 ? 'background-color: #f8fafc;' : 'background-color: #ffffff;';
+                    productionRowsHtml += `
+                        <tr style="${bg} border-bottom: 1px solid #e2e8f0; page-break-inside: avoid;">
+                            <td style="padding: 8px 10px; font-weight: bold; color: #0f172a; text-transform: uppercase;">${r.productName}</td>
+                            <td style="padding: 8px 10px; text-align: center; font-weight: bold; color: #0f172a;">${r.qty.toLocaleString()} pcs</td>
+                            <td style="padding: 8px 10px; text-align: right; color: #334155;">${r.price.toLocaleString()}</td>
+                            <td style="padding: 8px 10px; text-align: right; font-weight: bold; color: #15803d;">${r.totalValue.toLocaleString()}</td>
+                        </tr>
+                    `;
+                });
+            }
+
+            // 2. Raw Materials Data
+            const rawMaterialsDispatchHistory = window.appData.rawMaterialsDispatchHistory || [];
+            const dailyDispatches = rawMaterialsDispatchHistory.filter(disp => matchesSelectedDate(disp.dateRaw, disp.date));
+            const materialUsageMap = {};
+            dailyDispatches.forEach(disp => {
+                const matId = disp.materialId;
+                const matName = (disp.materialName || '').toUpperCase();
+                const qty = Number(disp.qty) || 0;
+                const unit = disp.unit || 'kg';
+                const unitCost = getMaterialUnitCost(matId || matName, disp.dateRaw || selectedDateVal);
+                const totalCost = qty * unitCost;
+
+                if (!materialUsageMap[matName]) {
+                    materialUsageMap[matName] = { materialName: matName, qty: 0, unit: unit, unitCost: unitCost, totalCost: 0 };
+                }
+                materialUsageMap[matName].qty += qty;
+                materialUsageMap[matName].totalCost += totalCost;
+            });
+
+            let totalRawMaterialsCost = 0;
+            const materialRows = Object.values(materialUsageMap);
+            let materialsRowsHtml = '';
+            if (materialRows.length === 0) {
+                materialsRowsHtml = `<tr><td colspan="4" style="padding: 10px; text-align: center; color: #64748b; font-style: italic;">Hakuna malighafi zilizotolewa/kutumika katika kipindi hiki.</td></tr>`;
+            } else {
+                materialRows.forEach((m, idx) => {
+                    totalRawMaterialsCost += m.totalCost;
+                    const bg = idx % 2 === 1 ? 'background-color: #f8fafc;' : 'background-color: #ffffff;';
+                    materialsRowsHtml += `
+                        <tr style="${bg} border-bottom: 1px solid #e2e8f0; page-break-inside: avoid;">
+                            <td style="padding: 8px 10px; font-weight: bold; color: #0f172a; text-transform: uppercase;">${m.materialName}</td>
+                            <td style="padding: 8px 10px; text-align: center; font-weight: bold; color: #0f172a;">${m.qty.toFixed(1)} ${m.unit}</td>
+                            <td style="padding: 8px 10px; text-align: right; color: #334155;">${m.unitCost.toLocaleString()}</td>
+                            <td style="padding: 8px 10px; text-align: right; font-weight: bold; color: #be123c;">${m.totalCost.toLocaleString()}</td>
+                        </tr>
+                    `;
+                });
+            }
+
+            // 3. Operating Expenses Data
+            const adminExpenses = (window.appData.adminExpenses || []).filter(exp => matchesSelectedDate(exp.dateRaw, exp.date));
+            const shopExpenses = [];
+            const finances = window.appData.finances || {};
+            const shops = window.appData.shops || [];
+            Object.keys(finances).forEach(shopId => {
+                if (shopId === 'overall_stats_baseline') return;
+                const shopFin = finances[shopId] || {};
+                const personalExpenses = shopFin.personalExpenses || [];
+                const shop = shops.find(s => s.id === shopId);
+                const shopLoc = shop ? (shop.location || shop.name) : 'Duka';
+                personalExpenses.filter(exp => matchesSelectedDate(exp.dateRaw, exp.date)).forEach(exp => {
+                    shopExpenses.push({ description: `${exp.description} (${shopLoc})`, amount: Number(exp.amount) || 0, category: exp.category || 'Duka' });
+                });
+            });
+            const salaryPayments = [];
+            (window.appData.salaryList || []).forEach(emp => {
+                (emp.payments || []).filter(p => matchesSelectedDate(p.dateRaw, p.date)).forEach(p => {
+                    salaryPayments.push({ description: `Mshahara: ${emp.name} (${p.notes || 'Malipo'})`, amount: Number(p.amount) || 0, category: 'Mishahara' });
+                });
+            });
+
+            const otherCostsList = [];
+            adminExpenses.forEach(e => otherCostsList.push({ description: e.description, amount: Number(e.amount) || 0, category: 'Admin' }));
+            shopExpenses.forEach(e => otherCostsList.push(e));
+            salaryPayments.forEach(e => otherCostsList.push(e));
+
+            let totalOtherDailyCosts = 0;
+            let operatingCostsRowsHtml = '';
+            if (otherCostsList.length === 0) {
+                operatingCostsRowsHtml = `<tr><td colspan="3" style="padding: 10px; text-align: center; color: #64748b; font-style: italic;">Hakuna matumizi mengineyo ya uendeshaji katika kipindi hiki.</td></tr>`;
+            } else {
+                otherCostsList.forEach((c, idx) => {
+                    totalOtherDailyCosts += c.amount;
+                    const bg = idx % 2 === 1 ? 'background-color: #f8fafc;' : 'background-color: #ffffff;';
+                    operatingCostsRowsHtml += `
+                        <tr style="${bg} border-bottom: 1px solid #e2e8f0; page-break-inside: avoid;">
+                            <td style="padding: 8px 10px; font-weight: bold; color: #0f172a;">${c.description}</td>
+                            <td style="padding: 8px 10px; text-align: center; color: #475569; font-weight: bold; font-size: 11px;">${c.category}</td>
+                            <td style="padding: 8px 10px; text-align: right; font-weight: bold; color: #ea580c;">${c.amount.toLocaleString()}</td>
+                        </tr>
+                    `;
+                });
+            }
+
+            // 4. Shop Sales Data
+            const shopSalesList = [];
+            let totalShopSales = 0;
+            Object.keys(finances).forEach(shopId => {
+                if (shopId === 'overall_stats_baseline') return;
+                const shopFin = finances[shopId] || {};
+                const salesHistory = shopFin.salesHistory || [];
+                const shop = shops.find(s => s.id === shopId);
+                const shopLoc = shop ? (shop.location || shop.name) : 'Duka';
+                salesHistory.filter(s => matchesSelectedDate(s.dateRaw, s.date)).forEach(s => {
+                    const amt = Number(s.amount) || 0;
+                    totalShopSales += amt;
+                    shopSalesList.push({ shopLocation: shopLoc, notes: s.notes || 'Mauzo ya Kawaida', date: s.date || formattedDateStr, amount: amt });
+                });
+            });
+
+            let shopSalesRowsHtml = '';
+            if (shopSalesList.length === 0) {
+                shopSalesRowsHtml = `<tr><td colspan="4" style="padding: 10px; text-align: center; color: #64748b; font-style: italic;">Hakuna mauzo yaliyowasilishwa na maduka katika kipindi hiki.</td></tr>`;
+            } else {
+                shopSalesList.forEach((s, idx) => {
+                    const bg = idx % 2 === 1 ? 'background-color: #f8fafc;' : 'background-color: #ffffff;';
+                    shopSalesRowsHtml += `
+                        <tr style="${bg} border-bottom: 1px solid #e2e8f0; page-break-inside: avoid;">
+                            <td style="padding: 8px 10px; font-weight: bold; color: #0f172a; text-transform: uppercase;">${s.shopLocation}</td>
+                            <td style="padding: 8px 10px; color: #334155;">${s.notes}</td>
+                            <td style="padding: 8px 10px; text-align: center; color: #64748b; font-size: 11px;">${s.date}</td>
+                            <td style="padding: 8px 10px; text-align: right; font-weight: bold; color: #15803d;">${s.amount.toLocaleString()}</td>
+                        </tr>
+                    `;
+                });
+            }
+
+            const totalDailyCost = totalRawMaterialsCost + totalOtherDailyCosts;
+            const estimatedProfit = totalProductionValue - totalDailyCost;
+            const profitMargin = totalProductionValue > 0 ? (estimatedProfit / totalProductionValue) * 100 : 0;
+            const netCashProfit = totalShopSales - totalDailyCost;
+
+            const periodLabel = isResetActiveForSelectedDate && resetPoint
+                ? `Kipindi Kipya: Kuanzia ${resetPoint.resetDateStr} ${resetPoint.resetTimeStr || ''} (na ${resetPoint.resetBy || 'Admin'})`
+                : `Rekodi Zote za Siku (${displayDate})`;
+
+            const generatedDateStr = new Date().toLocaleString('en-GB');
+
+            return `
+                <div style="font-family: Tahoma, 'Segoe UI', Arial, sans-serif; font-size: 12px; color: #1e293b; background: #ffffff; padding: 15px; max-width: 760px; margin: 0 auto; line-height: 1.45;">
+                    <!-- HEADER -->
+                    <div style="border-bottom: 2px solid #1e3a8a; padding-bottom: 12px; margin-bottom: 14px;">
+                        <table style="width: 100%; border-collapse: collapse;">
+                            <tr>
+                                <td style="width: 48px; vertical-align: middle;">
+                                    <div style="width: 44px; height: 44px; background: #1e3a8a; border-radius: 8px; color: #ffffff; text-align: center; line-height: 44px; font-weight: bold; font-size: 20px;">
+                                        N
+                                    </div>
+                                </td>
+                                <td style="vertical-align: middle; padding-left: 10px;">
+                                    <h1 style="margin: 0; font-size: 17px; font-weight: bold; color: #1e3a8a; text-transform: uppercase; letter-spacing: 0.5px;">NGAE FOOD PROCESSORS HUB</h1>
+                                    <p style="margin: 2px 0 0; font-size: 11px; color: #475569; font-weight: bold; text-transform: uppercase;">Daily Production & Financial Management System</p>
+                                </td>
+                                <td style="text-align: right; vertical-align: middle;">
+                                    <div style="display: inline-block; background: #eff6ff; border: 1px solid #bfdbfe; padding: 6px 12px; border-radius: 6px;">
+                                        <span style="display: block; font-size: 10px; color: #1e40af; font-weight: bold; text-transform: uppercase;">RIPOTI YA SIKU (DAILY REPORT)</span>
+                                        <span style="font-size: 12px; font-weight: bold; color: #0f172a;">${displayDate}</span>
+                                    </div>
+                                </td>
+                            </tr>
+                        </table>
+                        <table style="width: 100%; border-collapse: collapse; margin-top: 8px; font-size: 11px; color: #475569;">
+                            <tr>
+                                <td style="text-align: left;"><strong>Kipindi cha Ripoti:</strong> ${periodLabel}</td>
+                                <td style="text-align: right;"><strong>Tarehe ya Kuchapishwa:</strong> ${generatedDateStr}</td>
+                            </tr>
+                        </table>
+                    </div>
+
+                    <!-- EXECUTIVE SUMMARY KPI CARDS -->
+                    <div style="margin-bottom: 16px; page-break-inside: avoid;">
+                        <table style="width: 100%; border-collapse: separate; border-spacing: 8px; margin: 0 -8px;">
+                            <tr>
+                                <td style="width: 25%; background: #f0f9ff; border: 1px solid #bae6fd; border-radius: 6px; padding: 8px 10px;">
+                                    <div style="font-size: 10px; font-weight: bold; color: #0369a1; text-transform: uppercase;">Thamani ya Uzalishaji</div>
+                                    <div style="font-size: 14px; font-weight: bold; color: #0f172a; margin-top: 2px;">Tsh ${totalProductionValue.toLocaleString()}</div>
+                                    <div style="font-size: 10px; color: #64748b; margin-top: 2px;">${totalProductsCount} pcs zilizozalishwa</div>
+                                </td>
+                                <td style="width: 25%; background: #fff1f2; border: 1px solid #fecdd3; border-radius: 6px; padding: 8px 10px;">
+                                    <div style="font-size: 10px; font-weight: bold; color: #be123c; text-transform: uppercase;">Jumla ya Gharama</div>
+                                    <div style="font-size: 14px; font-weight: bold; color: #be123c; margin-top: 2px;">Tsh ${totalDailyCost.toLocaleString()}</div>
+                                    <div style="font-size: 10px; color: #64748b; margin-top: 2px;">Malighafi + Matumizi</div>
+                                </td>
+                                <td style="width: 25%; background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 6px; padding: 8px 10px;">
+                                    <div style="font-size: 10px; font-weight: bold; color: #15803d; text-transform: uppercase;">Mauzo ya Madukani</div>
+                                    <div style="font-size: 14px; font-weight: bold; color: #15803d; margin-top: 2px;">Tsh ${totalShopSales.toLocaleString()}</div>
+                                    <div style="font-size: 10px; color: #64748b; margin-top: 2px;">${shopSalesList.length} miamala ya maduka</div>
+                                </td>
+                                <td style="width: 25%; background: #faf5ff; border: 1px solid #e9d5ff; border-radius: 6px; padding: 8px 10px;">
+                                    <div style="font-size: 10px; font-weight: bold; color: #7e22ce; text-transform: uppercase;">Faida Makadirio</div>
+                                    <div style="font-size: 14px; font-weight: bold; color: ${estimatedProfit >= 0 ? '#15803d' : '#be123c'}; margin-top: 2px;">Tsh ${estimatedProfit.toLocaleString()}</div>
+                                    <div style="font-size: 10px; color: #64748b; margin-top: 2px;">Asilimia: ${profitMargin.toFixed(1)}%</div>
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+
+                    <!-- SECTION A: DAILY PRODUCTION -->
+                    <div style="margin-bottom: 16px; page-break-inside: avoid;">
+                        <div style="background: #1e3a8a; color: #ffffff; padding: 6px 10px; font-weight: bold; font-size: 11px; text-transform: uppercase; border-radius: 4px 4px 0 0;">
+                            A. Uzalishaji wa Bidhaa (Daily Production)
+                        </div>
+                        <table style="width: 100%; border-collapse: collapse; font-size: 12px; border: 1px solid #cbd5e1;">
+                            <thead>
+                                <tr style="background: #f1f5f9; border-bottom: 1px solid #cbd5e1;">
+                                    <th style="padding: 7px 10px; text-align: left; font-size: 11px; text-transform: uppercase; color: #334155;">Jina la Bidhaa</th>
+                                    <th style="padding: 7px 10px; text-align: center; font-size: 11px; text-transform: uppercase; color: #334155; width: 110px;">Kiasi</th>
+                                    <th style="padding: 7px 10px; text-align: right; font-size: 11px; text-transform: uppercase; color: #334155; width: 120px;">Bei / Unit (Tsh)</th>
+                                    <th style="padding: 7px 10px; text-align: right; font-size: 11px; text-transform: uppercase; color: #334155; width: 130px;">Thamani (Tsh)</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${productionRowsHtml}
+                            </tbody>
+                            <tfoot>
+                                <tr style="background: #f8fafc; font-weight: bold; border-top: 2px solid #cbd5e1;">
+                                    <td style="padding: 7px 10px;">Jumla Kuu ya Uzalishaji</td>
+                                    <td style="padding: 7px 10px; text-align: center;">${totalProductsCount} pcs</td>
+                                    <td style="padding: 7px 10px; text-align: right;">-</td>
+                                    <td style="padding: 7px 10px; text-align: right; color: #0f172a;">Tsh ${totalProductionValue.toLocaleString()}</td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+
+                    <!-- SECTION B: RAW MATERIALS USED -->
+                    <div style="margin-bottom: 16px; page-break-inside: avoid;">
+                        <div style="background: #be123c; color: #ffffff; padding: 6px 10px; font-weight: bold; font-size: 11px; text-transform: uppercase; border-radius: 4px 4px 0 0;">
+                            B. Malighafi Zilizotumika Uzalishajini (Raw Materials Consumed)
+                        </div>
+                        <table style="width: 100%; border-collapse: collapse; font-size: 12px; border: 1px solid #cbd5e1;">
+                            <thead>
+                                <tr style="background: #f1f5f9; border-bottom: 1px solid #cbd5e1;">
+                                    <th style="padding: 7px 10px; text-align: left; font-size: 11px; text-transform: uppercase; color: #334155;">Jina la Malighafi</th>
+                                    <th style="padding: 7px 10px; text-align: center; font-size: 11px; text-transform: uppercase; color: #334155; width: 110px;">Kiasi</th>
+                                    <th style="padding: 7px 10px; text-align: right; font-size: 11px; text-transform: uppercase; color: #334155; width: 120px;">Gharama / Kipimo</th>
+                                    <th style="padding: 7px 10px; text-align: right; font-size: 11px; text-transform: uppercase; color: #334155; width: 130px;">Jumla (Tsh)</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${materialsRowsHtml}
+                            </tbody>
+                            <tfoot>
+                                <tr style="background: #f8fafc; font-weight: bold; border-top: 2px solid #cbd5e1;">
+                                    <td colspan="3" style="padding: 7px 10px;">Jumla ya Gharama za Malighafi</td>
+                                    <td style="padding: 7px 10px; text-align: right; color: #be123c;">Tsh ${totalRawMaterialsCost.toLocaleString()}</td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+
+                    <!-- SECTION C: OPERATING EXPENSES -->
+                    <div style="margin-bottom: 16px; page-break-inside: avoid;">
+                        <div style="background: #ea580c; color: #ffffff; padding: 6px 10px; font-weight: bold; font-size: 11px; text-transform: uppercase; border-radius: 4px 4px 0 0;">
+                            C. Matumizi Mengineyo ya Uendeshaji (Operating Expenses)
+                        </div>
+                        <table style="width: 100%; border-collapse: collapse; font-size: 12px; border: 1px solid #cbd5e1;">
+                            <thead>
+                                <tr style="background: #f1f5f9; border-bottom: 1px solid #cbd5e1;">
+                                    <th style="padding: 7px 10px; text-align: left; font-size: 11px; text-transform: uppercase; color: #334155;">Maelezo ya Matumizi</th>
+                                    <th style="padding: 7px 10px; text-align: center; font-size: 11px; text-transform: uppercase; color: #334155; width: 110px;">Aina</th>
+                                    <th style="padding: 7px 10px; text-align: right; font-size: 11px; text-transform: uppercase; color: #334155; width: 130px;">Kiasi (Tsh)</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${operatingCostsRowsHtml}
+                            </tbody>
+                            <tfoot>
+                                <tr style="background: #f8fafc; font-weight: bold; border-top: 2px solid #cbd5e1;">
+                                    <td colspan="2" style="padding: 7px 10px;">Jumla ya Matumizi ya Uendeshaji</td>
+                                    <td style="padding: 7px 10px; text-align: right; color: #ea580c;">Tsh ${totalOtherDailyCosts.toLocaleString()}</td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+
+                    <!-- SECTION D: SHOP SALES & REVENUE -->
+                    <div style="margin-bottom: 16px; page-break-inside: avoid;">
+                        <div style="background: #15803d; color: #ffffff; padding: 6px 10px; font-weight: bold; font-size: 11px; text-transform: uppercase; border-radius: 4px 4px 0 0;">
+                            D. Mauzo na Mapato ya Madukani (Shop Sales & Revenue)
+                        </div>
+                        <table style="width: 100%; border-collapse: collapse; font-size: 12px; border: 1px solid #cbd5e1;">
+                            <thead>
+                                <tr style="background: #f1f5f9; border-bottom: 1px solid #cbd5e1;">
+                                    <th style="padding: 7px 10px; text-align: left; font-size: 11px; text-transform: uppercase; color: #334155;">Duka / Eneo</th>
+                                    <th style="padding: 7px 10px; text-align: left; font-size: 11px; text-transform: uppercase; color: #334155;">Maelezo ya Mauzo</th>
+                                    <th style="padding: 7px 10px; text-align: center; font-size: 11px; text-transform: uppercase; color: #334155; width: 110px;">Muda</th>
+                                    <th style="padding: 7px 10px; text-align: right; font-size: 11px; text-transform: uppercase; color: #334155; width: 130px;">Kiasi (Tsh)</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${shopSalesRowsHtml}
+                            </tbody>
+                            <tfoot>
+                                <tr style="background: #f8fafc; font-weight: bold; border-top: 2px solid #cbd5e1;">
+                                    <td colspan="3" style="padding: 7px 10px;">Jumla ya Mauzo ya Madukani</td>
+                                    <td style="padding: 7px 10px; text-align: right; color: #15803d;">Tsh ${totalShopSales.toLocaleString()}</td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+
+                    <!-- SECTION E: FINANCIAL RECONCILIATION SUMMARY -->
+                    <div style="margin-bottom: 18px; border: 1px solid #94a3b8; border-radius: 6px; background: #f8fafc; padding: 12px 14px; page-break-inside: avoid;">
+                        <div style="font-weight: bold; font-size: 12px; color: #0f172a; text-transform: uppercase; border-bottom: 1px solid #cbd5e1; padding-bottom: 5px; margin-bottom: 8px;">
+                            E. Muhtasari wa Fedha na Faida (Financial Reconciliation & Profit Statement)
+                        </div>
+                        <table style="width: 100%; border-collapse: collapse; font-size: 12px;">
+                            <tr>
+                                <td style="padding: 3px 0; color: #475569;">1. Thamani ya Jumla ya Uzalishaji (Production Value):</td>
+                                <td style="padding: 3px 0; text-align: right; font-weight: bold; color: #0f172a;">Tsh ${totalProductionValue.toLocaleString()}</td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 3px 0; color: #475569;">2. Gharama ya Malighafi Zilizotumika (Raw Materials):</td>
+                                <td style="padding: 3px 0; text-align: right; font-weight: bold; color: #be123c;">- Tsh ${totalRawMaterialsCost.toLocaleString()}</td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 3px 0; color: #475569;">3. Matumizi ya Uendeshaji & Mishahara (Operating Expenses):</td>
+                                <td style="padding: 3px 0; text-align: right; font-weight: bold; color: #ea580c;">- Tsh ${totalOtherDailyCosts.toLocaleString()}</td>
+                            </tr>
+                            <tr style="border-top: 1px solid #cbd5e1;">
+                                <td style="padding: 5px 0; font-weight: bold; color: #be123c;">JUMLA YA GHARAMA ZA SIKU (TOTAL DAILY COST):</td>
+                                <td style="padding: 5px 0; text-align: right; font-weight: bold; color: #be123c; font-size: 13px;">Tsh ${totalDailyCost.toLocaleString()}</td>
+                            </tr>
+                            <tr style="border-top: 1px dashed #cbd5e1;">
+                                <td style="padding: 5px 0; font-weight: bold; color: #15803d;">4. Jumla ya Mauzo Yaliyopokelewa Madukani (Shop Cash Revenue):</td>
+                                <td style="padding: 5px 0; text-align: right; font-weight: bold; color: #15803d; font-size: 13px;">Tsh ${totalShopSales.toLocaleString()}</td>
+                            </tr>
+                            <tr style="border-top: 2px solid #0f172a; background: #ffffff;">
+                                <td style="padding: 7px 6px; font-weight: bold; color: #0f172a; font-size: 12px;">FAIDA MAKADIRIO YA UZALISHAJI (ESTIMATED PRODUCTION PROFIT):</td>
+                                <td style="padding: 7px 6px; text-align: right; font-weight: bold; font-size: 13px; color: ${estimatedProfit >= 0 ? '#15803d' : '#be123c'};">Tsh ${estimatedProfit.toLocaleString()} (${profitMargin.toFixed(2)}%)</td>
+                            </tr>
+                        </table>
+                    </div>
+
+                    <!-- SIGN-OFF BLOCK -->
+                    <div style="margin-top: 20px; page-break-inside: avoid;">
+                        <table style="width: 100%; border-collapse: collapse; font-size: 11px;">
+                            <tr>
+                                <td style="width: 33%; border-top: 1px solid #94a3b8; padding-top: 5px;">
+                                    <strong>Imetayarishwa na:</strong><br>
+                                    Msimamizi wa Uzalishaji<br>
+                                    Sahihi: _______________________<br>
+                                    Tarehe: ________________________
+                                </td>
+                                <td style="width: 33%; text-align: center; vertical-align: top;">
+                                    <div style="display: inline-block; border: 2px dashed #cbd5e1; padding: 12px 20px; color: #94a3b8; font-weight: bold; font-size: 10px; text-transform: uppercase;">
+                                        Muhuri Rasmi wa NGAE
+                                    </div>
+                                </td>
+                                <td style="width: 33%; border-top: 1px solid #94a3b8; padding-top: 5px; text-align: right;">
+                                    <strong>Imeidhinishwa na:</strong><br>
+                                    Mkurugenzi Mkuu / Admin<br>
+                                    Sahihi: _______________________<br>
+                                    Tarehe: ________________________
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+            `;
         }
 
         function printDailyReportDirectly() {
             const dateVal = document.getElementById('dailyReportDatePicker').value;
-            const printContent = document.getElementById('dailyReportPrintableArea').innerHTML;
-            
             const printWindow = window.open('', '_blank');
             if (!printWindow) {
                 alert("Tafadhali ruhusu pop-ups kwenye kivinjari chako ili uweze kuchapa.");
                 return;
             }
-            
-            // Reformat display date
-            const dateParts = dateVal.split('-');
-            const displayDate = dateParts.length === 3 ? `${dateParts[2]}/${dateParts[1]}/${dateParts[0]}` : dateVal;
-            
+
+            const docHtml = generateDailyReportDocumentHtml(dateVal);
+
             printWindow.document.write(`
                 <!DOCTYPE html>
                 <html>
                 <head>
-                    <title>NGAE FOOD PROCESSORS - DAILY REPORT - ${displayDate}</title>
-                    <script src="https://cdn.tailwindcss.com"><\/script>
-                    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+                    <title>NGAE FOOD PROCESSORS - DAILY REPORT - ${dateVal}</title>
                     <style>
+                        @page { size: A4 portrait; margin: 10mm; }
                         body {
-                            font-family: 'Poppins', sans-serif;
-                            padding: 20px;
-                            background-color: white;
-                        }
-                        .print-header {
-                            display: block !important;
+                            font-family: 'Tahoma', 'Segoe UI', Arial, sans-serif !important;
+                            font-size: 12px !important;
+                            padding: 10px;
+                            margin: 0;
+                            background-color: #ffffff;
+                            color: #1e293b;
                         }
                         @media print {
                             body { padding: 0; }
@@ -5055,16 +6066,11 @@ Saini ya Mwajiriwa (${emp.name}): ____________________      Tarehe: ____________
                     </style>
                 </head>
                 <body>
-                    <div class="max-w-4xl mx-auto">
-                        ${printContent}
-                    </div>
+                    ${docHtml}
                     <script>
-                        // Force show printable header
-                        const headers = document.querySelectorAll('.print-header');
-                        headers.forEach(h => h.classList.remove('hidden'));
                         window.onload = function() {
                             window.print();
-                            setTimeout(function() { window.close(); }, 500);
+                            setTimeout(function() { window.close(); }, 800);
                         }
                     <\/script>
                 </body>
@@ -5075,25 +6081,38 @@ Saini ya Mwajiriwa (${emp.name}): ____________________      Tarehe: ____________
 
         function downloadReportPDF(callback) {
             const dateVal = document.getElementById('dailyReportDatePicker').value;
-            const element = document.getElementById('dailyReportPrintableArea');
-            if (!element) return;
-            
             const btn = document.getElementById('btnDownloadReport');
+            
             if (btn && !callback) {
                 btn.disabled = true;
                 btn.innerHTML = `<i class="bi bi-hourglass-split animate-spin"></i> INAPAKUA...`;
             }
-            
-            // Temporary reveal printable header
-            const printHeader = element.querySelector('.print-header');
-            if (printHeader) printHeader.classList.remove('hidden');
+
+            // Create dedicated Tahoma 12px offscreen export element
+            const reportContainer = document.createElement('div');
+            reportContainer.id = 'tempPdfExportContainer_' + Date.now();
+            reportContainer.style.position = 'absolute';
+            reportContainer.style.left = '-9999px';
+            reportContainer.style.top = '0';
+            reportContainer.style.width = '780px';
+            reportContainer.style.backgroundColor = '#ffffff';
+            reportContainer.innerHTML = generateDailyReportDocumentHtml(dateVal);
+            document.body.appendChild(reportContainer);
 
             const opt = {
-                margin:       [10, 10, 15, 10], // top, left, bottom, right
-                filename:     `Daily_Report_${dateVal}.pdf`,
+                margin:       [10, 10, 12, 10], // mm: top, left, bottom, right
+                filename:     `NGAE_Daily_Report_${dateVal}.pdf`,
                 pagebreak:    { mode: ['css', 'legacy'] },
                 image:        { type: 'jpeg', quality: 0.98 },
-                html2canvas:  { scale: 2, useCORS: true, logging: false },
+                html2canvas:  { 
+                    scale: 2, 
+                    useCORS: true, 
+                    logging: false,
+                    letterRendering: true,
+                    scrollY: 0,
+                    scrollX: 0,
+                    windowWidth: 800
+                },
                 jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
             };
 
@@ -5102,22 +6121,20 @@ Saini ya Mwajiriwa (${emp.name}): ____________________      Tarehe: ____________
                     throw new Error("Maktaba ya PDF haijapatikana (html2pdf is missing). Tafadhali refresh ukurasa.");
                 }
 
-                // Generate and save
-                const worker = html2pdf().from(element).set(opt);
+                const worker = html2pdf().from(reportContainer).set(opt);
                 
                 if (callback) {
-                    // If callback is provided, we return the blob
                     worker.toPdf().get('pdf').then(function (pdf) {
-                        if (printHeader) printHeader.classList.add('hidden');
+                        if (reportContainer.parentNode) reportContainer.parentNode.removeChild(reportContainer);
                         const pdfBlob = pdf.output('blob');
                         callback(pdfBlob, null);
                     }).catch(err => {
-                        if (printHeader) printHeader.classList.add('hidden');
+                        if (reportContainer.parentNode) reportContainer.parentNode.removeChild(reportContainer);
                         callback(null, err);
                     });
                 } else {
                     worker.save().then(function() {
-                        if (printHeader) printHeader.classList.add('hidden');
+                        if (reportContainer.parentNode) reportContainer.parentNode.removeChild(reportContainer);
                         console.log("PDF downloaded successfully.");
                         if (btn) {
                             btn.disabled = false;
@@ -5127,8 +6144,8 @@ Saini ya Mwajiriwa (${emp.name}): ____________________      Tarehe: ____________
                             }, 3000);
                         }
                     }).catch(err => {
-                        console.error(err);
-                        if (printHeader) printHeader.classList.add('hidden');
+                        console.error("PDF download error:", err);
+                        if (reportContainer.parentNode) reportContainer.parentNode.removeChild(reportContainer);
                         if (btn) {
                             btn.disabled = false;
                             btn.innerHTML = `<i class="bi bi-download"></i> DOWNLOAD PDF`;
@@ -5138,7 +6155,7 @@ Saini ya Mwajiriwa (${emp.name}): ____________________      Tarehe: ____________
                 }
             } catch (error) {
                 console.error("PDF generation error:", error);
-                if (printHeader) printHeader.classList.add('hidden');
+                if (reportContainer.parentNode) reportContainer.parentNode.removeChild(reportContainer);
                 if (btn && !callback) {
                     btn.disabled = false;
                     btn.innerHTML = `<i class="bi bi-download"></i> DOWNLOAD PDF`;
@@ -5147,7 +6164,7 @@ Saini ya Mwajiriwa (${emp.name}): ____________________      Tarehe: ____________
                 if (callback) {
                     callback(null, error);
                 } else {
-                    alert("Hitilafu imetokea wakati wa kuandaa PDF. " + error.message);
+                    alert("Hitilafu imetokea wakati wa kuandaa PDF: " + error.message);
                 }
             }
         }

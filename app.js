@@ -185,6 +185,10 @@ function _ensureFields(data) {
     if (!data.manufacturerMaterials) data.manufacturerMaterials = {};
     if (!data.adminExpenses) data.adminExpenses = [];
     if (!data.salaryList) data.salaryList = [];
+    if (!data.systemResets) data.systemResets = {};
+    if (!data.systemResets.daily_report) data.systemResets.daily_report = null;
+    if (!data.systemResets.cash_flow) data.systemResets.cash_flow = null;
+    if (!data.systemResets.audit_trail) data.systemResets.audit_trail = { logs: [] };
 
     return data;
 }
@@ -378,6 +382,9 @@ async function saveData(data) {
             const currentCFTransactions = (appData.cashFlow && appData.cashFlow.transactions) ? appData.cashFlow.transactions : [];
             const lastCFTransactions = (lastSyncedAppData.cashFlow && lastSyncedAppData.cashFlow.transactions) ? lastSyncedAppData.cashFlow.transactions : [];
             syncArrayCol('cash_flow_transactions', currentCFTransactions, lastCFTransactions, 'id');
+
+            // System Resets (Daily Report & Cash Flow starting points)
+            syncObjectCol('system_resets', appData.systemResets, lastSyncedAppData.systemResets);
 
             if (promises.length > 0) {
                 await Promise.all(promises);
@@ -700,6 +707,15 @@ function startRealtimeSync() {
             });
             appData.cashFlow.balance = balance;
         });
+
+        listenToCollection('system_resets', 'object', snapshot => {
+            const localResets = {};
+            snapshot.forEach(doc => {
+                localResets[doc.id] = doc.data();
+            });
+            if (!appData.systemResets) appData.systemResets = {};
+            Object.assign(appData.systemResets, localResets);
+        });
     });
 }
 
@@ -712,6 +728,12 @@ function _refreshUIIfPossible() {
         if (typeof renderStaff === 'function') renderStaff();
         if (typeof renderProducts === 'function') renderProducts();
         if (typeof renderCashFlow === 'function') renderCashFlow();
+        if (typeof renderDailyReport === 'function') {
+            const activeTab = document.querySelector('.tab-content:not(.hidden)');
+            if (activeTab && activeTab.id === 'tab-daily-report') {
+                renderDailyReport();
+            }
+        }
         if (typeof renderSuggestions === 'function') renderSuggestions();
         if (typeof renderNotifications === 'function') renderNotifications();
         if (typeof renderOverallStats === 'function') renderOverallStats();
@@ -1629,12 +1651,21 @@ window.appGetPersonalCashFlowStats = function() {
         return { today: 0, week: 0, month: 0, year: 0 };
     }
 
+    const resetPoint = window.appGetCashFlowResetPoint ? window.appGetCashFlowResetPoint() : null;
+    const resetTime = (resetPoint && resetPoint.resetAt) ? new Date(resetPoint.resetAt).getTime() : null;
+
     const now = new Date();
     let today = 0, week = 0, month = 0, year = 0;
 
     appData.cashFlow.transactions.forEach(t => {
         if (t.type === 'IN') {
             const tDate = new Date(t.dateRaw);
+            const tTime = tDate.getTime();
+
+            // Ignore transactions prior to the cash flow reset point
+            if (resetTime !== null && !isNaN(tTime) && tTime < resetTime) {
+                return;
+            }
 
             if (tDate.getFullYear() === now.getFullYear()) {
                 year += t.amount;
@@ -1657,6 +1688,145 @@ window.appGetPersonalCashFlowStats = function() {
     });
 
     return { today, week, month, year };
+};
+
+// ==========================================
+// SYSTEM RESETS (DAILY REPORT & CASH FLOW)
+// Zero-loss reset points synchronized across devices
+// ==========================================
+
+window.appResetDailyReport = function(adminUser = 'Admin') {
+    if (!appData.systemResets) {
+        appData.systemResets = {};
+    }
+    const now = new Date();
+    const nowIso = now.toISOString();
+    const prevReset = (appData.systemResets.daily_report && appData.systemResets.daily_report.resetAt)
+        ? appData.systemResets.daily_report.resetAt
+        : 'Mwanzo wa Mfumo';
+
+    appData.systemResets.daily_report = {
+        resetAt: nowIso,
+        resetDateStr: now.toLocaleDateString('en-GB'),
+        resetTimeStr: now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
+        resetBy: adminUser,
+        prevPeriodStart: prevReset
+    };
+
+    if (!appData.systemResets.audit_trail) {
+        appData.systemResets.audit_trail = { logs: [] };
+    } else if (!appData.systemResets.audit_trail.logs) {
+        appData.systemResets.audit_trail.logs = [];
+    }
+
+    const auditEntry = {
+        id: 'rst_' + Date.now() + '_' + Math.random().toString(36).substr(2, 6),
+        module: 'DAILY_REPORT',
+        moduleName: 'Daily Report (Ripoti ya Siku)',
+        adminUser: adminUser,
+        timestamp: nowIso,
+        formattedDate: `${now.toLocaleDateString('en-GB')} ${now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}`,
+        previousResetAt: prevReset,
+        newResetAt: nowIso
+    };
+    appData.systemResets.audit_trail.logs.push(auditEntry);
+
+    if (appData.systemResets.audit_trail.logs.length > 100) {
+        appData.systemResets.audit_trail.logs = appData.systemResets.audit_trail.logs.slice(-100);
+    }
+
+    saveData(appData);
+    window.appData = appData;
+
+    if (typeof appAddNotification === 'function') {
+        appAddNotification('Daily Report Mpya', `Ripoti ya Siku imeanzishwa upya na ${adminUser}. Mahesabu yanahesabiwa kuanzia sasa.`);
+    }
+
+    return true;
+};
+
+window.appResetCashFlow = function(adminUser = 'Admin') {
+    if (!appData.systemResets) {
+        appData.systemResets = {};
+    }
+    const now = new Date();
+    const nowIso = now.toISOString();
+    const prevReset = (appData.systemResets.cash_flow && appData.systemResets.cash_flow.resetAt)
+        ? appData.systemResets.cash_flow.resetAt
+        : 'Mwanzo wa Mfumo';
+
+    appData.systemResets.cash_flow = {
+        resetAt: nowIso,
+        resetDateStr: now.toLocaleDateString('en-GB'),
+        resetTimeStr: now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
+        resetBy: adminUser,
+        prevPeriodStart: prevReset
+    };
+
+    if (!appData.systemResets.audit_trail) {
+        appData.systemResets.audit_trail = { logs: [] };
+    } else if (!appData.systemResets.audit_trail.logs) {
+        appData.systemResets.audit_trail.logs = [];
+    }
+
+    const auditEntry = {
+        id: 'rst_' + Date.now() + '_' + Math.random().toString(36).substr(2, 6),
+        module: 'CASH_FLOW',
+        moduleName: 'Cash Flow (Kitabu cha Fedha)',
+        adminUser: adminUser,
+        timestamp: nowIso,
+        formattedDate: `${now.toLocaleDateString('en-GB')} ${now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}`,
+        previousResetAt: prevReset,
+        newResetAt: nowIso
+    };
+    appData.systemResets.audit_trail.logs.push(auditEntry);
+
+    if (appData.systemResets.audit_trail.logs.length > 100) {
+        appData.systemResets.audit_trail.logs = appData.systemResets.audit_trail.logs.slice(-100);
+    }
+
+    saveData(appData);
+    window.appData = appData;
+
+    if (typeof appAddNotification === 'function') {
+        appAddNotification('Cash Flow Mpya', `Kipindi kipya cha Cash Flow kimeanzishwa na ${adminUser}. Mahesabu yataanza sifuri.`);
+    }
+
+    return true;
+};
+
+window.appGetDailyReportResetPoint = function() {
+    return (appData.systemResets && appData.systemResets.daily_report) ? appData.systemResets.daily_report : null;
+};
+
+window.appGetCashFlowResetPoint = function() {
+    return (appData.systemResets && appData.systemResets.cash_flow) ? appData.systemResets.cash_flow : null;
+};
+
+window.appGetResetAuditLogs = function() {
+    return (appData.systemResets && appData.systemResets.audit_trail && appData.systemResets.audit_trail.logs)
+        ? appData.systemResets.audit_trail.logs
+        : [];
+};
+
+window.appGetPersonalCashFlowBalance = function() {
+    if (!appData.cashFlow || !appData.cashFlow.transactions) return 0;
+    const resetPoint = window.appGetCashFlowResetPoint ? window.appGetCashFlowResetPoint() : null;
+    const resetTime = (resetPoint && resetPoint.resetAt) ? new Date(resetPoint.resetAt).getTime() : null;
+
+    if (resetTime === null) {
+        return appData.cashFlow.balance || 0;
+    }
+
+    let activeBal = 0;
+    appData.cashFlow.transactions.forEach(t => {
+        const tTime = new Date(t.dateRaw).getTime();
+        if (!isNaN(tTime) && tTime >= resetTime) {
+            if (t.type === 'IN') activeBal += (Number(t.amount) || 0);
+            else if (t.type === 'OUT') activeBal -= (Number(t.amount) || 0);
+        }
+    });
+    return activeBal;
 };
 
 // ==========================================

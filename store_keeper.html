@@ -753,6 +753,7 @@
     <!-- SCRIPTS -->
     <!-- Firebase SDK (Real-time Sync kati ya vifaa vyote) -->
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
     <script src="firebase-config.js"></script>
     <script src="app.js"></script>
@@ -938,7 +939,7 @@
             // Initial view load
             renderOverviewDashboard();
 
-            // ✅ REAL-TIME UPDATE: Sikiliza mabadiliko kutoka vifaa vingine (Firebase)
+            // Γ£à REAL-TIME UPDATE: Sikiliza mabadiliko kutoka vifaa vingine (Firebase)
             window.addEventListener('ngae-data-updated', function() {
                 renderOverviewDashboard();
                 if (typeof renderReceivePortal === 'function') renderReceivePortal();
@@ -959,14 +960,14 @@
                 }
             });
 
-            // ✅ Pakia tena data baada ya sekunde 1.5 (Firebase inapakia)
+            // Γ£à Pakia tena data baada ya sekunde 1.5 (Firebase inapakia)
             setTimeout(() => {
                 renderOverviewDashboard();
                 if (typeof renderStockPortal === 'function') renderStockPortal();
             }, 1500);
         });
 
-        // ✅ Hook inayotumiwa na app.js _refreshUIIfPossible()
+        // Γ£à Hook inayotumiwa na app.js _refreshUIIfPossible()
         window._refreshStorekeeperStats = function() {
             renderOverviewDashboard();
             if (typeof renderReceivePortal === 'function') renderReceivePortal();

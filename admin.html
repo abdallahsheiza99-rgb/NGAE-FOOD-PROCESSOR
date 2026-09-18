@@ -166,7 +166,7 @@
                 </div>
                 <div>
                     <label class="block text-sm font-bold text-gray-700 mb-1">Nenosiri (Password)</label>
-                    <input type="password" id="adminPass" required placeholder="••••••••"
+                    <input type="password" id="adminPass" required placeholder="ΓÇóΓÇóΓÇóΓÇóΓÇóΓÇóΓÇóΓÇó"
                         class="w-full border border-gray-300 rounded-xl p-3 focus:ring-2 focus:ring-red-500 outline-none">
                 </div>
                 <button type="submit"
@@ -1908,7 +1908,7 @@
                         <!-- 3. DAILY REPORT SUMMARY (Bottom Box) -->
                         <div class="bg-slate-50 rounded-2xl border border-slate-200 p-6 space-y-4">
                             <h3 class="text-sm font-black text-slate-800 uppercase tracking-wider border-b pb-3 mb-2 text-center" id="repSummaryBoxTitle">
-                                DAILY REPORT SUMMARY – [DATE]
+                                DAILY REPORT SUMMARY ΓÇô [DATE]
                             </h3>
                             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 text-xs">
                                 <div class="space-y-2">
@@ -2277,6 +2277,7 @@
     <!-- Scripts -->
     <!-- Firebase SDK (Real-time Sync kati ya vifaa vyote) -->
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
@@ -2356,7 +2357,7 @@
 
                     if (window.appReceiveMaterial) {
                         window.appReceiveMaterial(name, unit, stock, 0);
-                        alert(`✅ Malighafi "${name.toUpperCase()}" imesajiliwa kwenye Stoo! Stock: ${stock} ${unit}`);
+                        alert(`Γ£à Malighafi "${name.toUpperCase()}" imesajiliwa kwenye Stoo! Stock: ${stock} ${unit}`);
                         addMatForm.reset();
                         renderAdminStore();
                     }
@@ -2394,7 +2395,7 @@
                 if (window.appAddStaff) {
                     const newId = window.appAddStaff(name, role, customId, photoUrl || null);
                     if (newId) {
-                        alert(`✅ Akaunti mpya imetengenezwa!\nJina: ${name}\nStaff ID: ${newId}\nJukumu: ${role}`);
+                        alert(`Γ£à Akaunti mpya imetengenezwa!\nJina: ${name}\nStaff ID: ${newId}\nJukumu: ${role}`);
                         document.getElementById('addStaffForm').reset();
 
                         // Ficha custom role input
@@ -2741,10 +2742,10 @@ Saini ya Mwajiriwa (${emp.name}): ____________________      Tarehe: ____________
                             senderId: senderId,
                             updatedAt: firebase.firestore.FieldValue.serverTimestamp()
                         }).then(() => {
-                            alert("✅ Mipangilio ya WhatsApp API imehifadhiwa salama kwenye Firestore!");
+                            alert("Γ£à Mipangilio ya WhatsApp API imehifadhiwa salama kwenye Firestore!");
                             closeWhatsAppConfigModal();
                         }).catch(err => {
-                            alert("❌ Kosa la kuhifadhi mipangilio: " + err.message);
+                            alert("Γ¥î Kosa la kuhifadhi mipangilio: " + err.message);
                         });
                     } else {
                         alert("Firebase is not initialized.");
@@ -2765,7 +2766,7 @@ Saini ya Mwajiriwa (${emp.name}): ____________________      Tarehe: ____________
             document.getElementById('adminDashboard').classList.remove('hidden');
 
             // Tumia window.appData iliyoandaliwa na app.js (Firebase + localStorage)
-            // USIIBADILISHE hapa — app.js ndiyo inayoshughulikia data sync
+            // USIIBADILISHE hapa ΓÇö app.js ndiyo inayoshughulikia data sync
             // Kama appData bado haijapakia (Firebase inaendelea), subiri kidogo kisha render
             function _doRender() {
                 const renderers = [
@@ -3564,7 +3565,7 @@ Saini ya Mwajiriwa (${emp.name}): ____________________      Tarehe: ____________
                 }
                 closeDailyReportResetModal();
                 renderDailyReport();
-                alert("✅ Daily Report imeanzishwa upya kikamilifu! Mahesabu yataanza sifuri kuanzia wakati huu bila kufuta rekodi zozote za nyuma.");
+                alert("Γ£à Daily Report imeanzishwa upya kikamilifu! Mahesabu yataanza sifuri kuanzia wakati huu bila kufuta rekodi zozote za nyuma.");
             } catch (err) {
                 console.error("Daily report reset error:", err);
                 alert("Hitilafu wakati wa kuweka upya Daily Report: " + err.message);
@@ -3607,7 +3608,7 @@ Saini ya Mwajiriwa (${emp.name}): ____________________      Tarehe: ____________
                 currentCashFlowViewMode = 'current';
                 closeCashFlowResetModal();
                 renderCashFlow();
-                alert("✅ Kipindi kipya cha Cash Flow kimeanzishwa kikamilifu! Salio na mahesabu yataanza sifuri kuanzia sasa bila kufuta miamala ya awali.");
+                alert("Γ£à Kipindi kipya cha Cash Flow kimeanzishwa kikamilifu! Salio na mahesabu yataanza sifuri kuanzia sasa bila kufuta miamala ya awali.");
             } catch (err) {
                 console.error("Cash flow reset error:", err);
                 alert("Hitilafu wakati wa kuanzisha Cash Flow mpya: " + err.message);
@@ -5968,7 +5969,7 @@ Saini ya Mwajiriwa (${emp.name}): ____________________      Tarehe: ____________
             if (printReportDateTitle) printReportDateTitle.textContent = `TAREHE: ${displayDate}`;
             
             const repSummaryBoxTitle = document.getElementById('repSummaryBoxTitle');
-            if (repSummaryBoxTitle) repSummaryBoxTitle.textContent = `DAILY REPORT SUMMARY – ${displayDate}`;
+            if (repSummaryBoxTitle) repSummaryBoxTitle.textContent = `DAILY REPORT SUMMARY ΓÇô ${displayDate}`;
 
             document.getElementById('sumProductionValue').textContent = `Tsh ${totalProductionValue.toLocaleString()}`;
             document.getElementById('sumProductsCount').textContent = `${totalProductsProducedCount.toLocaleString()} pcs`;
@@ -6718,7 +6719,7 @@ Saini ya Mwajiriwa (${emp.name}): ____________________      Tarehe: ____________
                     const dateParts = dateVal.split('-');
                     const displayDate = dateParts.length === 3 ? `${dateParts[2]}/${dateParts[1]}/${dateParts[0]}` : dateVal;
 
-                    const messageText = `*NGAE FOOD PROCESSORS HUB – DAILY REPORT*\n\nDaily Report for: *${displayDate}*\n\nPlease find attached the Daily Production and Financial Report for the selected date.\n\n*Estimated Profit:* ${profitText}\n*Estimated Profit Margin:* ${marginText}`;
+                    const messageText = `*NGAE FOOD PROCESSORS HUB ΓÇô DAILY REPORT*\n\nDaily Report for: *${displayDate}*\n\nPlease find attached the Daily Production and Financial Report for the selected date.\n\n*Estimated Profit:* ${profitText}\n*Estimated Profit Margin:* ${marginText}`;
 
                     const recipients = ['+255765394352', '+255776637247'];
                     
@@ -6726,9 +6727,9 @@ Saini ya Mwajiriwa (${emp.name}): ____________________      Tarehe: ____________
                         addWhatsAppLog(`Inatuma ripoti kwenda ${num}...`, 'info');
                         const success = await sendToGateway(num, messageText, publicUrl, config);
                         if (success) {
-                            addWhatsAppLog(`✅ Sent Successfully kwa namba ${num}`, 'success');
+                            addWhatsAppLog(`Γ£à Sent Successfully kwa namba ${num}`, 'success');
                         } else {
-                            addWhatsAppLog(`❌ Failed to Send kwa namba ${num}`, 'error');
+                            addWhatsAppLog(`Γ¥î Failed to Send kwa namba ${num}`, 'error');
                         }
                     }
                     

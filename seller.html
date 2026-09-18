@@ -316,7 +316,7 @@
                         <span class="text-[10px] font-black uppercase tracking-wider text-purple-600 bg-purple-50 px-2.5 py-1 rounded-full border border-purple-100">Mauzo Rank</span>
                     </div>
                     <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Nafasi Yangu Kwenye Mauzo</p>
-                    <h3 class="text-xl md:text-2xl font-black text-purple-700 mt-1" id="salesRankText">🥇 Nafasi ya 1</h3>
+                    <h3 class="text-xl md:text-2xl font-black text-purple-700 mt-1" id="salesRankText">≡ƒÑç Nafasi ya 1</h3>
                     <p class="text-[11px] text-slate-500 mt-2 flex items-center gap-1 font-medium">
                         <i class="bi bi-graph-up-arrow text-purple-500"></i> Inapimwa kulingana na mauzo ya maduka mengine yote
                     </p>
@@ -628,6 +628,7 @@
     <!-- SCRIPTS SYSTEM -->
     <!-- Firebase SDK (Real-time Sync kati ya vifaa vyote) -->
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
     <script src="firebase-config.js"></script>
     <script src="app.js"></script>
@@ -794,17 +795,17 @@
                 }
             });
 
-            // ✅ REAL-TIME UPDATE: Sikiliza mabadiliko kutoka vifaa vingine (Firebase)
+            // Γ£à REAL-TIME UPDATE: Sikiliza mabadiliko kutoka vifaa vingine (Firebase)
             window.addEventListener('ngae-data-updated', function() {
                 renderSellerDashboard();
                 renderSuggestionsChat();
             });
 
-            // ✅ Pakia tena data ya hivi karibuni baada ya sekunde 1.5 (Firebase inapakia)
+            // Γ£à Pakia tena data ya hivi karibuni baada ya sekunde 1.5 (Firebase inapakia)
             setTimeout(renderSellerDashboard, 1500);
         });
 
-        // ✅ Hook inayotumiwa na app.js _refreshUIIfPossible()
+        // Γ£à Hook inayotumiwa na app.js _refreshUIIfPossible()
         window._refreshSellerStats = function() {
             renderSellerDashboard();
         };
@@ -884,10 +885,10 @@
             }
 
             // Card 5: Sales Rank
-            let medal = "🥇";
-            if (stats.userRank === 2) medal = "🥈";
-            else if (stats.userRank === 3) medal = "🥉";
-            else if (stats.userRank > 3) medal = "🏅";
+            let medal = "≡ƒÑç";
+            if (stats.userRank === 2) medal = "≡ƒÑê";
+            else if (stats.userRank === 3) medal = "≡ƒÑë";
+            else if (stats.userRank > 3) medal = "≡ƒÅà";
 
             document.getElementById('salesRankText').textContent = `${medal} Nafasi ya ${stats.userRank} kati ya Maduka ${stats.totalShopsCount}`;
 

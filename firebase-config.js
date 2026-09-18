@@ -1,19 +1,19 @@
-/**
+﻿/**
  * =====================================================================
  * FIREBASE CONFIGURATION - NGAE FOOD PROCESSORS HUB
  * =====================================================================
  * 
  * HATUA ZA KUPATA CONFIG YAKO:
  * 1. Nenda: https://console.firebase.google.com/
- * 2. Bonyeza "Add project" → weka jina (k.m. "ngae-food-hub") → Continue
- * 3. Disable Google Analytics (si lazima) → Create project
- * 4. Baada ya project kuundwa → bonyeza ikoni ya "</>  Web"
- * 5. Weka app nickname (k.m. "ngae-web") → Register app
- * 6. Nakili values zote kutoka kwa firebaseConfig → weka hapa chini
+ * 2. Bonyeza "Add project" ΓåÆ weka jina (k.m. "ngae-food-hub") ΓåÆ Continue
+ * 3. Disable Google Analytics (si lazima) ΓåÆ Create project
+ * 4. Baada ya project kuundwa ΓåÆ bonyeza ikoni ya "</>  Web"
+ * 5. Weka app nickname (k.m. "ngae-web") ΓåÆ Register app
+ * 6. Nakili values zote kutoka kwa firebaseConfig ΓåÆ weka hapa chini
  * 
  * HATUA ZA KUWEZESHA FIRESTORE:
- * 7. Kwenye Firebase Console → Build → Firestore Database
- * 8. Create database → Start in test mode → Next → Enable
+ * 7. Kwenye Firebase Console ΓåÆ Build ΓåÆ Firestore Database
+ * 8. Create database ΓåÆ Start in test mode ΓåÆ Next ΓåÆ Enable
  * 
  * =====================================================================
  */

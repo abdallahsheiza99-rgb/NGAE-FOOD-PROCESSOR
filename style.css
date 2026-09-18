@@ -1,196 +1,354 @@
-* {margin:0; padding:0; box-sizing:border-box; font-family:'Poppins', sans-serif;}
+/* NGAE FOOD PROCESSORS HUB - Core Styling */
 :root {
-  /* Bakery themed colors */
-  --primary: #5c3a21; 
-  --secondary: #d38c44; 
-  --dark: #3e2723; 
-  --light: #fdf8f5; 
-  --shadow: 0 6px 18px rgba(0,0,0,.12);
+  --primary: #b91c1c;
+  --primary-hover: #991b1b;
+  --secondary: #d97706;
+  --dark: #0f172a;
+  --light: #f8fafc;
+  --white: #ffffff;
+  --font-main: 'Poppins', sans-serif;
 }
-body {background:#fff; color:#333; overflow-x: hidden;}
-.container {width:92%; max-width:1200px; margin:auto;}
-a {text-decoration:none; color:inherit;}
 
-/* HEADER & NAV */
-header {position:fixed; top:0; width:100%; background:#fff; box-shadow:var(--shadow); z-index:1000;}
-.header-container {display:flex; justify-content:space-between; align-items:center; padding:14px 0;}
-.logo {display:flex; align-items:center;}
-.logo i {font-size: 30px; color: var(--secondary); margin-right: 10px;}
-.logo h2 {color: var(--primary); font-size: 1.4rem;}
-nav ul {display:flex; list-style:none; gap:25px; align-items: center;}
-nav ul li a {font-weight:600; color: var(--dark); transition: 0.3s;}
-nav ul li a:hover {color: var(--secondary);}
-.mobile-menu {display:none; font-size:1.8rem; cursor:pointer;}
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: var(--font-main);
+}
 
-/* LOGIN & CART BUTTONS */
-.nav-actions {display: flex; align-items: center; gap: 20px;}
-.cart-icon {position: relative; font-size: 1.4rem; color: var(--dark); transition: 0.3s;}
-.cart-icon:hover {color: var(--secondary);}
+body {
+  background-color: var(--light);
+  color: #334155;
+  overflow-x: hidden;
+}
 
-/* CART BADGE */
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+/* Header */
+header {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(12px);
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.03);
+}
+
+.header-container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 70px;
+}
+
+.nav-actions {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+nav ul {
+  display: flex;
+  align-items: center;
+  list-style: none;
+  gap: 24px;
+}
+
+nav ul li a {
+  text-decoration: none;
+  color: #475569;
+  font-weight: 600;
+  font-size: 14px;
+  transition: all 0.2s ease;
+}
+
+nav ul li a:hover {
+  color: var(--primary);
+}
+
+.login-btn {
+  background: linear-gradient(135deg, var(--primary), #dc2626);
+  color: #fff !important;
+  padding: 8px 18px;
+  border-radius: 20px;
+  box-shadow: 0 4px 12px rgba(185, 28, 28, 0.25);
+}
+
+.login-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(185, 28, 28, 0.35);
+}
+
+.cart-icon {
+  position: relative;
+  font-size: 18px;
+  color: #334155 !important;
+  display: flex;
+  align-items: center;
+}
+
 .cart-badge {
-    position: absolute; top: -6px; right: -10px; 
-    background: #e74c3c; color: #fff; font-size: 0.7rem; 
-    padding: 2px 6px; border-radius: 50%; font-weight: bold;
-    display: none;
+  position: absolute;
+  top: -8px;
+  right: -10px;
+  background: var(--primary);
+  color: white;
+  font-size: 10px;
+  font-weight: 800;
+  padding: 2px 6px;
+  border-radius: 10px;
+  display: none;
 }
 
-.login-btn {background: var(--secondary); color: #fff !important; padding: 8px 20px; border-radius: 20px;}
-.login-btn:hover {background: var(--primary);}
-
-/* HERO */
-.hero-slider {margin-top:70px; height:80vh; position:relative; overflow:hidden;}
-.slide {position:absolute; inset:0; opacity:0; transition:1s;}
-.slide.active {opacity:1;}
-.slide .bg {position:absolute; inset:0; background-size:cover; background-position:center; filter:brightness(.5);}
-.hero-content {position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); color:#fff; text-align:center; width: 90%; z-index: 10;}
-.hero-content h2 {font-size:3rem; margin-bottom: 10px;}
-.hero-content p {margin:12px 0 25px; font-size: 1.2rem;}
-.btn {background:var(--secondary); padding:12px 26px; border-radius:30px; color:#fff; font-weight:600; transition: 0.3s; display: inline-block;}
-.btn:hover {background: var(--primary);}
-
-/* SECTIONS */
-section {padding:80px 0;}
-.section-title {text-align:center; margin-bottom:40px;}
-.section-title h2 {color: var(--primary); font-size: 2.2rem;}
-
-/* PRODUCTS */
-.products {background:var(--light);}
-.products-grid {display:grid; grid-template-columns:repeat(auto-fit,minmax(250px,1fr)); gap:22px;}
-.product-card {background:#fff; border-radius:14px; box-shadow:var(--shadow); transition:.3s; overflow:hidden; text-align: center; padding-bottom: 20px;}
-.product-card:hover {transform:translateY(-8px);}
-.product-img {height: 200px; background-size: cover; background-position: center;}
-.product-content {padding:20px 20px 10px;}
-.product-content h3 {color: var(--primary); margin-bottom: 10px;}
-.product-content p {margin-bottom: 15px; font-size: 0.95rem; color: #555;}
-.order-btn {background: var(--primary); color: #fff; padding: 8px 20px; border-radius: 25px; font-size: 0.95rem; font-weight: 600; transition: 0.3s; display: inline-block;}
-.order-btn:hover {background: var(--secondary);}
-
-/* ABOUT */
-.about {background:#fff;}
-.about-grid {display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:30px;}
-.about-box {background:#fdf8f5; padding:30px; border-radius:14px; box-shadow:var(--shadow); text-align: center;}
-.about-box i {font-size:2.5rem; color:var(--secondary); margin-bottom:15px;}
-
-/* TESTIMONIALS */
-.testimonials {background:var(--primary); color: #fff; text-align:center;}
-.testimonials .section-title h2 {color: #fff;}
-.testimonial-carousel {max-width:850px; margin:auto; position:relative; height:220px;}
-.testimonial {position:absolute; inset:0; opacity:0; transition:1s;}
-.testimonial.active {opacity:1;}
-.testimonial img {width:80px; height:80px; border-radius:50%; object-fit:cover; margin-bottom:10px; border:3px solid var(--secondary);}
-
-/* CONTACT */
-.contact-grid {display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:25px;}
-.contact-box {background:#fdf8f5; padding:30px; border-radius:14px; box-shadow:var(--shadow);}
-.contact-box p {margin-bottom: 15px; font-size: 1.1rem;}
-.contact-box i {color: var(--secondary); margin-right: 10px; width: 20px;}
-.social-icons {margin-top: 20px;}
-.social-icons a {font-size:1.6rem; margin-right:15px; color:var(--primary); transition: 0.3s;}
-.social-icons a:hover {color: var(--secondary);}
-
-/* FOOTER */
-footer {background:var(--dark); color:#ccc; padding:30px 0; text-align:center;}
-
-/* WHATSAPP BUTTON */
-.float-btn {
-    position:fixed; right:22px; bottom:22px; width:60px; height:60px; 
-    border-radius:50%; background:#25D366; color:#fff; 
-    display:flex; align-items:center; justify-content:center; 
-    font-size:2rem; box-shadow: 0 4px 15px rgba(37, 211, 102, 0.4); 
-    z-index: 99;
-    animation: bounceAndJump 2.5s infinite;
-}
-@keyframes bounceAndJump {
-    0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
-    40% { transform: translateY(-20px); }
-    60% { transform: translateY(-10px); }
+.mobile-menu {
+  display: none;
+  font-size: 22px;
+  cursor: pointer;
+  color: #1e293b;
 }
 
-/* =========================================
-   LOGIN MODAL (STAFF PORTAL) - BORESHO
-   ========================================= */
-.modal-overlay {
-    position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
-    background: rgba(0,0,0,0.6); display: none; justify-content: center; 
-    align-items: center; z-index: 2000; padding: 15px;
+/* Hero Slider */
+.hero-slider {
+  position: relative;
+  height: 520px;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  text-align: center;
 }
 
-.modal-content {
-    background: #fff; padding: 25px 20px; border-radius: 16px; 
-    width: 100%; max-width: 600px; /* Imeruhusu upana kwa kadi 4 kompyutani */
-    position: relative; box-shadow: 0 15px 30px rgba(0,0,0,0.2);
+.hero-slider .slide {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  transition: opacity 1s ease-in-out;
 }
 
-.close-modal {
-    position: absolute; top: 10px; right: 15px; font-size: 1.8rem; 
-    cursor: pointer; color: #888; transition: 0.3s; line-height: 1;
+.hero-slider .slide.active {
+  opacity: 1;
 }
-.close-modal:hover {color: #e74c3c;}
 
-/* Headers ndani ya Modal */
-.modal-content h2 { font-size: 1.4rem; margin: 0; line-height: 1.2; }
-.modal-content p.sub-title { font-size: 0.85rem; margin-top: 3px; }
-.modal-content h3 { font-size: 1rem; margin-top: 15px; margin-bottom: 5px; }
+.hero-slider .slide .bg {
+  width: 100%;
+  height: 100%;
+  background-size: cover;
+  background-position: center;
+  filter: brightness(0.45);
+}
 
-/* Grid ya Cards */
+.hero-content {
+  position: relative;
+  z-index: 10;
+  max-width: 800px;
+  padding: 0 20px;
+}
+
+.hero-content h2 {
+  font-size: 42px;
+  font-weight: 900;
+  margin-bottom: 16px;
+  letter-spacing: -0.5px;
+  text-shadow: 0 2px 10px rgba(0,0,0,0.5);
+}
+
+.hero-content p {
+  font-size: 18px;
+  margin-bottom: 24px;
+  color: #f1f5f9;
+  font-weight: 500;
+}
+
+.hero-content .btn {
+  display: inline-block;
+  background: var(--secondary);
+  color: #fff;
+  padding: 12px 28px;
+  border-radius: 30px;
+  text-decoration: none;
+  font-weight: 700;
+  transition: transform 0.2s, box-shadow 0.2s;
+  box-shadow: 0 6px 20px rgba(217, 119, 6, 0.4);
+}
+
+.hero-content .btn:hover {
+  transform: scale(1.05);
+}
+
+/* Products Section */
+.products {
+  padding: 60px 0;
+}
+
+.section-title {
+  text-align: center;
+  margin-bottom: 40px;
+}
+
+.section-title h2 {
+  font-size: 28px;
+  font-weight: 800;
+  color: #0f172a;
+  position: relative;
+  display: inline-block;
+}
+
+.section-title h2::after {
+  content: '';
+  position: absolute;
+  bottom: -8px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 60px;
+  height: 4px;
+  background: var(--primary);
+  border-radius: 2px;
+}
+
+.products-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 30px;
+}
+
+.product-card {
+  background: #fff;
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  border: 1px solid rgba(0,0,0,0.04);
+}
+
+.product-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 16px 32px rgba(0, 0, 0, 0.1);
+}
+
+.product-img {
+  height: 200px;
+  background-size: cover;
+  background-position: center;
+}
+
+.product-content {
+  padding: 24px;
+}
+
+.product-content h3 {
+  font-size: 20px;
+  font-weight: 800;
+  color: #1e293b;
+  margin-bottom: 8px;
+}
+
+.product-content p {
+  color: #64748b;
+  font-size: 14px;
+  line-height: 1.6;
+  margin-bottom: 20px;
+}
+
+.order-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: #f8fafc;
+  color: var(--primary);
+  border: 2px solid var(--primary);
+  padding: 10px 20px;
+  border-radius: 14px;
+  font-weight: 700;
+  text-decoration: none;
+  font-size: 14px;
+  transition: all 0.2s ease;
+}
+
+.order-btn:hover {
+  background: var(--primary);
+  color: white;
+}
+
+/* Role Cards in Login Modal */
 .role-grid {
-    display: grid; 
-    grid-template-columns: repeat(4, 1fr); /* Kadi 4 kwa msitari mmoja kompyutani */
-    gap: 10px; /* Nafasi ndogo kati ya kadi */
-    margin-top: 15px;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+  margin-top: 20px;
 }
 
-/* Kadi zenyewe */
 .role-card {
-    display: flex; flex-direction: column; align-items: center; justify-content: center;
-    padding: 12px 5px; border-radius: 12px; text-align: center; 
-    border: 1px solid transparent; transition: all 0.3s ease; 
-    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 20px;
+  border-radius: 18px;
+  text-decoration: none;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  transition: all 0.25s ease;
 }
-.role-card:hover {transform: translateY(-3px); box-shadow: 0 6px 12px rgba(0,0,0,0.1);}
 
-.role-card h4 {font-size: 0.85rem; font-weight: 700; color: #333; margin-bottom: 3px; margin-top: 5px;}
-.role-card p {font-size: 0.7rem; color: #666; line-height: 1.2;}
+.role-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.06);
+}
+
+.role-orange:hover { border-color: #f97316; background: #fff7ed; }
+.role-blue:hover { border-color: #3b82f6; background: #eff6ff; }
+.role-green:hover { border-color: #10b981; background: #ecfdf5; }
+.role-purple:hover { border-color: #8b5cf6; background: #f5f3ff; }
 
 .icon-circle {
-    width: 40px; height: 40px; border-radius: 50%; display: flex; 
-    align-items: center; justify-content: center; 
-    font-size: 1.1rem; color: #fff; box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  width: 50px;
+  height: 50px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  margin-bottom: 12px;
 }
 
-/* Rangi za Cards */
-.role-orange {background: #fff7ed; border-color: #ffedd5;}
-.role-orange:hover {border-color: #fdba74;}
-.role-orange .icon-circle {background: #f97316;}
+.role-orange .icon-circle { background: #ffedd5; color: #ea580c; }
+.role-blue .icon-circle { background: #dbeafe; color: #2563eb; }
+.role-green .icon-circle { background: #d1fae5; color: #059669; }
+.role-purple .icon-circle { background: #ede9fe; color: #7c3aed; }
 
-.role-blue {background: #eff6ff; border-color: #dbeafe;}
-.role-blue:hover {border-color: #93c5fd;}
-.role-blue .icon-circle {background: #3b82f6;}
-
-.role-green {background: #f0fdf4; border-color: #dcfce7;}
-.role-green:hover {border-color: #86efac;}
-.role-green .icon-circle {background: #22c55e;}
-
-.role-purple {background: #faf5ff; border-color: #f3e8ff;}
-.role-purple:hover {border-color: #d8b4fe;}
-.role-purple .icon-circle {background: #a855f7;}
-
-/* RESPONSIVE DESIGN */
-@media(max-width:880px){
- nav ul {display:none; flex-direction:column; background:#fff; position:absolute; top:70px; left:0; width:100%; padding: 20px 0; box-shadow: 0 10px 10px rgba(0,0,0,0.1);}
- nav ul.active {display:flex;}
- .mobile-menu {display:block; color: var(--primary);}
- .hero-content h2 {font-size: 2.2rem;}
- .nav-actions {gap: 15px;}
+.role-card h4 {
+  font-size: 15px;
+  font-weight: 800;
+  color: #1e293b;
+  margin-bottom: 4px;
 }
 
-/* Hapa ndio tunapanga kadi zikae 2 kwa 2 kwenye simu */
-@media(max-width:600px){
- .role-grid {
-    grid-template-columns: repeat(2, 1fr); /* 2 juu, 2 chini */
-    gap: 8px;
- }
- .modal-content { padding: 20px 15px; }
- .modal-content h2 { font-size: 1.2rem; }
+.role-card p {
+  font-size: 12px;
+  color: #64748b;
+  font-weight: 500;
+}
+
+@media (max-width: 768px) {
+  .hero-content h2 { font-size: 28px; }
+  .mobile-menu { display: block; }
+  nav ul {
+    display: none;
+    position: absolute;
+    top: 70px;
+    left: 0;
+    width: 100%;
+    background: white;
+    flex-direction: column;
+    padding: 20px;
+    box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+  }
+  nav ul.active { display: flex; }
+  .role-grid { grid-template-columns: 1fr; }
 }

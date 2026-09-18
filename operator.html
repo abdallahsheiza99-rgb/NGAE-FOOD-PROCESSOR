@@ -722,6 +722,7 @@
     <!-- CORE APPLICATION JAVASCRIPT -->
     <!-- Firebase SDK (Real-time Sync kati ya vifaa vyote) -->
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
     <script src="firebase-config.js"></script>
     <script src="app.js"></script>
@@ -743,7 +744,7 @@
             document.getElementById('dispatchForm').addEventListener('submit', handleDispatchSubmit);
             document.getElementById('suggestionPortalSubmitForm').addEventListener('submit', handleSuggestionSubmit);
 
-            // ✅ REAL-TIME UPDATE: Sikiliza mabadiliko kutoka vifaa vingine (Firebase)
+            // Γ£à REAL-TIME UPDATE: Sikiliza mabadiliko kutoka vifaa vingine (Firebase)
             window.addEventListener('ngae-data-updated', function() {
                 renderOverviewCards();
                 renderStockGrid();
@@ -771,11 +772,11 @@
                 }
             });
 
-            // ✅ Pakia tena data baada ya sekunde 1.5 (Firebase inapakia)
+            // Γ£à Pakia tena data baada ya sekunde 1.5 (Firebase inapakia)
             setTimeout(initializeOperatorPortal, 1500);
         });
 
-        // ✅ Hook inayotumiwa na app.js _refreshUIIfPossible()
+        // Γ£à Hook inayotumiwa na app.js _refreshUIIfPossible()
         window._refreshOperatorStats = function() {
             renderOverviewCards();
             renderStockGrid();
@@ -1086,7 +1087,7 @@
                 const unitPrice = prod ? prod.price : (h.unitPrice || 1000);
                 const estValue = (h.quantity * unitPrice).toLocaleString();
 
-                const grace = window.appGetDispatchGracePeriodStatus ? window.appGetDispatchGracePeriodStatus(h) : { isEditable: false, statusText: 'EDIT LOCKED – 1 HOUR EXPIRED' };
+                const grace = window.appGetDispatchGracePeriodStatus ? window.appGetDispatchGracePeriodStatus(h) : { isEditable: false, statusText: 'EDIT LOCKED ΓÇô 1 HOUR EXPIRED' };
 
                 let statusBadge = '';
                 let actionButtons = '';
@@ -1115,7 +1116,7 @@
                 } else {
                     statusBadge = `
                         <span class="inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-[10px] font-extrabold bg-slate-100 text-slate-500 border border-slate-200 uppercase tracking-wider">
-                            <i class="bi bi-lock-fill text-slate-400"></i> EDIT LOCKED – 1 HOUR EXPIRED
+                            <i class="bi bi-lock-fill text-slate-400"></i> EDIT LOCKED ΓÇô 1 HOUR EXPIRED
                         </span>
                     `;
                     actionButtons = `

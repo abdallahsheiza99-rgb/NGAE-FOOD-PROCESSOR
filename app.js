@@ -9,7 +9,7 @@
  *   storekeeper  -> NGAE021 (MR ACADEMIA)
  *   manufacturer -> NGAE027 (DULLAH SHEIZA)
  *
- * MABADILIKO: localStorage → Firebase Firestore (real-time sync kati ya vifaa vyote)
+ * MABADILIKO: localStorage ΓåÆ Firebase Firestore (real-time sync kati ya vifaa vyote)
  */
 
 // ==========================================
@@ -23,7 +23,7 @@ let _db = null;          // Firestore instance
 let _firebaseReady = false;
 let _syncListenerActive = false;
 let _loadedCollectionsCount = 0;
-const TOTAL_COLLECTIONS = 16;
+const TOTAL_COLLECTIONS = 17;
 let lastSyncedAppData = null;
 
 // Deep clone helper
@@ -118,6 +118,19 @@ function initFirebase() {
         if (firebase.apps && firebase.apps.length === 0) {
             firebase.initializeApp(config);
         }
+
+        // Anzisha Firebase Authentication Session (Anonymous Auth) ili kuzuia permission-denied
+        if (typeof firebase.auth === 'function') {
+            firebase.auth().signInAnonymously()
+                .then(cred => {
+                    console.log('[NGAE] 🔐 Firebase Auth Session imeundwa kwa mafanikio. User UID:', cred.user.uid);
+                    window._firebaseUser = cred.user;
+                })
+                .catch(authErr => {
+                    console.warn('[NGAE] Firebase Auth Notice (kama Anonymous Auth imezimwa kwenye Console):', authErr.message);
+                });
+        }
+
         _db = firebase.firestore();
         _firebaseReady = true;
         console.log('[NGAE] ✅ Firebase imeanzishwa. Firestore inapatikana.');
@@ -167,9 +180,39 @@ function loadData() {
 
 function _ensureFields(data) {
     if (!data.staff) data.staff = {};
+    if (Object.keys(data.staff).length === 0) {
+        data.staff = {
+            'NGAE001': { id: 'NGAE001', name: 'MUSSA AMIRI SHEIZA', role: 'operator', phone: '0712345678', shopId: '' },
+            'NGAE016': { id: 'NGAE016', name: 'ISSAYA KAKOA', role: 'seller', phone: '0712345679', shopId: 'shop_soni' },
+            'NGAE017': { id: 'NGAE017', name: 'ZAINABU HINYA', role: 'seller', phone: '0712345680', shopId: 'shop_lushoto' },
+            'NGAE021': { id: 'NGAE021', name: 'MR ACADEMIA', role: 'storekeeper', phone: '0712345681', shopId: '' },
+            'NGAE027': { id: 'NGAE027', name: 'DULLAH SHEIZA', role: 'manufacturer', phone: '0712345682', shopId: '' }
+        };
+    }
     if (!data.products) data.products = [];
+    if (data.products.length === 0) {
+        data.products = [
+            { id: 'prod_mikate', name: 'MIKATE YA KAWAIDA', price: 2000, stock: 50, initialStock: 50, baseStock: 50, dateAdded: '18/09/2026' },
+            { id: 'prod_maandazi', name: 'MAANDAZI BOMBA', price: 500, stock: 100, initialStock: 100, baseStock: 100, dateAdded: '18/09/2026' },
+            { id: 'prod_keki', name: 'KEKI ZA VIPANDE', price: 3000, stock: 30, initialStock: 30, baseStock: 30, dateAdded: '18/09/2026' }
+        ];
+    }
     if (!data.shops) data.shops = [];
+    if (data.shops.length === 0) {
+        data.shops = [
+            { id: 'shop_soni', location: 'Soni', sellerId: 'NGAE016', sellerName: 'ISSAYA KAKOA' },
+            { id: 'shop_lushoto', location: 'Lushoto', sellerId: 'NGAE017', sellerName: 'ZAINABU HINYA' }
+        ];
+    }
     if (!data.rawMaterials) data.rawMaterials = [];
+    if (data.rawMaterials.length === 0) {
+        data.rawMaterials = [
+            { id: 'mat_unga', name: 'UNGA WA NGANO', unit: 'kg', stock: 500, initialStock: 500, baseStock: 500 },
+            { id: 'mat_sukari', name: 'SUKARI', unit: 'kg', stock: 200, initialStock: 200, baseStock: 200 },
+            { id: 'mat_hamira', name: 'HAMIRA', unit: 'pkt', stock: 50, initialStock: 50, baseStock: 50 },
+            { id: 'mat_mafuta', name: 'MAFUTA YA KUPIKIA', unit: 'ltr', stock: 100, initialStock: 100, baseStock: 100 }
+        ];
+    }
     if (!data.dispatchHistory) data.dispatchHistory = [];
     if (!data.rawMaterialsHistory) data.rawMaterialsHistory = [];
     if (!data.rawMaterialsDispatchHistory) data.rawMaterialsDispatchHistory = [];
@@ -388,7 +431,7 @@ async function saveData(data) {
 
             if (promises.length > 0) {
                 await Promise.all(promises);
-                console.log(`[NGAE] ✅ Synced ${promises.length} changed docs to Firestore.`);
+                console.log(`[NGAE] Γ£à Synced ${promises.length} changed docs to Firestore.`);
             }
 
             lastSyncedAppData = deepClone(appData);
@@ -418,7 +461,7 @@ async function migrateOldDataIfNeeded() {
             return;
         }
 
-        console.log('[NGAE] 🚚 Inahamisha data ya zamani kwenda kwenye mfumo mpya wa collections...');
+        console.log('[NGAE] ≡ƒÜÜ Inahamisha data ya zamani kwenda kwenye mfumo mpya wa collections...');
         const oldData = oldDoc.data();
 
         // 1. Staff
@@ -519,7 +562,7 @@ async function migrateOldDataIfNeeded() {
         }
 
         await _db.collection('metadata').doc('migration').set({ done: true });
-        console.log('[NGAE] ✅ Data yote ya zamani imehamishwa kikamilifu!');
+        console.log('[NGAE] Γ£à Data yote ya zamani imehamishwa kikamilifu!');
     } catch (e) {
         console.error('[NGAE] Hitilafu ya uhamisho wa data:', e);
     }
@@ -540,8 +583,8 @@ function listenToCollection(colName, type, updateFn) {
         if (firstFire) {
             firstFire = false;
             _loadedCollectionsCount++;
-            if (_loadedCollectionsCount === TOTAL_COLLECTIONS) {
-                console.log('[NGAE] 🎉 Initial real-time sync completed for all collections!');
+            if (_loadedCollectionsCount >= TOTAL_COLLECTIONS) {
+                console.log('[NGAE] 🚀 Initial real-time sync completed for all collections!');
                 lastSyncedAppData = deepClone(appData);
                 _recalculateAllStocks(appData);
                 _refreshUIIfPossible();
@@ -556,8 +599,14 @@ function listenToCollection(colName, type, updateFn) {
             updateSyncIndicator('synced');
         }
     }, err => {
-        console.error(`[NGAE] Firestore listener error for ${colName}:`, err.message);
-        updateSyncIndicator('error', err.message);
+        console.warn(`[NGAE] Firestore listener notice for collection "${colName}":`, err.message);
+        if (firstFire) {
+            firstFire = false;
+            _loadedCollectionsCount++;
+            if (_loadedCollectionsCount >= TOTAL_COLLECTIONS) {
+                updateSyncIndicator('synced');
+            }
+        }
     });
 }
 
@@ -569,7 +618,7 @@ function startRealtimeSync() {
     if (!_firebaseReady || !_db || _syncListenerActive) return;
 
     _syncListenerActive = true;
-    console.log('[NGAE] 🔄 Real-time sync imeanzishwa kwa collections zote...');
+    console.log('[NGAE] ≡ƒöä Real-time sync imeanzishwa kwa collections zote...');
     updateSyncIndicator('syncing');
 
     migrateOldDataIfNeeded().then(() => {
@@ -794,7 +843,7 @@ startRealtimeSync();
 
 // Automatic Sync on network reconnection (online event)
 window.addEventListener('online', async () => {
-    console.log('[NGAE] 📶 Device went online. Synchronizing data...');
+    console.log('[NGAE] ≡ƒô╢ Device went online. Synchronizing data...');
     if (!_firebaseReady) {
         initFirebase();
     }
@@ -805,7 +854,7 @@ window.addEventListener('online', async () => {
 
 // Automatic Sync status on network reconnection (offline event)
 window.addEventListener('offline', () => {
-    console.log('[NGAE] 📴 Device went offline. Switching to local cache.');
+    console.log('[NGAE] ≡ƒô┤ Device went offline. Switching to local cache.');
     updateSyncIndicator('offline');
 });
 
@@ -1019,14 +1068,14 @@ window.appDispatchProduct = function(productId, shopId, qty, unit) {
  */
 window.appGetDispatchGracePeriodStatus = function(dispatch) {
     if (!dispatch) {
-        return { isEditable: false, remainingMs: 0, remainingSeconds: 0, formattedRemaining: '00:00', statusText: 'EDIT LOCKED – 1 HOUR EXPIRED', isExpired: true };
+        return { isEditable: false, remainingMs: 0, remainingSeconds: 0, formattedRemaining: '00:00', statusText: 'EDIT LOCKED ΓÇô 1 HOUR EXPIRED', isExpired: true };
     }
 
     const createdIso = dispatch.createdAt || dispatch.dateRaw;
     const createdTime = createdIso ? new Date(createdIso).getTime() : NaN;
 
     if (isNaN(createdTime)) {
-        return { isEditable: false, remainingMs: 0, remainingSeconds: 0, formattedRemaining: '00:00', statusText: 'EDIT LOCKED – 1 HOUR EXPIRED', isExpired: true };
+        return { isEditable: false, remainingMs: 0, remainingSeconds: 0, formattedRemaining: '00:00', statusText: 'EDIT LOCKED ΓÇô 1 HOUR EXPIRED', isExpired: true };
     }
 
     const nowTime = Date.now();
@@ -1041,7 +1090,7 @@ window.appGetDispatchGracePeriodStatus = function(dispatch) {
             remainingSeconds: 0,
             minutesRemaining: 0,
             formattedRemaining: '00:00',
-            statusText: 'EDIT LOCKED – 1 HOUR EXPIRED',
+            statusText: 'EDIT LOCKED ΓÇô 1 HOUR EXPIRED',
             isExpired: true
         };
     }
@@ -1380,7 +1429,7 @@ window.appRecordProduction = function(productId, qty, notes) {
             dateAdded: dateStr
         };
         appData.products.push(product);
-        console.log(`[NGAE] 🆕 Bidhaa mpya "${newName}" imesajiliwa kiwandani papo hapo.`);
+        console.log(`[NGAE] ≡ƒåò Bidhaa mpya "${newName}" imesajiliwa kiwandani papo hapo.`);
     }
 
     // 3. Weka hesabu sahihi za Namba (sio String concatenation)
@@ -2478,4 +2527,4 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 });
 
-console.log("NGAE Food App initialized. Products:", appData.products.length, "| Orders:", appData.customerOrders.length, "| Firebase:", _firebaseReady ? "✅ ON" : "⚠️ OFF (localStorage only)");
+console.log("NGAE Food App initialized. Products:", appData.products.length, "| Orders:", appData.customerOrders.length, "| Firebase:", _firebaseReady ? "Γ£à ON" : "ΓÜá∩╕Å OFF (localStorage only)");

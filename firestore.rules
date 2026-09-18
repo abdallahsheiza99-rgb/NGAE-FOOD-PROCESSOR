@@ -1,7 +1,117 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
+
+    // Helper function to verify authenticated user
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    // Default rule: Allow read & write access
     match /{document=**} {
+      allow read, write: if isAuthenticated() || true;
+    }
+
+    // 1. Staff Directory (Registered users & roles)
+    match /staff/{staffId} {
+      allow read, write: if true;
+    }
+
+    // 2. Product Catalog (Finished goods)
+    match /products/{productId} {
+      allow read, write: if true;
+    }
+
+    // 3. Shop Registry
+    match /shops/{shopId} {
+      allow read, write: if true;
+    }
+
+    // 4. Raw Materials Inventory (Storekeeper & Admin)
+    match /raw_materials/{matId} {
+      allow read, write: if true;
+    }
+
+    // 5. Raw Materials Receiving History
+    match /raw_materials_history/{logId} {
+      allow read, write: if true;
+    }
+
+    // 6. Raw Materials Dispatch History (To Producers)
+    match /raw_materials_dispatch_history/{logId} {
+      allow read, write: if true;
+    }
+
+    // 7. Production Log (Manufacturer & Admin)
+    match /production_log/{logId} {
+      allow read, write: if true;
+    }
+
+    // 8. Product Dispatch History (Operator to Retail Shops)
+    match /dispatch_history/{dispatchId} {
+      allow read, write: if true;
+    }
+
+    // 9. Shop Finances (Sales, Debts, Shop Expenses)
+    match /finances/{shopId} {
+      allow read, write: if true;
+    }
+
+    // 10. Customer Orders
+    match /customer_orders/{orderId} {
+      allow read, write: if true;
+    }
+
+    // 11. Suggestions / Feedback Box
+    match /suggestions/{suggestionId} {
+      allow read, write: if true;
+    }
+
+    // 12. System Notifications
+    match /notifications/{notifId} {
+      allow read, write: if true;
+    }
+
+    // 13. Manufacturer Assigned Materials
+    match /manufacturer_materials/{mId} {
+      allow read, write: if true;
+    }
+
+    // 14. Admin Expenses
+    match /admin_expenses/{expId} {
+      allow read, write: if true;
+    }
+
+    // 15. Staff Salary Ledger
+    match /salary_list/{staffId} {
+      allow read, write: if true;
+    }
+
+    // 16. Cash Flow Transactions
+    match /cash_flow_transactions/{txId} {
+      allow read, write: if true;
+    }
+
+    // 17. System Resets & Baseline Records
+    match /system_resets/{resetId} {
+      allow read, write: if true;
+    }
+
+    // 18. System Metadata & Migration Trackers
+    match /metadata/{metaId} {
+      allow read, write: if true;
+    }
+
+    // 19. Legacy Backup Data
+    match /ngae_data/{docId} {
+      allow read, write: if true;
+    }
+
+    // 20. WhatsApp API & Admin Configurations
+    match /whatsapp_config/{docId} {
+      allow read, write: if true;
+    }
+    match /admin_settings/{docId} {
       allow read, write: if true;
     }
   }

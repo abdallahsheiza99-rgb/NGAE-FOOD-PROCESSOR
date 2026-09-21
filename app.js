@@ -101,6 +101,45 @@ function updateSyncIndicator(status, message) {
     }
 }
 
+let _authPromise = null;
+
+/**
+ * Hakikisha Firebase Auth Session (Anonymous Auth) ipo tayari kabla ya kusoma/kuandika Firestore
+ */
+function ensureFirebaseAuth() {
+    if (_authPromise) return _authPromise;
+
+    _authPromise = new Promise((resolve) => {
+        if (typeof firebase !== 'undefined' && firebase.auth) {
+            const auth = firebase.auth();
+            const unsubscribe = auth.onAuthStateChanged((user) => {
+                if (unsubscribe) unsubscribe();
+                if (user) {
+                    console.log('[NGAE] 🔐 Firebase Auth session tayari. User UID:', user.uid);
+                    window._firebaseUser = user;
+                    resolve(user);
+                } else {
+                    auth.signInAnonymously()
+                        .then(cred => {
+                            console.log('[NGAE] 🔐 Firebase Auth Session imeundwa kwa mafanikio. User UID:', cred.user.uid);
+                            window._firebaseUser = cred.user;
+                            resolve(cred.user);
+                        })
+                        .catch(authErr => {
+                            console.warn('[NGAE] Firebase Auth Notice:', authErr.message);
+                            resolve(null);
+                        });
+                }
+            });
+        } else {
+            resolve(null);
+        }
+    });
+
+    return _authPromise;
+}
+window.ensureFirebaseAuth = ensureFirebaseAuth;
+
 /**
  * Anzisha Firebase na Firestore
  * Hii inaitwa mara moja ukurasa ukianza
@@ -119,17 +158,8 @@ function initFirebase() {
             firebase.initializeApp(config);
         }
 
-        // Anzisha Firebase Authentication Session (Anonymous Auth) ili kuzuia permission-denied
-        if (typeof firebase.auth === 'function') {
-            firebase.auth().signInAnonymously()
-                .then(cred => {
-                    console.log('[NGAE] 🔐 Firebase Auth Session imeundwa kwa mafanikio. User UID:', cred.user.uid);
-                    window._firebaseUser = cred.user;
-                })
-                .catch(authErr => {
-                    console.warn('[NGAE] Firebase Auth Notice (kama Anonymous Auth imezimwa kwenye Console):', authErr.message);
-                });
-        }
+        // Anzisha Firebase Auth
+        ensureFirebaseAuth();
 
         _db = firebase.firestore();
         _firebaseReady = true;
@@ -351,6 +381,7 @@ async function saveData(data) {
     if (_firebaseReady && _db) {
         try {
             updateSyncIndicator('syncing');
+            await ensureFirebaseAuth();
 
             if (!lastSyncedAppData) {
                 lastSyncedAppData = _ensureFields({});
@@ -618,10 +649,12 @@ function startRealtimeSync() {
     if (!_firebaseReady || !_db || _syncListenerActive) return;
 
     _syncListenerActive = true;
-    console.log('[NGAE] ≡ƒöä Real-time sync imeanzishwa kwa collections zote...');
+    console.log('[NGAE] 🔄 Real-time sync imeanzishwa kwa collections zote...');
     updateSyncIndicator('syncing');
 
-    migrateOldDataIfNeeded().then(() => {
+    ensureFirebaseAuth().then(() => {
+        return migrateOldDataIfNeeded();
+    }).then(() => {
         listenToCollection('staff', 'object', snapshot => {
             const localStaff = {};
             snapshot.forEach(doc => {

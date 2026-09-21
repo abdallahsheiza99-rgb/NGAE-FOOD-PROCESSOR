@@ -2734,19 +2734,26 @@ Saini ya Mwajiriwa (${emp.name}): ____________________      Tarehe: ____________
                     const senderId = document.getElementById('waSenderId').value.trim();
 
                     if (window.firebaseReady !== false && firebase.apps.length > 0) {
-                        const db = firebase.firestore();
-                        db.collection('configs').doc('whatsapp').set({
-                            provider: provider,
-                            apiUrl: apiUrl,
-                            apiKey: apiKey,
-                            senderId: senderId,
-                            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-                        }).then(() => {
-                            alert("Γ£à Mipangilio ya WhatsApp API imehifadhiwa salama kwenye Firestore!");
-                            closeWhatsAppConfigModal();
-                        }).catch(err => {
-                            alert("Γ¥î Kosa la kuhifadhi mipangilio: " + err.message);
-                        });
+                        const doSave = () => {
+                            const db = firebase.firestore();
+                            db.collection('configs').doc('whatsapp').set({
+                                provider: provider,
+                                apiUrl: apiUrl,
+                                apiKey: apiKey,
+                                senderId: senderId,
+                                updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                            }).then(() => {
+                                alert("✅ Mipangilio ya WhatsApp API imehifadhiwa salama kwenye Firestore!");
+                                closeWhatsAppConfigModal();
+                            }).catch(err => {
+                                alert("❌ Kosa la kuhifadhi mipangilio: " + err.message);
+                            });
+                        };
+                        if (window.ensureFirebaseAuth) {
+                            window.ensureFirebaseAuth().then(doSave);
+                        } else {
+                            doSave();
+                        }
                     } else {
                         alert("Firebase is not initialized.");
                     }
@@ -5545,18 +5552,25 @@ Saini ya Mwajiriwa (${emp.name}): ____________________      Tarehe: ____________
             
             // Load existing configuration from Firestore if available
             if (window.firebaseReady !== false && firebase.apps.length > 0) {
-                const db = firebase.firestore();
-                db.collection('configs').doc('whatsapp').get().then(doc => {
-                    if (doc.exists) {
-                        const data = doc.data();
-                        document.getElementById('waProvider').value = data.provider || 'ultramsg';
-                        document.getElementById('waApiUrl').value = data.apiUrl || '';
-                        document.getElementById('waApiKey').value = data.apiKey || '';
-                        document.getElementById('waSenderId').value = data.senderId || '';
-                    }
-                }).catch(err => {
-                    console.error("Error loading WhatsApp config from Firestore:", err);
-                });
+                const loadConfig = () => {
+                    const db = firebase.firestore();
+                    db.collection('configs').doc('whatsapp').get().then(doc => {
+                        if (doc.exists) {
+                            const data = doc.data();
+                            document.getElementById('waProvider').value = data.provider || 'ultramsg';
+                            document.getElementById('waApiUrl').value = data.apiUrl || '';
+                            document.getElementById('waApiKey').value = data.apiKey || '';
+                            document.getElementById('waSenderId').value = data.senderId || '';
+                        }
+                    }).catch(err => {
+                        console.error("Error loading WhatsApp config from Firestore:", err);
+                    });
+                };
+                if (window.ensureFirebaseAuth) {
+                    window.ensureFirebaseAuth().then(loadConfig);
+                } else {
+                    loadConfig();
+                }
             }
             modal.classList.remove('hidden');
             modal.classList.add('flex');
@@ -6662,6 +6676,7 @@ Saini ya Mwajiriwa (${emp.name}): ____________________      Tarehe: ____________
             if (logContainer) logContainer.innerHTML = '';
             
             addWhatsAppLog("Anza ukaguzi wa mipangilio ya WhatsApp...", 'info');
+            if (window.ensureFirebaseAuth) await window.ensureFirebaseAuth();
             
             const db = firebase.firestore();
             let config = null;

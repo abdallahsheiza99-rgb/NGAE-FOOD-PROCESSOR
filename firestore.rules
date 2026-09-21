@@ -7,112 +7,115 @@ service cloud.firestore {
       return request.auth != null;
     }
 
-    // Default rule: Allow read & write access
+    // Default rule: Allow authenticated read & write access across all documents
     match /{document=**} {
-      allow read, write: if isAuthenticated() || true;
+      allow read, write: if isAuthenticated();
     }
 
     // 1. Staff Directory (Registered users & roles)
     match /staff/{staffId} {
-      allow read, write: if true;
+      allow read, write: if isAuthenticated();
     }
 
     // 2. Product Catalog (Finished goods)
     match /products/{productId} {
-      allow read, write: if true;
+      allow read, write: if isAuthenticated();
     }
 
     // 3. Shop Registry
     match /shops/{shopId} {
-      allow read, write: if true;
+      allow read, write: if isAuthenticated();
     }
 
     // 4. Raw Materials Inventory (Storekeeper & Admin)
     match /raw_materials/{matId} {
-      allow read, write: if true;
+      allow read, write: if isAuthenticated();
     }
 
     // 5. Raw Materials Receiving History
     match /raw_materials_history/{logId} {
-      allow read, write: if true;
+      allow read, write: if isAuthenticated();
     }
 
     // 6. Raw Materials Dispatch History (To Producers)
     match /raw_materials_dispatch_history/{logId} {
-      allow read, write: if true;
+      allow read, write: if isAuthenticated();
     }
 
     // 7. Production Log (Manufacturer & Admin)
     match /production_log/{logId} {
-      allow read, write: if true;
+      allow read, write: if isAuthenticated();
     }
 
     // 8. Product Dispatch History (Operator to Retail Shops)
     match /dispatch_history/{dispatchId} {
-      allow read, write: if true;
+      allow read, write: if isAuthenticated();
     }
 
     // 9. Shop Finances (Sales, Debts, Shop Expenses)
     match /finances/{shopId} {
-      allow read, write: if true;
+      allow read, write: if isAuthenticated();
     }
 
     // 10. Customer Orders
     match /customer_orders/{orderId} {
-      allow read, write: if true;
+      allow read, write: if isAuthenticated();
     }
 
     // 11. Suggestions / Feedback Box
     match /suggestions/{suggestionId} {
-      allow read, write: if true;
+      allow read, write: if isAuthenticated();
     }
 
     // 12. System Notifications
     match /notifications/{notifId} {
-      allow read, write: if true;
+      allow read, write: if isAuthenticated();
     }
 
     // 13. Manufacturer Assigned Materials
     match /manufacturer_materials/{mId} {
-      allow read, write: if true;
+      allow read, write: if isAuthenticated();
     }
 
     // 14. Admin Expenses
     match /admin_expenses/{expId} {
-      allow read, write: if true;
+      allow read, write: if isAuthenticated();
     }
 
     // 15. Staff Salary Ledger
     match /salary_list/{staffId} {
-      allow read, write: if true;
+      allow read, write: if isAuthenticated();
     }
 
     // 16. Cash Flow Transactions
     match /cash_flow_transactions/{txId} {
-      allow read, write: if true;
+      allow read, write: if isAuthenticated();
     }
 
     // 17. System Resets & Baseline Records
     match /system_resets/{resetId} {
-      allow read, write: if true;
+      allow read, write: if isAuthenticated();
     }
 
     // 18. System Metadata & Migration Trackers
     match /metadata/{metaId} {
-      allow read, write: if true;
+      allow read, write: if isAuthenticated();
     }
 
     // 19. Legacy Backup Data
     match /ngae_data/{docId} {
-      allow read, write: if true;
+      allow read, write: if isAuthenticated();
     }
 
-    // 20. WhatsApp API & Admin Configurations
+    // 20. System Configurations & WhatsApp Settings
+    match /configs/{docId} {
+      allow read, write: if isAuthenticated();
+    }
     match /whatsapp_config/{docId} {
-      allow read, write: if true;
+      allow read, write: if isAuthenticated();
     }
     match /admin_settings/{docId} {
-      allow read, write: if true;
+      allow read, write: if isAuthenticated();
     }
   }
 }

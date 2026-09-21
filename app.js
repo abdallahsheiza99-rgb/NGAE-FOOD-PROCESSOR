@@ -84,7 +84,7 @@ function updateSyncIndicator(status, message) {
         div.style.color = '#ffffff';
         div.innerHTML = '<i class="fas fa-check-circle"></i> Imesawazishwa';
         setTimeout(() => {
-            if (div.innerHTML.includes('Imesawazishwa')) {
+            if (div.innerHTML && div.innerHTML.includes('Imesawazishwa')) {
                 div.style.opacity = '0.7';
             }
         }, 3000);
@@ -94,10 +94,18 @@ function updateSyncIndicator(status, message) {
         div.innerHTML = '<i class="fas fa-wifi-slash"></i> Offline (Kadi ya Ndani)';
         div.style.opacity = '1';
     } else if (status === 'error') {
-        div.style.backgroundColor = 'rgba(220, 38, 38, 0.9)'; // Red
-        div.style.color = '#ffffff';
-        div.innerHTML = `<i class="fas fa-exclamation-triangle"></i> Hitilafu: ${message || 'Sync error'}`;
-        div.style.opacity = '1';
+        if (message && (message.includes('permission') || message.includes('Missing or insufficient') || message.includes('permission-denied'))) {
+            console.warn('[NGAE] Firestore permission notice handled gracefully:', message);
+            div.style.backgroundColor = 'rgba(107, 114, 128, 0.9)'; // Gray
+            div.style.color = '#ffffff';
+            div.innerHTML = '<i class="fas fa-database"></i> Kadi ya Ndani (Local Storage)';
+            div.style.opacity = '1';
+        } else {
+            div.style.backgroundColor = 'rgba(220, 38, 38, 0.9)'; // Red
+            div.style.color = '#ffffff';
+            div.innerHTML = `<i class="fas fa-exclamation-triangle"></i> Hitilafu: ${message || 'Sync error'}`;
+            div.style.opacity = '1';
+        }
     }
 }
 
@@ -600,6 +608,47 @@ async function migrateOldDataIfNeeded() {
 }
 
 /**
+ * Helpers to safely merge Firestore snapshots with local storage memory
+ * Prevents empty Firestore snapshots from wiping out local user data.
+ */
+function mergeArraySnapshot(existingArr, snapshot, key = 'id') {
+    existingArr = Array.isArray(existingArr) ? existingArr : [];
+    if (snapshot.empty) {
+        return existingArr.length > 0 ? existingArr : [];
+    }
+    const remoteMap = new Map();
+    snapshot.forEach(doc => {
+        remoteMap.set(doc.id, { [key]: doc.id, ...doc.data() });
+    });
+
+    const resultMap = new Map();
+    existingArr.forEach(item => {
+        if (item && item[key]) {
+            resultMap.set(item[key], item);
+        }
+    });
+
+    remoteMap.forEach((item, id) => {
+        resultMap.set(id, item);
+    });
+
+    return Array.from(resultMap.values());
+}
+
+function mergeObjectSnapshot(existingObj, snapshot) {
+    existingObj = (existingObj && typeof existingObj === 'object') ? existingObj : {};
+    if (snapshot.empty) {
+        return Object.keys(existingObj).length > 0 ? existingObj : {};
+    }
+    const remoteObj = {};
+    snapshot.forEach(doc => {
+        remoteObj[doc.id] = doc.data();
+    });
+
+    return { ...existingObj, ...remoteObj };
+}
+
+/**
  * Listener registration helper for Firestore collections
  */
 function listenToCollection(colName, type, updateFn) {
@@ -610,6 +659,13 @@ function listenToCollection(colName, type, updateFn) {
         }
 
         updateFn(snapshot);
+
+        // Always sync updated memory to localStorage as backup
+        try {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(appData));
+        } catch (e) {
+            console.warn('[NGAE] LocalStorage backup write error:', e);
+        }
 
         if (firstFire) {
             firstFire = false;
@@ -635,7 +691,7 @@ function listenToCollection(colName, type, updateFn) {
             firstFire = false;
             _loadedCollectionsCount++;
             if (_loadedCollectionsCount >= TOTAL_COLLECTIONS) {
-                updateSyncIndicator('synced');
+                updateSyncIndicator('offline', err.message);
             }
         }
     });
@@ -656,130 +712,67 @@ function startRealtimeSync() {
         return migrateOldDataIfNeeded();
     }).then(() => {
         listenToCollection('staff', 'object', snapshot => {
-            const localStaff = {};
-            snapshot.forEach(doc => {
-                localStaff[doc.id] = doc.data();
-            });
-            appData.staff = localStaff;
+            appData.staff = mergeObjectSnapshot(appData.staff, snapshot);
         });
 
         listenToCollection('products', 'array', snapshot => {
-            const arr = [];
-            snapshot.forEach(doc => {
-                arr.push({ id: doc.id, ...doc.data() });
-            });
-            appData.products = arr;
+            appData.products = mergeArraySnapshot(appData.products, snapshot, 'id');
         });
 
         listenToCollection('shops', 'array', snapshot => {
-            const arr = [];
-            snapshot.forEach(doc => {
-                arr.push({ id: doc.id, ...doc.data() });
-            });
-            appData.shops = arr;
+            appData.shops = mergeArraySnapshot(appData.shops, snapshot, 'id');
         });
 
         listenToCollection('raw_materials', 'array', snapshot => {
-            const arr = [];
-            snapshot.forEach(doc => {
-                arr.push({ id: doc.id, ...doc.data() });
-            });
-            appData.rawMaterials = arr;
+            appData.rawMaterials = mergeArraySnapshot(appData.rawMaterials, snapshot, 'id');
         });
 
         listenToCollection('dispatch_history', 'array', snapshot => {
-            const arr = [];
-            snapshot.forEach(doc => {
-                arr.push({ id: doc.id, ...doc.data() });
-            });
-            appData.dispatchHistory = arr;
+            appData.dispatchHistory = mergeArraySnapshot(appData.dispatchHistory, snapshot, 'id');
         });
 
         listenToCollection('raw_materials_history', 'array', snapshot => {
-            const arr = [];
-            snapshot.forEach(doc => {
-                arr.push({ id: doc.id, ...doc.data() });
-            });
-            appData.rawMaterialsHistory = arr;
+            appData.rawMaterialsHistory = mergeArraySnapshot(appData.rawMaterialsHistory, snapshot, 'id');
         });
 
         listenToCollection('raw_materials_dispatch_history', 'array', snapshot => {
-            const arr = [];
-            snapshot.forEach(doc => {
-                arr.push({ id: doc.id, ...doc.data() });
-            });
-            appData.rawMaterialsDispatchHistory = arr;
+            appData.rawMaterialsDispatchHistory = mergeArraySnapshot(appData.rawMaterialsDispatchHistory, snapshot, 'id');
         });
 
         listenToCollection('production_log', 'array', snapshot => {
-            const arr = [];
-            snapshot.forEach(doc => {
-                arr.push({ id: doc.id, ...doc.data() });
-            });
-            appData.productionLog = arr;
+            appData.productionLog = mergeArraySnapshot(appData.productionLog, snapshot, 'id');
         });
 
         listenToCollection('finances', 'object', snapshot => {
-            const localFin = {};
-            snapshot.forEach(doc => {
-                localFin[doc.id] = doc.data();
-            });
-            appData.finances = localFin;
+            appData.finances = mergeObjectSnapshot(appData.finances, snapshot);
         });
 
         listenToCollection('customer_orders', 'array', snapshot => {
-            const arr = [];
-            snapshot.forEach(doc => {
-                arr.push({ id: doc.id, ...doc.data() });
-            });
-            appData.customerOrders = arr;
+            appData.customerOrders = mergeArraySnapshot(appData.customerOrders, snapshot, 'id');
         });
 
         listenToCollection('suggestions', 'array', snapshot => {
-            const arr = [];
-            snapshot.forEach(doc => {
-                arr.push({ id: doc.id, ...doc.data() });
-            });
-            appData.suggestions = arr;
+            appData.suggestions = mergeArraySnapshot(appData.suggestions, snapshot, 'id');
         });
 
         listenToCollection('notifications', 'array', snapshot => {
-            const arr = [];
-            snapshot.forEach(doc => {
-                arr.push({ id: doc.id, ...doc.data() });
-            });
-            appData.notifications = arr;
+            appData.notifications = mergeArraySnapshot(appData.notifications, snapshot, 'id');
         });
 
         listenToCollection('manufacturer_materials', 'object', snapshot => {
-            const localMM = {};
-            snapshot.forEach(doc => {
-                localMM[doc.id] = doc.data();
-            });
-            appData.manufacturerMaterials = localMM;
+            appData.manufacturerMaterials = mergeObjectSnapshot(appData.manufacturerMaterials, snapshot);
         });
 
         listenToCollection('admin_expenses', 'array', snapshot => {
-            const arr = [];
-            snapshot.forEach(doc => {
-                arr.push({ id: doc.id, ...doc.data() });
-            });
-            appData.adminExpenses = arr;
+            appData.adminExpenses = mergeArraySnapshot(appData.adminExpenses, snapshot, 'id');
         });
 
         listenToCollection('salary_list', 'array', snapshot => {
-            const arr = [];
-            snapshot.forEach(doc => {
-                arr.push({ id: doc.id, ...doc.data() });
-            });
-            appData.salaryList = arr;
+            appData.salaryList = mergeArraySnapshot(appData.salaryList, snapshot, 'id');
         });
 
         listenToCollection('cash_flow_transactions', 'array', snapshot => {
-            const arr = [];
-            snapshot.forEach(doc => {
-                arr.push({ id: doc.id, ...doc.data() });
-            });
+            const arr = mergeArraySnapshot(appData.cashFlow ? appData.cashFlow.transactions : [], snapshot, 'id');
             if (!appData.cashFlow) appData.cashFlow = { balance: 0, transactions: [] };
             appData.cashFlow.transactions = arr;
             let balance = 0;

@@ -884,8 +884,11 @@
             // Form Submit: Receive Material
             const addForm = document.getElementById('addMaterialFormPortal');
             if (addForm) {
-                addForm.addEventListener('submit', (e) => {
+                addForm.addEventListener('submit', async (e) => {
                     e.preventDefault();
+                    const btn = e.target.querySelector('button[type="submit"]');
+                    const origHtml = btn ? btn.innerHTML : '';
+
                     let matName = document.getElementById('materialSelectPortal').value;
                     if (matName === 'other') matName = document.getElementById('materialCustomPortal').value.toUpperCase();
                     const unitType = document.querySelector('input[name="unit_type_in_portal"]:checked')?.value;
@@ -898,15 +901,23 @@
                     }
 
                     if (window.appReceiveMaterial) {
-                        window.appReceiveMaterial(matName, unitType, qty, price);
-                        showMessage(`Malighafi ${matName} (${qty} ${unitType}) imerekodiwa na kuhifadhiwa kikamilifu stoo!`, 'success');
-                        addForm.reset();
-                        document.getElementById('displayTotalPortal').innerText = '0.00';
-                        const customDiv = document.getElementById('customMaterialDivPortal');
-                        if (customDiv) customDiv.classList.add('hidden');
+                        try {
+                            if (btn) { btn.disabled = true; btn.innerHTML = `<i class="bi bi-arrow-repeat spin-anim"></i> Inahifadhi Stoo...`; }
 
-                        renderOverviewDashboard();
-                        renderReceivePortal();
+                            await window.appReceiveMaterial(matName, unitType, qty, price);
+                            showMessage(`Malighafi ${matName} (${qty} ${unitType}) imerekodiwa na kuhifadhiwa kikamilifu kwenye server na stoo!`, 'success');
+                            addForm.reset();
+                            document.getElementById('displayTotalPortal').innerText = '0.00';
+                            const customDiv = document.getElementById('customMaterialDivPortal');
+                            if (customDiv) customDiv.classList.add('hidden');
+
+                            renderOverviewDashboard();
+                            renderReceivePortal();
+                        } catch (err) {
+                            showMessage('Hitilafu imetokea wakati wa kuhifadhi: ' + (err.message || 'Mtandao umekatika'), 'error');
+                        } finally {
+                            if (btn) { btn.disabled = false; btn.innerHTML = origHtml; }
+                        }
                     }
                 });
             }
@@ -914,23 +925,34 @@
             // Form Submit: Dispatch Material
             const dispatchForm = document.getElementById('dispatchMaterialFormPortal');
             if (dispatchForm) {
-                dispatchForm.addEventListener('submit', (e) => {
+                dispatchForm.addEventListener('submit', async (e) => {
                     e.preventDefault();
+                    const btn = e.target.querySelector('button[type="submit"]');
+                    const origHtml = btn ? btn.innerHTML : '';
+
                     const matId = document.getElementById('dispatchSelectPortal').value;
                     const qty = parseFloat(document.getElementById('dispatchQtyPortal').value);
                     const manufacturerId = (document.getElementById('dispatchManufacturerPortal').value || '').toUpperCase().trim();
 
                     if (window.appDispatchMaterial) {
-                        const success = window.appDispatchMaterial(matId, qty, manufacturerId);
-                        if (success) {
-                            showMessage(`Malighafi imetolewa na kukabidhiwa kwa producer kikamilifu!`, 'orange');
-                            dispatchForm.reset();
-                            const availableDisplay = document.getElementById('availableStockDisplayPortal');
-                            if (availableDisplay) availableDisplay.textContent = '0.00';
-                            renderOverviewDashboard();
-                            renderDispatchPortal();
-                        } else {
-                            showMessage('Kosa: Kiasi kilichoombwa ni kikubwa kuliko kilichopo stoo.', 'error');
+                        try {
+                            if (btn) { btn.disabled = true; btn.innerHTML = `<i class="bi bi-arrow-repeat spin-anim"></i> Inatoa Malighafi...`; }
+
+                            const success = await window.appDispatchMaterial(matId, qty, manufacturerId);
+                            if (success) {
+                                showMessage(`Malighafi imetolewa na kukabidhiwa kwa producer kikamilifu!`, 'orange');
+                                dispatchForm.reset();
+                                const availableDisplay = document.getElementById('availableStockDisplayPortal');
+                                if (availableDisplay) availableDisplay.textContent = '0.00';
+                                renderOverviewDashboard();
+                                renderDispatchPortal();
+                            } else {
+                                showMessage('Kosa: Kiasi kilichoombwa ni kikubwa kuliko kilichopo stoo.', 'error');
+                            }
+                        } catch (err) {
+                            showMessage('Hitilafu ya muunganisho: ' + (err.message || 'Server error'), 'error');
+                        } finally {
+                            if (btn) { btn.disabled = false; btn.innerHTML = origHtml; }
                         }
                     }
                 });

@@ -692,8 +692,11 @@
             if (expDateInput) expDateInput.value = todayStr;
 
             // Submit Sales Form Listener
-            document.getElementById('submitSalesForm').addEventListener('submit', (e) => {
+            document.getElementById('submitSalesForm').addEventListener('submit', async (e) => {
                 e.preventDefault();
+                const btn = e.target.querySelector('button[type="submit"]');
+                const origHtml = btn.innerHTML;
+
                 const amount = parseInt(document.getElementById('submittedAmount').value);
                 const notes = document.getElementById('salesNotes').value;
                 
@@ -703,26 +706,41 @@
                 }
 
                 if (window.appSubmitSales) {
-                    const success = window.appSubmitSales(amount, notes);
-                    if (success) {
-                        toggleModal('submitSalesModal');
-                        
-                        const msg = document.getElementById('salesMessage');
-                        msg.textContent = `Mauzo ya Tsh ${amount.toLocaleString()} yamewasilishwa kikamilifu!`;
-                        msg.className = "p-4 rounded-2xl font-bold bg-emerald-100 text-emerald-800 border border-emerald-200 block shadow-sm";
-                        setTimeout(() => msg.classList.add('hidden'), 5000);
-                        
-                        renderSellerDashboard();
-                        document.getElementById('submitSalesForm').reset();
-                    } else {
-                        alert("Imeshindwa kuwasilisha mauzo. Hakikisha duka lako limesajiliwa.");
+                    try {
+                        btn.disabled = true;
+                        btn.innerHTML = `<i class="bi bi-arrow-repeat spin-anim"></i> Inahifadhi kwenye Server...`;
+
+                        const success = await window.appSubmitSales(amount, notes);
+                        if (success) {
+                            toggleModal('submitSalesModal');
+                            
+                            const msg = document.getElementById('salesMessage');
+                            if (msg) {
+                                msg.textContent = `Mauzo ya Tsh ${amount.toLocaleString()} yamewasilishwa na kuhifadhiwa kikamilifu kwenye server!`;
+                                msg.className = "p-4 rounded-2xl font-bold bg-emerald-100 text-emerald-800 border border-emerald-200 block shadow-sm";
+                                setTimeout(() => msg.classList.add('hidden'), 5000);
+                            }
+                            
+                            renderSellerDashboard();
+                            document.getElementById('submitSalesForm').reset();
+                        } else {
+                            alert("Imeshindwa kuwasilisha mauzo. Hakikisha duka lako limesajiliwa na namba za ID ziko sahihi.");
+                        }
+                    } catch (err) {
+                        alert("Hitilafu imetokea wakati wa kuhifadhi: " + (err.message || 'Mtandao umekatika'));
+                    } finally {
+                        btn.disabled = false;
+                        btn.innerHTML = origHtml;
                     }
                 }
             });
 
             // Debt Report Form Listener
-            document.getElementById('debtReportForm').addEventListener('submit', (e) => {
+            document.getElementById('debtReportForm').addEventListener('submit', async (e) => {
                 e.preventDefault();
+                const btn = e.target.querySelector('button[type="submit"]');
+                const origHtml = btn.innerHTML;
+
                 const amount = parseInt(document.getElementById('debtAmount').value);
                 const reason = document.getElementById('debtReason').value;
                 
@@ -732,26 +750,41 @@
                 }
 
                 if (window.appReportDebt) {
-                    const success = window.appReportDebt(amount, reason);
-                    if (success) {
-                        toggleModal('debtReportModal');
-                        
-                        const msg = document.getElementById('salesMessage');
-                        msg.textContent = `Ripoti ya deni ya Tsh ${amount.toLocaleString()} imetumwa kikamilifu!`;
-                        msg.className = "p-4 rounded-2xl font-bold bg-amber-100 text-amber-800 border border-amber-200 block shadow-sm";
-                        setTimeout(() => msg.classList.add('hidden'), 5000);
-                        
-                        renderSellerDashboard();
-                        document.getElementById('debtReportForm').reset();
-                    } else {
-                        alert("Imeshindwa kutuma ripoti ya deni. Hakikisha duka lako limesajiliwa.");
+                    try {
+                        btn.disabled = true;
+                        btn.innerHTML = `<i class="bi bi-arrow-repeat spin-anim"></i> Inatuma Ripoti...`;
+
+                        const success = await window.appReportDebt(amount, reason);
+                        if (success) {
+                            toggleModal('debtReportModal');
+                            
+                            const msg = document.getElementById('salesMessage');
+                            if (msg) {
+                                msg.textContent = `Ripoti ya deni ya Tsh ${amount.toLocaleString()} imetumwa na kuhifadhiwa kikamilifu!`;
+                                msg.className = "p-4 rounded-2xl font-bold bg-amber-100 text-amber-800 border border-amber-200 block shadow-sm";
+                                setTimeout(() => msg.classList.add('hidden'), 5000);
+                            }
+                            
+                            renderSellerDashboard();
+                            document.getElementById('debtReportForm').reset();
+                        } else {
+                            alert("Imeshindwa kutuma ripoti ya deni. Hakikisha duka lako limesajiliwa.");
+                        }
+                    } catch (err) {
+                        alert("Hitilafu ya mtandao: " + (err.message || 'Shida ya muunganisho'));
+                    } finally {
+                        btn.disabled = false;
+                        btn.innerHTML = origHtml;
                     }
                 }
             });
 
             // Expense Form Listener
-            document.getElementById('sellerExpenseForm').addEventListener('submit', (e) => {
+            document.getElementById('sellerExpenseForm').addEventListener('submit', async (e) => {
                 e.preventDefault();
+                const btn = e.target.querySelector('button[type="submit"]');
+                const origHtml = btn.innerHTML;
+
                 const amt = parseFloat(document.getElementById('sellerExpAmount').value);
                 const desc = document.getElementById('sellerExpDesc').value;
                 const cat = document.getElementById('sellerExpCategory').value;
@@ -764,38 +797,62 @@
                 }
 
                 if (window.appAddSellerExpense) {
-                    const success = window.appAddSellerExpense(amt, desc, cat, date, notes);
-                    if (success) {
-                        alert("Matumizi binafsi yamehifadhiwa!");
-                        document.getElementById('sellerExpenseForm').reset();
-                        // Reset date picker to today
-                        const defaultToday = new Date().toISOString().split('T')[0];
-                        const expDateEl = document.getElementById('sellerExpDate');
-                        if (expDateEl) expDateEl.value = defaultToday;
-                        
-                        renderSellerDashboard();
-                    } else {
-                        alert("Imeshindwa kuhifadhi matumizi binafsi. Hakikisha duka lako limesajiliwa.");
+                    try {
+                        btn.disabled = true;
+                        btn.innerHTML = `<i class="bi bi-arrow-repeat spin-anim"></i> Inahifadhi...`;
+
+                        const success = await window.appAddSellerExpense(amt, desc, cat, date, notes);
+                        if (success) {
+                            alert("Matumizi binafsi yamehifadhiwa kikamilifu kwenye server!");
+                            document.getElementById('sellerExpenseForm').reset();
+                            const defaultToday = new Date().toISOString().split('T')[0];
+                            const expDateEl = document.getElementById('sellerExpDate');
+                            if (expDateEl) expDateEl.value = defaultToday;
+                            
+                            renderSellerDashboard();
+                        } else {
+                            alert("Imeshindwa kuhifadhi matumizi binafsi. Hakikisha duka lako limesajiliwa.");
+                        }
+                    } catch (err) {
+                        alert("Hitilafu ya server: " + (err.message || 'Jaribu tena baadaye'));
+                    } finally {
+                        btn.disabled = false;
+                        btn.innerHTML = origHtml;
                     }
                 }
             });
 
             // Suggestion Submit Listener
-            document.getElementById('suggestionSubmitForm').addEventListener('submit', (e) => {
+            document.getElementById('suggestionSubmitForm').addEventListener('submit', async (e) => {
                 e.preventDefault();
+                const btn = e.target.querySelector('button[type="submit"]');
+                const origHtml = btn.innerHTML;
                 const msg = document.getElementById('suggestionMessage').value;
+
+                if (!msg || !msg.trim()) return;
+
                 if (window.appSubmitSuggestion) {
-                    const success = window.appSubmitSuggestion(msg);
-                    if (success) {
-                        document.getElementById('suggestionMessage').value = '';
-                        renderSuggestionsChat();
-                    } else {
-                        alert("Imeshindwa kutuma maoni.");
+                    try {
+                        btn.disabled = true;
+                        btn.innerHTML = `<i class="bi bi-arrow-repeat spin-anim"></i> Inatuma...`;
+
+                        const success = await window.appSubmitSuggestion(msg.trim());
+                        if (success) {
+                            document.getElementById('suggestionMessage').value = '';
+                            renderSuggestionsChat();
+                        } else {
+                            alert("Imeshindwa kutuma maoni.");
+                        }
+                    } catch (err) {
+                        alert("Hitilafu ya kutuma maoni: " + err.message);
+                    } finally {
+                        btn.disabled = false;
+                        btn.innerHTML = origHtml;
                     }
                 }
             });
 
-            // Γ£à REAL-TIME UPDATE: Sikiliza mabadiliko kutoka vifaa vingine (Firebase)
+            // REAL-TIME UPDATE: Sikiliza mabadiliko kutoka vifaa vingine (Firebase)
             window.addEventListener('ngae-data-updated', function() {
                 renderSellerDashboard();
                 renderSuggestionsChat();

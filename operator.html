@@ -1039,32 +1039,43 @@
         }
 
         // Handle Dispatch Form Submit
-        function handleDispatchSubmit(e) {
+        async function handleDispatchSubmit(e) {
             e.preventDefault();
+            const btn = e.target.querySelector('button[type="submit"]');
+            const origHtml = btn ? btn.innerHTML : '';
+
             const productId = document.getElementById('product_id').value;
             const shopId = document.getElementById('shop_id').value;
             const qty = parseInt(document.getElementById('quantity').value);
             const unit = document.getElementById('unit_type').value;
 
             if (window.appDispatchProduct) {
-                const success = window.appDispatchProduct(productId, shopId, qty, unit);
-                const toast = document.getElementById('dispatchToast');
-                toast.classList.remove('hidden');
+                try {
+                    if (btn) { btn.disabled = true; btn.innerHTML = `<i class="bi bi-arrow-repeat spin-anim"></i> Inasafirisha...`; }
 
-                if (success) {
-                    toast.className = "p-4 rounded-2xl font-bold text-xs bg-emerald-100 text-emerald-800 border border-emerald-200 flex items-center gap-2";
-                    toast.innerHTML = `<i class="bi bi-check-circle-fill text-lg"></i> Mzigo umetumwa kikamilifu! Dakika 60 za neema ya kurekebisha idadi zimeanza.`;
-                    document.getElementById('dispatchForm').reset();
-                    updateEstimatedValue();
+                    const success = await window.appDispatchProduct(productId, shopId, qty, unit);
+                    const toast = document.getElementById('dispatchToast');
+                    toast.classList.remove('hidden');
 
-                    // Refresh dropdowns & UI
-                    initializeOperatorPortal();
-                } else {
-                    toast.className = "p-4 rounded-2xl font-bold text-xs bg-red-100 text-red-800 border border-red-200 flex items-center gap-2";
-                    toast.innerHTML = `<i class="bi bi-exclamation-triangle-fill text-lg"></i> Kiasi cha bidhaa ulichoweka kinazidi bidhaa zilizopo stoo.`;
+                    if (success) {
+                        toast.className = "p-4 rounded-2xl font-bold text-xs bg-emerald-100 text-emerald-800 border border-emerald-200 flex items-center gap-2";
+                        toast.innerHTML = `<i class="bi bi-check-circle-fill text-lg"></i> Mzigo umetumwa na kuhifadhiwa kikamilifu kwenye server! Dakika 60 za neema ya kurekebisha idadi zimeanza.`;
+                        document.getElementById('dispatchForm').reset();
+                        updateEstimatedValue();
+
+                        // Refresh dropdowns & UI
+                        initializeOperatorPortal();
+                    } else {
+                        toast.className = "p-4 rounded-2xl font-bold text-xs bg-red-100 text-red-800 border border-red-200 flex items-center gap-2";
+                        toast.innerHTML = `<i class="bi bi-exclamation-triangle-fill text-lg"></i> Kiasi cha bidhaa ulichoweka kinazidi bidhaa zilizopo stoo.`;
+                    }
+
+                    setTimeout(() => toast.classList.add('hidden'), 5000);
+                } catch (err) {
+                    alert("Hitilafu ya mtandao: " + (err.message || 'Jaribu tena'));
+                } finally {
+                    if (btn) { btn.disabled = false; btn.innerHTML = origHtml; }
                 }
-
-                setTimeout(() => toast.classList.add('hidden'), 5000);
             }
         }
 
@@ -1350,7 +1361,7 @@
             }
         }
 
-        function submitEditDispatchQuantity(e) {
+        async function submitEditDispatchQuantity(e) {
             e.preventDefault();
             const dispatchId = document.getElementById('editModalDispatchId').value;
             const newQty = parseInt(document.getElementById('editModalNewQty').value);
@@ -1369,24 +1380,31 @@
 
             // Call secure backend/core function
             if (window.appEditDispatchQuantity) {
-                submitBtn.disabled = true;
-                submitBtn.innerHTML = `<i class="bi bi-arrow-repeat animate-spin"></i> Inasasisha taarifa...`;
+                try {
+                    submitBtn.disabled = true;
+                    submitBtn.innerHTML = `<i class="bi bi-arrow-repeat animate-spin"></i> Inasasisha taarifa...`;
 
-                const result = window.appEditDispatchQuantity(dispatchId, newQty, reason);
+                    const result = await window.appEditDispatchQuantity(dispatchId, newQty, reason);
 
-                if (result.success) {
-                    alertBox.className = 'p-3.5 rounded-2xl text-xs font-bold border bg-emerald-100 text-emerald-800 border-emerald-200 block';
-                    alertBox.innerHTML = `<i class="bi bi-check-circle-fill"></i> ${result.message}`;
+                    if (result.success) {
+                        alertBox.className = 'p-3.5 rounded-2xl text-xs font-bold border bg-emerald-100 text-emerald-800 border-emerald-200 block';
+                        alertBox.innerHTML = `<i class="bi bi-check-circle-fill"></i> ${result.message}`;
 
-                    setTimeout(() => {
-                        closeEditDispatchModal();
-                        initializeOperatorPortal();
-                    }, 1200);
-                } else {
+                        setTimeout(() => {
+                            closeEditDispatchModal();
+                            initializeOperatorPortal();
+                        }, 1200);
+                    } else {
+                        submitBtn.disabled = false;
+                        submitBtn.innerHTML = `<i class="bi bi-check2-circle text-base"></i> Thibitisha Marekebisho Sasa`;
+                        alertBox.className = 'p-3.5 rounded-2xl text-xs font-bold border bg-red-100 text-red-800 border-red-200 block';
+                        alertBox.innerHTML = `<i class="bi bi-exclamation-triangle-fill"></i> ${result.message}`;
+                    }
+                } catch (err) {
                     submitBtn.disabled = false;
                     submitBtn.innerHTML = `<i class="bi bi-check2-circle text-base"></i> Thibitisha Marekebisho Sasa`;
                     alertBox.className = 'p-3.5 rounded-2xl text-xs font-bold border bg-red-100 text-red-800 border-red-200 block';
-                    alertBox.innerHTML = `<i class="bi bi-exclamation-triangle-fill"></i> ${result.message}`;
+                    alertBox.innerHTML = `<i class="bi bi-exclamation-triangle-fill"></i> ${err.message || 'Error occurred'}`;
                 }
             }
         }

@@ -374,6 +374,42 @@ function seedData() {
 }
 
 /**
+ * Direct document persistence helper
+ */
+async function persistDoc(colName, docId, item) {
+    if (_firebaseReady && _db) {
+        try {
+            await ensureFirebaseAuth();
+            await _db.collection(colName).doc(docId).set(item);
+            console.log(`[NGAE] ✅ Persisted ${colName}/${docId} to Firestore.`);
+            return true;
+        } catch (e) {
+            console.error(`[NGAE] ❌ Error persisting ${colName}/${docId}:`, e.message);
+            throw e;
+        }
+    }
+    return false;
+}
+
+/**
+ * Direct document deletion helper
+ */
+async function removeDoc(colName, docId) {
+    if (_firebaseReady && _db) {
+        try {
+            await ensureFirebaseAuth();
+            await _db.collection(colName).doc(docId).delete();
+            console.log(`[NGAE] 🗑️ Deleted ${colName}/${docId} from Firestore.`);
+            return true;
+        } catch (e) {
+            console.error(`[NGAE] ❌ Error deleting ${colName}/${docId}:`, e.message);
+            throw e;
+        }
+    }
+    return false;
+}
+
+/**
  * Hifadhi data:
  * 1. Smart merge na localStorage (mara moja - offline support)
  * 2. Firestore Incremental updates (real-time sync kwa vifaa vyote)
@@ -382,10 +418,14 @@ async function saveData(data) {
     appData = data;
     window.appData = appData;
 
-    // 1. Hifadhi kwenye localStorage haraka
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(appData));
+    // 1. Hifadhi kwenye localStorage haraka (daima, bila kujali Firebase)
+    try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(appData));
+    } catch (e) {
+        console.warn('[NGAE] LocalStorage write error:', e);
+    }
 
-    // 2. Hifadhi kwenye Firestore incremental changes
+    // 2. Hifadhi kwenye Firestore (gracefully - haifanyi throw ili UI isivunjike)
     if (_firebaseReady && _db) {
         try {
             updateSyncIndicator('syncing');
@@ -398,25 +438,21 @@ async function saveData(data) {
             const promises = [];
 
             // Helper ya array-based collections
-            function syncArrayCol(colName, currentArray, lastSyncedArray, key) {
+            function syncArrayCol(colName, currentArray, lastSyncedArray, key = 'id') {
                 currentArray = currentArray || [];
                 lastSyncedArray = lastSyncedArray || [];
 
-                const currentMap = new Map(currentArray.map(item => [item[key], item]));
-                const lastSyncedMap = new Map(lastSyncedArray.map(item => [item[key], item]));
+                const currentMap = new Map(currentArray.map(item => [item && item[key], item]));
+                const lastSyncedMap = new Map(lastSyncedArray.map(item => [item && item[key], item]));
 
-                // Additions au updates
                 for (const [id, item] of currentMap) {
+                    if (!id || !item) continue;
                     const lastItem = lastSyncedMap.get(id);
                     if (!lastItem || JSON.stringify(item) !== JSON.stringify(lastItem)) {
-                        promises.push(_db.collection(colName).doc(id).set(item));
-                    }
-                }
-
-                // Deletions
-                for (const [id, item] of lastSyncedMap) {
-                    if (!currentMap.has(id)) {
-                        promises.push(_db.collection(colName).doc(id).delete());
+                        promises.push(
+                            _db.collection(colName).doc(id).set(item)
+                              .catch(e => console.error(`[NGAE] ❌ Failed to sync ${colName}/${id}:`, e.message))
+                        );
                     }
                 }
             }
@@ -426,24 +462,20 @@ async function saveData(data) {
                 currentObj = currentObj || {};
                 lastSyncedObj = lastSyncedObj || {};
 
-                // Additions au updates
                 for (const id in currentObj) {
+                    if (!id) continue;
                     const item = currentObj[id];
                     const lastItem = lastSyncedObj[id];
                     if (!lastItem || JSON.stringify(item) !== JSON.stringify(lastItem)) {
-                        promises.push(_db.collection(colName).doc(id).set(item));
-                    }
-                }
-
-                // Deletions
-                for (const id in lastSyncedObj) {
-                    if (!(id in currentObj)) {
-                        promises.push(_db.collection(colName).doc(id).delete());
+                        promises.push(
+                            _db.collection(colName).doc(id).set(item)
+                              .catch(e => console.error(`[NGAE] ❌ Failed to sync ${colName}/${id}:`, e.message))
+                        );
                     }
                 }
             }
 
-            // Sync all 15 basic collections + cash flow
+            // Sync all collections
             syncObjectCol('staff', appData.staff, lastSyncedAppData.staff);
             syncArrayCol('products', appData.products, lastSyncedAppData.products, 'id');
             syncArrayCol('shops', appData.shops, lastSyncedAppData.shops, 'id');
@@ -460,26 +492,27 @@ async function saveData(data) {
             syncArrayCol('admin_expenses', appData.adminExpenses, lastSyncedAppData.adminExpenses, 'id');
             syncArrayCol('salary_list', appData.salaryList, lastSyncedAppData.salaryList, 'id');
 
-            // Cash flow transactions
             const currentCFTransactions = (appData.cashFlow && appData.cashFlow.transactions) ? appData.cashFlow.transactions : [];
             const lastCFTransactions = (lastSyncedAppData.cashFlow && lastSyncedAppData.cashFlow.transactions) ? lastSyncedAppData.cashFlow.transactions : [];
             syncArrayCol('cash_flow_transactions', currentCFTransactions, lastCFTransactions, 'id');
 
-            // System Resets (Daily Report & Cash Flow starting points)
             syncObjectCol('system_resets', appData.systemResets, lastSyncedAppData.systemResets);
 
             if (promises.length > 0) {
                 await Promise.all(promises);
-                console.log(`[NGAE] Γ£à Synced ${promises.length} changed docs to Firestore.`);
+                console.log(`[NGAE] ✅ Synced ${promises.length} changed docs to Firestore.`);
             }
 
             lastSyncedAppData = deepClone(appData);
             updateSyncIndicator('synced');
         } catch (err) {
-            console.error('[NGAE] Firestore save error:', err.message);
+            // Graceful failure: data is ALREADY saved to localStorage above.
+            // We do NOT re-throw — this means the UI form will still show success.
+            console.error('[NGAE] Firestore sync error (data is safe in localStorage):', err.message);
             updateSyncIndicator('error', err.message);
         }
     }
+    return true;
 }
 
 /**
@@ -607,6 +640,13 @@ async function migrateOldDataIfNeeded() {
     }
 }
 
+function mergeArrayById(arr1, arr2, key = 'id') {
+    const map = new Map();
+    (arr1 || []).forEach(item => { if (item && item[key]) map.set(item[key], item); });
+    (arr2 || []).forEach(item => { if (item && item[key]) map.set(item[key], item); });
+    return Array.from(map.values());
+}
+
 /**
  * Helpers to safely merge Firestore snapshots with local storage memory
  * Prevents empty Firestore snapshots from wiping out local user data.
@@ -645,7 +685,23 @@ function mergeObjectSnapshot(existingObj, snapshot) {
         remoteObj[doc.id] = doc.data();
     });
 
-    return { ...existingObj, ...remoteObj };
+    const merged = { ...existingObj };
+    for (const id in remoteObj) {
+        if (!merged[id]) {
+            merged[id] = remoteObj[id];
+        } else {
+            const localItem = merged[id];
+            const remoteItem = remoteObj[id];
+            merged[id] = { ...localItem, ...remoteItem };
+            if (Array.isArray(localItem.salesHistory) || Array.isArray(remoteItem.salesHistory)) {
+                merged[id].salesHistory = mergeArrayById(localItem.salesHistory || [], remoteItem.salesHistory || [], 'id');
+            }
+            if (Array.isArray(localItem.personalExpenses) || Array.isArray(remoteItem.personalExpenses)) {
+                merged[id].personalExpenses = mergeArrayById(localItem.personalExpenses || [], remoteItem.personalExpenses || [], 'id');
+            }
+        }
+    }
+    return merged;
 }
 
 /**
@@ -844,15 +900,29 @@ function appAddNotification(title, message) {
     const timeStr = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
 
     appData.notifications.push({
-        id: 'notif_' + Math.random().toString(36).substr(2, 9),
+        id: 'notif_' + Date.now() + '_' + Math.random().toString(36).substr(2, 6),
         title: title,
         message: message,
         date: `${dateStr} ${timeStr}`,
         dateRaw: now.toISOString(),
         read: false
     });
-    saveData(appData);
+
+    // Save to localStorage immediately (fire-and-forget Firestore — no await to avoid re-entrant loops)
+    try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(appData));
+    } catch (e) {
+        console.warn('[NGAE] Notification localStorage write error:', e);
+    }
     window.appData = appData;
+
+    // Schedule async Firestore sync without blocking callers
+    if (_firebaseReady && _db) {
+        const notif = appData.notifications[appData.notifications.length - 1];
+        ensureFirebaseAuth().then(() => {
+            return _db.collection('notifications').doc(notif.id).set(notif);
+        }).catch(e => console.warn('[NGAE] Notification sync warning:', e.message));
+    }
 }
 
 // ==========================================
@@ -893,7 +963,7 @@ window.appGetProducts = function() {
     return appData.products || [];
 };
 
-window.appAddProduct = function(name, price, stock = 0) {
+window.appAddProduct = async function(name, price, stock = 0) {
     if (!appData.products) appData.products = [];
     const formattedName = name.toUpperCase().trim();
     const exists = appData.products.some(p => p.name.toUpperCase() === formattedName);
@@ -912,7 +982,7 @@ window.appAddProduct = function(name, price, stock = 0) {
         dateAdded: dateStr
     };
     appData.products.push(product);
-    saveData(appData);
+    await saveData(appData);
     window.appData = appData;
 
     if (window.appAddNotification) {
@@ -921,7 +991,7 @@ window.appAddProduct = function(name, price, stock = 0) {
     return { success: true, product };
 };
 
-window.appUpdateProduct = function(id, name, price, stock) {
+window.appUpdateProduct = async function(id, name, price, stock) {
     if (!appData.products) return false;
     const product = appData.products.find(p => p.id === id);
     if (!product) return false;
@@ -956,7 +1026,7 @@ window.appUpdateProduct = function(id, name, price, stock) {
         product.initialStock = targetStock - totalProduced + totalDispatched;
         product.baseStock = targetStock - totalProduced + totalDispatched;
     }
-    saveData(appData);
+    await saveData(appData);
     window.appData = appData;
 
     if (window.appAddNotification) {
@@ -965,11 +1035,12 @@ window.appUpdateProduct = function(id, name, price, stock) {
     return true;
 };
 
-window.appDeleteProduct = function(id) {
+window.appDeleteProduct = async function(id) {
     if (!appData.products) return false;
     const prod = appData.products.find(p => p.id === id);
     appData.products = appData.products.filter(p => p.id !== id);
-    saveData(appData);
+    await removeDoc('products', id);
+    await saveData(appData);
     window.appData = appData;
 
     if (window.appAddNotification && prod) {
@@ -1041,7 +1112,7 @@ window.appProtectRoute = function(requiredRole) {
 // OPERATOR FUNCTIONS
 // ==========================================
 
-window.appDispatchProduct = function(productId, shopId, qty, unit) {
+window.appDispatchProduct = async function(productId, shopId, qty, unit) {
     const product = appData.products.find(p => p.id === productId);
     const shop = appData.shops.find(s => s.id === shopId);
     const numQty = Number(qty) || 0;
@@ -1080,7 +1151,7 @@ window.appDispatchProduct = function(productId, shopId, qty, unit) {
     }
 
     _recalculateAllStocks(appData);
-    saveData(appData);
+    await saveData(appData);
     window.appData = appData;
 
     appAddNotification('Usafirishaji Mpya', `Operator amesafirisha ${numQty} ${unit || 'pcs'} ya ${product.name} kwenda duka la ${shop.location}.`);
@@ -1094,14 +1165,14 @@ window.appDispatchProduct = function(productId, shopId, qty, unit) {
  */
 window.appGetDispatchGracePeriodStatus = function(dispatch) {
     if (!dispatch) {
-        return { isEditable: false, remainingMs: 0, remainingSeconds: 0, formattedRemaining: '00:00', statusText: 'EDIT LOCKED ΓÇô 1 HOUR EXPIRED', isExpired: true };
+        return { isEditable: false, remainingMs: 0, remainingSeconds: 0, formattedRemaining: '00:00', statusText: 'EDIT LOCKED – 1 HOUR EXPIRED', isExpired: true };
     }
 
     const createdIso = dispatch.createdAt || dispatch.dateRaw;
     const createdTime = createdIso ? new Date(createdIso).getTime() : NaN;
 
     if (isNaN(createdTime)) {
-        return { isEditable: false, remainingMs: 0, remainingSeconds: 0, formattedRemaining: '00:00', statusText: 'EDIT LOCKED ΓÇô 1 HOUR EXPIRED', isExpired: true };
+        return { isEditable: false, remainingMs: 0, remainingSeconds: 0, formattedRemaining: '00:00', statusText: 'EDIT LOCKED – 1 HOUR EXPIRED', isExpired: true };
     }
 
     const nowTime = Date.now();
@@ -1116,7 +1187,7 @@ window.appGetDispatchGracePeriodStatus = function(dispatch) {
             remainingSeconds: 0,
             minutesRemaining: 0,
             formattedRemaining: '00:00',
-            statusText: 'EDIT LOCKED ΓÇô 1 HOUR EXPIRED',
+            statusText: 'EDIT LOCKED – 1 HOUR EXPIRED',
             isExpired: true
         };
     }
@@ -1140,7 +1211,7 @@ window.appGetDispatchGracePeriodStatus = function(dispatch) {
 /**
  * Secure Server-Side/Core function to edit dispatch quantity within 1-hour grace period
  */
-window.appEditDispatchQuantity = function(dispatchId, newQuantity, reason = 'Marekebisho ya idadi') {
+window.appEditDispatchQuantity = async function(dispatchId, newQuantity, reason = 'Marekebisho ya idadi') {
     if (!appData) appData = loadData();
     const dispatch = (appData.dispatchHistory || []).find(d => d.id === dispatchId);
 
@@ -1219,7 +1290,7 @@ window.appEditDispatchQuantity = function(dispatchId, newQuantity, reason = 'Mar
     _recalculateAllStocks(appData);
 
     // 7. Save & Sync across Firebase and LocalStorage
-    saveData(appData);
+    await saveData(appData);
     window.appData = appData;
 
     // 8. Add Audit Notification
@@ -1239,7 +1310,7 @@ window.appEditDispatchQuantity = function(dispatchId, newQuantity, reason = 'Mar
 // SELLER FUNCTIONS
 // ==========================================
 
-window.appSubmitSales = function(amount, notes) {
+window.appSubmitSales = async function(amount, notes) {
     const staffId = (localStorage.getItem('ngae_logged_in_id') || '').toUpperCase().trim();
     const staffRecord = appData.staff[staffId];
     if (!staffRecord || !staffRecord.shopId) return false;
@@ -1269,7 +1340,7 @@ window.appSubmitSales = function(amount, notes) {
         dateRaw: now.toISOString()
     });
 
-    saveData(appData);
+    await saveData(appData);
     window.appData = appData;
 
     const shopLoc = appData.shops.find(s => s.id === shopId)?.location || 'dukani';
@@ -1278,7 +1349,7 @@ window.appSubmitSales = function(amount, notes) {
     return true;
 };
 
-window.appReportDebt = function(amount, reason) {
+window.appReportDebt = async function(amount, reason) {
     const staffId = (localStorage.getItem('ngae_logged_in_id') || '').toUpperCase().trim();
     const staffRecord = appData.staff[staffId];
     if (!staffRecord || !staffRecord.shopId) return false;
@@ -1292,12 +1363,12 @@ window.appReportDebt = function(amount, reason) {
     }
 
     appData.finances[shopId].reportedDebt = (Number(appData.finances[shopId].reportedDebt) || 0) + numAmount;
-    saveData(appData);
+    await saveData(appData);
     window.appData = appData;
     return true;
 };
 
-window.appAddSellerExpense = function(amount, description, category, date, notes) {
+window.appAddSellerExpense = async function(amount, description, category, date, notes) {
     const staffId = (localStorage.getItem('ngae_logged_in_id') || '').toUpperCase().trim();
     const staffRecord = appData.staff[staffId];
     if (!staffRecord || !staffRecord.shopId) return false;
@@ -1334,7 +1405,7 @@ window.appAddSellerExpense = function(amount, description, category, date, notes
         dateRaw: expDate.toISOString()
     });
 
-    saveData(appData);
+    await saveData(appData);
     window.appData = appData;
     return true;
 };
@@ -1343,19 +1414,35 @@ window.appAddSellerExpense = function(amount, description, category, date, notes
 // STORE KEEPER FUNCTIONS
 // ==========================================
 
-window.appReceiveMaterial = function(materialName, unit, qty, pricePerUnit) {
+window.appReceiveMaterial = async function(materialName, unit, qty, pricePerUnit) {
     const now = new Date();
     const dateStr = now.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
     const numQty = Number(qty) || 0;
     const numPrice = Number(pricePerUnit) || 0;
 
-    let mat = appData.rawMaterials.find(m => m.name.toUpperCase() === materialName.toUpperCase());
+    if (!materialName || numQty <= 0) return false;
+
+    // Use stable deterministic ID based on name (prevents duplicate materials from multi-device entry)
+    const stableMatId = 'mat_' + materialName.toLowerCase().trim().replace(/\s+/g, '_').replace(/[^a-z0-9_]/g, '');
+
+    let mat = appData.rawMaterials.find(m => m.name.toUpperCase().trim() === materialName.toUpperCase().trim());
     if (!mat) {
-        mat = { id: 'mat_' + materialName.toLowerCase().replace(/\s+/g,'_'), name: materialName.toUpperCase(), unit: unit, stock: 0 };
+        mat = {
+            id: stableMatId,
+            name: materialName.toUpperCase().trim(),
+            unit: unit,
+            stock: 0,
+            initialStock: 0,
+            baseStock: 0
+        };
         appData.rawMaterials.push(mat);
     }
 
+    // Update base stock to keep reconciliation correct
+    mat.initialStock = (Number(mat.initialStock) || 0) + numQty;
+    mat.baseStock = (Number(mat.baseStock) || 0) + numQty;
     mat.stock = (Number(mat.stock) || 0) + numQty;
+    mat.unit = unit || mat.unit; // update unit if provided
 
     appData.rawMaterialsHistory.push({
         id: 'mat_rec_' + Date.now() + '_' + Math.random().toString(36).substr(2, 6),
@@ -1363,20 +1450,20 @@ window.appReceiveMaterial = function(materialName, unit, qty, pricePerUnit) {
         dateRaw: now.toISOString(),
         materialName: mat.name,
         materialId: mat.id,
-        unit: unit,
+        unit: unit || mat.unit,
         qty: numQty,
         pricePerUnit: numPrice
     });
 
-    saveData(appData);
+    await saveData(appData);
     window.appData = appData;
 
-    appAddNotification('Malighafi Zimepokelewa', `Stoo imepokea ${numQty} ${unit} za ${mat.name} kutoka kwa msambazaji.`);
+    appAddNotification('Malighafi Zimepokelewa', `Stoo imepokea ${numQty} ${unit || mat.unit} za ${mat.name}.`);
 
     return true;
 };
 
-window.appDispatchMaterial = function(materialId, qty, manufacturerId) {
+window.appDispatchMaterial = async function(materialId, qty, manufacturerId) {
     const mat = appData.rawMaterials.find(m => m.id === materialId);
     const numQty = Number(qty) || 0;
     const mIdUpper = (manufacturerId || '').toUpperCase().trim();
@@ -1409,7 +1496,7 @@ window.appDispatchMaterial = function(materialId, qty, manufacturerId) {
     }
     appData.manufacturerMaterials[mIdUpper][mat.id] = (Number(appData.manufacturerMaterials[mIdUpper][mat.id]) || 0) + numQty;
 
-    saveData(appData);
+    await saveData(appData);
     window.appData = appData;
 
     appAddNotification('Malighafi Zimetolewa', `Stoo imetoa ${numQty} ${mat.unit} za ${mat.name} kwenda kwa ${manufacturerName}.`);
@@ -1421,7 +1508,7 @@ window.appDispatchMaterial = function(materialId, qty, manufacturerId) {
 // MANUFACTURER FUNCTIONS
 // ==========================================
 
-window.appRecordProduction = function(productId, qty, notes) {
+window.appRecordProduction = async function(productId, qty, notes) {
     if (!appData.products) appData.products = [];
     const numQty = Number(qty) || 0;
     if (numQty <= 0) return false;
@@ -1455,7 +1542,7 @@ window.appRecordProduction = function(productId, qty, notes) {
             dateAdded: dateStr
         };
         appData.products.push(product);
-        console.log(`[NGAE] ≡ƒåò Bidhaa mpya "${newName}" imesajiliwa kiwandani papo hapo.`);
+        console.log(`[NGAE] 🆕 Bidhaa mpya "${newName}" imesajiliwa kiwandani papo hapo.`);
     }
 
     // 3. Weka hesabu sahihi za Namba (sio String concatenation)
@@ -1476,7 +1563,7 @@ window.appRecordProduction = function(productId, qty, notes) {
         notes: notes || 'Uzalishaji wa Kiwandani'
     });
 
-    saveData(appData);
+    await saveData(appData);
     window.appData = appData;
 
     if (window.appAddNotification) {
@@ -1490,7 +1577,7 @@ window.appRecordProduction = function(productId, qty, notes) {
 // ADMIN STORE & PRODUCTION OVERRIDE FUNCTIONS
 // ==========================================
 
-window.appAdminEditRawMaterial = function(materialId, name, unit, stock) {
+window.appAdminEditRawMaterial = async function(materialId, name, unit, stock) {
     const mat = (appData.rawMaterials || []).find(m => m.id === materialId);
     if (!mat) return false;
     mat.name = name.toUpperCase().trim();
@@ -1522,20 +1609,21 @@ window.appAdminEditRawMaterial = function(materialId, name, unit, stock) {
     mat.initialStock = targetStock - totalReceived + totalDispatched;
     mat.baseStock = targetStock - totalReceived + totalDispatched;
 
-    saveData(appData);
+    await saveData(appData);
     window.appData = appData;
     return true;
 };
 
-window.appAdminDeleteRawMaterial = function(materialId) {
+window.appAdminDeleteRawMaterial = async function(materialId) {
     if (!appData.rawMaterials) return false;
     appData.rawMaterials = appData.rawMaterials.filter(m => m.id !== materialId);
-    saveData(appData);
+    await removeDoc('raw_materials', materialId);
+    await saveData(appData);
     window.appData = appData;
     return true;
 };
 
-window.appAdminEditProductionLog = function(logId, newQty, newNotes) {
+window.appAdminEditProductionLog = async function(logId, newQty, newNotes) {
     if (!appData.productionLog) return false;
     const entry = appData.productionLog.find(l => l.id === logId);
     if (!entry) return false;
@@ -1551,12 +1639,12 @@ window.appAdminEditProductionLog = function(logId, newQty, newNotes) {
         prod.stock = Math.max(0, (Number(prod.stock) || 0) + diff);
     }
 
-    saveData(appData);
+    await saveData(appData);
     window.appData = appData;
     return true;
 };
 
-window.appAdminDeleteProductionLog = function(logId) {
+window.appAdminDeleteProductionLog = async function(logId) {
     if (!appData.productionLog) return false;
     const entry = appData.productionLog.find(l => l.id === logId);
     if (!entry) return false;
@@ -1568,7 +1656,8 @@ window.appAdminDeleteProductionLog = function(logId) {
     }
 
     appData.productionLog = appData.productionLog.filter(l => l.id !== logId);
-    saveData(appData);
+    await removeDoc('production_log', logId);
+    await saveData(appData);
     window.appData = appData;
     return true;
 };
@@ -1577,7 +1666,7 @@ window.appAdminDeleteProductionLog = function(logId) {
 // CUSTOMER ORDER FUNCTIONS
 // ==========================================
 
-window.appPlaceOrder = function({ customer_name, phone, region, district, ward, street, items, total }) {
+window.appPlaceOrder = async function({ customer_name, phone, region, district, ward, street, items, total }) {
     const orderId = 'ORD-' + Math.random().toString(36).substr(2, 6).toUpperCase();
     const now = new Date();
     const dateStr = now.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
@@ -1595,7 +1684,7 @@ window.appPlaceOrder = function({ customer_name, phone, region, district, ward, 
     };
 
     appData.customerOrders.push(order);
-    saveData(appData);
+    await saveData(appData);
     window.appData = appData;
     return orderId;
 };
@@ -1608,7 +1697,7 @@ window.appTrackOrder = function(orderId) {
 // ADMIN FUNCTIONS
 // ==========================================
 
-window.appAddStaff = function(name, role, customId, photo) {
+window.appAddStaff = async function(name, role, customId, photo) {
     let newId = customId ? customId.toUpperCase().trim() : null;
     if (!newId) {
         let maxNum = 0;
@@ -1646,19 +1735,20 @@ window.appAddStaff = function(name, role, customId, photo) {
     }
 
     appData.staff[newId] = newStaff;
-    saveData(appData);
+    await saveData(appData);
     window.appData = appData;
     return newId;
 };
 
-window.appDeleteStaff = function(staffId) {
+window.appDeleteStaff = async function(staffId) {
     const staffObj = appData.staff[staffId];
     if (staffObj) {
         if (staffObj.role === 'seller' && staffObj.shopId) {
             appData.shops = (appData.shops || []).filter(s => s.id !== staffObj.shopId);
         }
         delete appData.staff[staffId];
-        saveData(appData);
+        await removeDoc('staff', staffId);
+        await saveData(appData);
         window.appData = appData;
         return true;
     }
@@ -1669,7 +1759,7 @@ window.appDeleteStaff = function(staffId) {
 // CASH FLOWING FUNCTIONS (ADMIN PERSONAL)
 // ==========================================
 
-window.appAddPersonalCash = function(amount, description) {
+window.appAddPersonalCash = async function(amount, description) {
     if (!appData.cashFlow) {
         appData.cashFlow = { balance: 0, transactions: [] };
     }
@@ -1690,12 +1780,12 @@ window.appAddPersonalCash = function(amount, description) {
         runningBalance: appData.cashFlow.balance
     });
 
-    saveData(appData);
+    await saveData(appData);
     window.appData = appData;
     return true;
 };
 
-window.appAddPersonalExpense = function(amount, description) {
+window.appAddPersonalExpense = async function(amount, description) {
     if (!appData.cashFlow) {
         appData.cashFlow = { balance: 0, transactions: [] };
     }
@@ -1716,7 +1806,7 @@ window.appAddPersonalExpense = function(amount, description) {
         runningBalance: appData.cashFlow.balance
     });
 
-    saveData(appData);
+    await saveData(appData);
     window.appData = appData;
     return true;
 };
@@ -1770,7 +1860,7 @@ window.appGetPersonalCashFlowStats = function() {
 // Zero-loss reset points synchronized across devices
 // ==========================================
 
-window.appResetDailyReport = function(adminUser = 'Admin') {
+window.appResetDailyReport = async function(adminUser = 'Admin') {
     if (!appData.systemResets) {
         appData.systemResets = {};
     }
@@ -1810,7 +1900,7 @@ window.appResetDailyReport = function(adminUser = 'Admin') {
         appData.systemResets.audit_trail.logs = appData.systemResets.audit_trail.logs.slice(-100);
     }
 
-    saveData(appData);
+    await saveData(appData);
     window.appData = appData;
 
     if (typeof appAddNotification === 'function') {
@@ -1820,7 +1910,7 @@ window.appResetDailyReport = function(adminUser = 'Admin') {
     return true;
 };
 
-window.appResetCashFlow = function(adminUser = 'Admin') {
+window.appResetCashFlow = async function(adminUser = 'Admin') {
     if (!appData.systemResets) {
         appData.systemResets = {};
     }
@@ -1860,7 +1950,7 @@ window.appResetCashFlow = function(adminUser = 'Admin') {
         appData.systemResets.audit_trail.logs = appData.systemResets.audit_trail.logs.slice(-100);
     }
 
-    saveData(appData);
+    await saveData(appData);
     window.appData = appData;
 
     if (typeof appAddNotification === 'function') {
@@ -1908,7 +1998,7 @@ window.appGetPersonalCashFlowBalance = function() {
 // STAFF SUGGESTIONS & FEEDBACK (MAPENDEKEZO)
 // ==========================================
 
-window.appSubmitSuggestion = function(message) {
+window.appSubmitSuggestion = async function(message) {
     if (!appData.suggestions) {
         appData.suggestions = [];
     }
@@ -1934,12 +2024,12 @@ window.appSubmitSuggestion = function(message) {
         replies: []
     });
 
-    saveData(appData);
+    await saveData(appData);
     window.appData = appData;
     return true;
 };
 
-window.appReplyToSuggestion = function(suggestionId, replyText) {
+window.appReplyToSuggestion = async function(suggestionId, replyText) {
     if (!appData.suggestions) return false;
 
     const sugg = appData.suggestions.find(s => s.id === suggestionId);
@@ -1956,7 +2046,7 @@ window.appReplyToSuggestion = function(suggestionId, replyText) {
         dateRaw: now.toISOString()
     });
 
-    saveData(appData);
+    await saveData(appData);
     window.appData = appData;
     return true;
 };
@@ -1985,16 +2075,16 @@ window.appGetNotifications = function() {
     return appData.notifications || [];
 };
 
-window.appMarkNotificationsAsRead = function() {
+window.appMarkNotificationsAsRead = async function() {
     if (!appData.notifications) return;
     appData.notifications.forEach(n => n.read = true);
-    saveData(appData);
+    await saveData(appData);
     window.appData = appData;
 };
 
-window.appClearNotifications = function() {
+window.appClearNotifications = async function() {
     appData.notifications = [];
-    saveData(appData);
+    await saveData(appData);
     window.appData = appData;
 };
 
@@ -2002,7 +2092,7 @@ window.appClearNotifications = function() {
 // ADMIN EXPENSES & OVERALL STATISTICS
 // ==========================================
 
-window.appAddAdminExpense = function(description, amount) {
+window.appAddAdminExpense = async function(description, amount) {
     if (!appData.adminExpenses) {
         appData.adminExpenses = [];
     }
@@ -2015,7 +2105,7 @@ window.appAddAdminExpense = function(description, amount) {
         date: dateStr,
         dateRaw: now.toISOString()
     });
-    saveData(appData);
+    await saveData(appData);
     window.appData = appData;
 
     appAddNotification('Matumizi Mapya ya Admin', `Admin amesajili matumizi mpya: "${description}" ya Tsh ${parseFloat(amount).toLocaleString()}.`);
@@ -2071,7 +2161,7 @@ window.appGetExpensesList = function() {
     });
 };
 
-window.appResetOverallStatsBaseline = function() {
+window.appResetOverallStatsBaseline = async function() {
     if (!appData.finances) {
         appData.finances = {};
     }
@@ -2079,7 +2169,7 @@ window.appResetOverallStatsBaseline = function() {
     appData.finances['overall_stats_baseline'] = {
         baselineDate: now.toISOString()
     };
-    saveData(appData);
+    await saveData(appData);
     window.appData = appData;
     return true;
 };
@@ -2175,7 +2265,7 @@ window.appGetManufacturerMaterials = function(manufacturerId) {
 // NGAE STAFF SALARY & CONTRACT MANAGEMENT
 // ==========================================
 
-window.appAddStaffSalary = function(staffId, monthlySalary, paymentMethod, nida) {
+window.appAddStaffSalary = async function(staffId, monthlySalary, paymentMethod, nida) {
     if (!appData.salaryList) {
         appData.salaryList = [];
     }
@@ -2198,7 +2288,7 @@ window.appAddStaffSalary = function(staffId, monthlySalary, paymentMethod, nida)
         payments: []
     });
 
-    saveData(appData);
+    await saveData(appData);
     window.appData = appData;
 
     appAddNotification('Mshahara Umesajiliwa', `Mshahara wa ${sRecord.name} (Tsh ${parseFloat(monthlySalary).toLocaleString()}/mwezi) umesajiliwa kwenye Ledger.`);
@@ -2206,7 +2296,7 @@ window.appAddStaffSalary = function(staffId, monthlySalary, paymentMethod, nida)
     return true;
 };
 
-window.appPaySalaryInstallment = function(staffId, amount, method, notes) {
+window.appPaySalaryInstallment = async function(staffId, amount, method, notes) {
     if (!appData.salaryList) return false;
     const emp = appData.salaryList.find(e => e.id === staffId);
     if (!emp) return false;
@@ -2216,6 +2306,7 @@ window.appPaySalaryInstallment = function(staffId, amount, method, notes) {
 
     if (!emp.payments) emp.payments = [];
     emp.payments.push({
+        id: 'pay_' + Date.now() + '_' + Math.random().toString(36).substr(2, 6), // Required for Firestore sync
         date: dateStr,
         dateRaw: now.toISOString(),
         amount: parseFloat(amount),
@@ -2223,7 +2314,7 @@ window.appPaySalaryInstallment = function(staffId, amount, method, notes) {
         notes: notes || 'Malipo ya mshahara'
     });
 
-    saveData(appData);
+    await saveData(appData);
     window.appData = appData;
 
     appAddNotification('Mshahara Umelipwa', `Malipo ya sehemu ya Tsh ${parseFloat(amount).toLocaleString()} kwa ${emp.name} yamefanyika kupitia ${method}.`);
@@ -2231,18 +2322,18 @@ window.appPaySalaryInstallment = function(staffId, amount, method, notes) {
     return true;
 };
 
-window.appSaveStaffContract = function(staffId, contractObj) {
+window.appSaveStaffContract = async function(staffId, contractObj) {
     if (!appData.salaryList) return false;
     const emp = appData.salaryList.find(e => e.id === staffId);
     if (!emp) return false;
 
     emp.contract = contractObj;
-    saveData(appData);
+    await saveData(appData);
     window.appData = appData;
     return true;
 };
 
-window.appSaveStaffPhoto = function(staffId, photoBase64) {
+window.appSaveStaffPhoto = async function(staffId, photoBase64) {
     if (!appData) appData = loadData();
 
     if (!appData.staff) appData.staff = {};
@@ -2257,7 +2348,7 @@ window.appSaveStaffPhoto = function(staffId, photoBase64) {
         if (emp) emp.photo = photoBase64;
     }
 
-    saveData(appData);
+    await saveData(appData);
     window.appData = appData;
     return true;
 };

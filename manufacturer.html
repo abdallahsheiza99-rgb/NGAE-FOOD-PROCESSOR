@@ -724,26 +724,40 @@
             populateProductDropdowns();
 
             // Form Submit listeners
-            document.getElementById('recordProductionFormPortal').addEventListener('submit', (e) => {
+            document.getElementById('recordProductionFormPortal').addEventListener('submit', async (e) => {
                 e.preventDefault();
-                const pId = document.getElementById('portalProdProduct').value;
-                const qty = parseInt(document.getElementById('portalProdQuantity').value);
-                const notes = document.getElementById('portalProdNotes').value;
-                submitProduction(pId, qty, notes, 'recordProductionFormPortal');
+                const btn = e.target.querySelector('button[type="submit"]');
+                const origHtml = btn ? btn.innerHTML : '';
+                try {
+                    if (btn) { btn.disabled = true; btn.innerHTML = `<i class="bi bi-arrow-repeat spin-anim"></i> Inahifadhi Kiwandani...`; }
+                    const pId = document.getElementById('portalProdProduct').value;
+                    const qty = parseInt(document.getElementById('portalProdQuantity').value);
+                    const notes = document.getElementById('portalProdNotes').value;
+                    await submitProduction(pId, qty, notes, 'recordProductionFormPortal');
+                } finally {
+                    if (btn) { btn.disabled = false; btn.innerHTML = origHtml; }
+                }
             });
 
-            document.getElementById('recordProductionModalForm').addEventListener('submit', (e) => {
+            document.getElementById('recordProductionModalForm').addEventListener('submit', async (e) => {
                 e.preventDefault();
-                const pId = document.getElementById('modalProdProduct').value;
-                const qty = parseInt(document.getElementById('modalProdQuantity').value);
-                const notes = document.getElementById('modalProdNotes').value;
-                submitProduction(pId, qty, notes, 'recordProductionModalForm');
-                closeRecordProductionModal();
+                const btn = e.target.querySelector('button[type="submit"]');
+                const origHtml = btn ? btn.innerHTML : '';
+                try {
+                    if (btn) { btn.disabled = true; btn.innerHTML = `<i class="bi bi-arrow-repeat spin-anim"></i> Inahifadhi...`; }
+                    const pId = document.getElementById('modalProdProduct').value;
+                    const qty = parseInt(document.getElementById('modalProdQuantity').value);
+                    const notes = document.getElementById('modalProdNotes').value;
+                    const ok = await submitProduction(pId, qty, notes, 'recordProductionModalForm');
+                    if (ok) closeRecordProductionModal();
+                } finally {
+                    if (btn) { btn.disabled = false; btn.innerHTML = origHtml; }
+                }
             });
 
             renderOverviewCards();
 
-            // Γ£à REAL-TIME UPDATE: Sikiliza mabadiliko kutoka vifaa vingine (Firebase)
+            // REAL-TIME UPDATE: Sikiliza mabadiliko kutoka vifaa vingine (Firebase)
             window.addEventListener('ngae-data-updated', function() {
                 renderOverviewCards();
                 populateProductDropdowns();
@@ -751,7 +765,7 @@
                 if (typeof renderMaterialsPortal === 'function') renderMaterialsPortal();
             });
 
-            // Γ£à Pakia tena data baada ya sekunde 1.5 (Firebase inapakia)
+            // Pakia tena data baada ya sekunde 1.5 (Firebase inapakia)
             setTimeout(() => {
                 populateProductDropdowns();
                 renderOverviewCards();
@@ -760,7 +774,7 @@
             }, 1500);
         });
 
-        // Γ£à Hook inayotumiwa na app.js _refreshUIIfPossible()
+        // Hook inayotumiwa na app.js _refreshUIIfPossible()
         window._refreshManufacturerStats = function() {
             renderOverviewCards();
             populateProductDropdowns();
@@ -809,7 +823,7 @@
         }
 
         // SUBMIT PRODUCTION LOGIC
-        function submitProduction(productId, qty, notes, formId) {
+        async function submitProduction(productId, qty, notes, formId) {
             if (window.appRecordProduction) {
                 let targetId = productId;
                 if (targetId === 'OTHER' || !targetId) {
@@ -818,21 +832,29 @@
 
                 if (!targetId) {
                     alert("Tafadhali chagua bidhaa au weka jina la bidhaa mpya kwenye maelezo (Notes).");
-                    return;
+                    return false;
                 }
 
-                const success = window.appRecordProduction(targetId, qty, notes);
-                if (success) {
-                    showActionMessage(`Uzalishaji wa pcs ${qty.toLocaleString()} umerekodiwa kikamilifu na kuingia stoo!`, 'emerald');
-                    const f = document.getElementById(formId);
-                    if (f) f.reset();
-                    populateProductDropdowns();
-                    renderOverviewCards();
-                    renderProductionHistoryTable();
-                } else {
-                    showActionMessage('Kuna tatizo lililotokea wakati wa kurekodi uzalishaji.', 'red');
+                try {
+                    const success = await window.appRecordProduction(targetId, qty, notes);
+                    if (success) {
+                        showActionMessage(`Uzalishaji wa pcs ${qty.toLocaleString()} umerekodiwa na kuhifadhiwa kikamilifu kwenye server na stoo!`, 'emerald');
+                        const f = document.getElementById(formId);
+                        if (f) f.reset();
+                        populateProductDropdowns();
+                        renderOverviewCards();
+                        renderProductionHistoryTable();
+                        return true;
+                    } else {
+                        showActionMessage('Kuna tatizo lililotokea wakati wa kurekodi uzalishaji.', 'red');
+                        return false;
+                    }
+                } catch (err) {
+                    showActionMessage('Hitilafu ya mtandao: ' + (err.message || 'Jaribu tena'), 'red');
+                    return false;
                 }
             }
+            return false;
         }
 
         // SHOW ACTION NOTIFICATION MESSAGE

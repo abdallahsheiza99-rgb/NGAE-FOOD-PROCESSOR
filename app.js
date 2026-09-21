@@ -25,6 +25,8 @@ let _syncListenerActive = false;
 let _loadedCollectionsCount = 0;
 const TOTAL_COLLECTIONS = 17;
 let lastSyncedAppData = null;
+let _saveDataLocked = false;  // Write lock: prevents concurrent saveData race conditions
+let _pendingSaveTimer = null; // Debounce timer for rapid saves
 
 // Deep clone helper
 function deepClone(obj) {
@@ -414,103 +416,223 @@ async function removeDoc(colName, docId) {
  * 1. Smart merge na localStorage (mara moja - offline support)
  * 2. Firestore Incremental updates (real-time sync kwa vifaa vyote)
  */
+/**
+ * saveData — persists to localStorage immediately, then syncs to Firestore.
+ *
+ * ARCHITECTURE:
+ * 1. localStorage write is ALWAYS synchronous and immediate — data is safe even if Firebase fails.
+ * 2. Firestore writes are per-document (not whole collection), so concurrent writes don't
+ *    overwrite each other.
+ * 3. For finances (which has embedded salesHistory arrays), we use arrayUnion to ATOMICALLY
+ *    append only NEW sales/expenses — preventing the race condition where two devices
+ *    simultaneously overwrite each other's embedded arrays.
+ * 4. A write-lock (_saveDataLocked) prevents concurrent calls from creating races.
+ */
 async function saveData(data) {
     appData = data;
     window.appData = appData;
 
-    // 1. Hifadhi kwenye localStorage haraka (daima, bila kujali Firebase)
+    // 1. ALWAYS save to localStorage first (instant, offline-safe)
     try {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(appData));
     } catch (e) {
         console.warn('[NGAE] LocalStorage write error:', e);
     }
 
-    // 2. Hifadhi kwenye Firestore (gracefully - haifanyi throw ili UI isivunjike)
+    // 2. Firestore sync (graceful — never throws, UI always shows success)
     if (_firebaseReady && _db) {
-        try {
-            updateSyncIndicator('syncing');
-            await ensureFirebaseAuth();
-
-            if (!lastSyncedAppData) {
-                lastSyncedAppData = _ensureFields({});
-            }
-
-            const promises = [];
-
-            // Helper ya array-based collections
-            function syncArrayCol(colName, currentArray, lastSyncedArray, key = 'id') {
-                currentArray = currentArray || [];
-                lastSyncedArray = lastSyncedArray || [];
-
-                const currentMap = new Map(currentArray.map(item => [item && item[key], item]));
-                const lastSyncedMap = new Map(lastSyncedArray.map(item => [item && item[key], item]));
-
-                for (const [id, item] of currentMap) {
-                    if (!id || !item) continue;
-                    const lastItem = lastSyncedMap.get(id);
-                    if (!lastItem || JSON.stringify(item) !== JSON.stringify(lastItem)) {
-                        promises.push(
-                            _db.collection(colName).doc(id).set(item)
-                              .catch(e => console.error(`[NGAE] ❌ Failed to sync ${colName}/${id}:`, e.message))
-                        );
-                    }
-                }
-            }
-
-            // Helper ya object-based collections
-            function syncObjectCol(colName, currentObj, lastSyncedObj) {
-                currentObj = currentObj || {};
-                lastSyncedObj = lastSyncedObj || {};
-
-                for (const id in currentObj) {
-                    if (!id) continue;
-                    const item = currentObj[id];
-                    const lastItem = lastSyncedObj[id];
-                    if (!lastItem || JSON.stringify(item) !== JSON.stringify(lastItem)) {
-                        promises.push(
-                            _db.collection(colName).doc(id).set(item)
-                              .catch(e => console.error(`[NGAE] ❌ Failed to sync ${colName}/${id}:`, e.message))
-                        );
-                    }
-                }
-            }
-
-            // Sync all collections
-            syncObjectCol('staff', appData.staff, lastSyncedAppData.staff);
-            syncArrayCol('products', appData.products, lastSyncedAppData.products, 'id');
-            syncArrayCol('shops', appData.shops, lastSyncedAppData.shops, 'id');
-            syncArrayCol('raw_materials', appData.rawMaterials, lastSyncedAppData.rawMaterials, 'id');
-            syncArrayCol('dispatch_history', appData.dispatchHistory, lastSyncedAppData.dispatchHistory, 'id');
-            syncArrayCol('raw_materials_history', appData.rawMaterialsHistory, lastSyncedAppData.rawMaterialsHistory, 'id');
-            syncArrayCol('raw_materials_dispatch_history', appData.rawMaterialsDispatchHistory, lastSyncedAppData.rawMaterialsDispatchHistory, 'id');
-            syncArrayCol('production_log', appData.productionLog, lastSyncedAppData.productionLog, 'id');
-            syncObjectCol('finances', appData.finances, lastSyncedAppData.finances);
-            syncArrayCol('customer_orders', appData.customerOrders, lastSyncedAppData.customerOrders, 'id');
-            syncArrayCol('suggestions', appData.suggestions, lastSyncedAppData.suggestions, 'id');
-            syncArrayCol('notifications', appData.notifications, lastSyncedAppData.notifications, 'id');
-            syncObjectCol('manufacturer_materials', appData.manufacturerMaterials, lastSyncedAppData.manufacturerMaterials);
-            syncArrayCol('admin_expenses', appData.adminExpenses, lastSyncedAppData.adminExpenses, 'id');
-            syncArrayCol('salary_list', appData.salaryList, lastSyncedAppData.salaryList, 'id');
-
-            const currentCFTransactions = (appData.cashFlow && appData.cashFlow.transactions) ? appData.cashFlow.transactions : [];
-            const lastCFTransactions = (lastSyncedAppData.cashFlow && lastSyncedAppData.cashFlow.transactions) ? lastSyncedAppData.cashFlow.transactions : [];
-            syncArrayCol('cash_flow_transactions', currentCFTransactions, lastCFTransactions, 'id');
-
-            syncObjectCol('system_resets', appData.systemResets, lastSyncedAppData.systemResets);
-
-            if (promises.length > 0) {
-                await Promise.all(promises);
-                console.log(`[NGAE] ✅ Synced ${promises.length} changed docs to Firestore.`);
-            }
-
-            lastSyncedAppData = deepClone(appData);
-            updateSyncIndicator('synced');
-        } catch (err) {
-            // Graceful failure: data is ALREADY saved to localStorage above.
-            // We do NOT re-throw — this means the UI form will still show success.
-            console.error('[NGAE] Firestore sync error (data is safe in localStorage):', err.message);
-            updateSyncIndicator('error', err.message);
+        // Debounce rapid saves: cancel pending timer and reschedule
+        if (_pendingSaveTimer) {
+            clearTimeout(_pendingSaveTimer);
         }
+        _pendingSaveTimer = setTimeout(async () => {
+            _pendingSaveTimer = null;
+            if (_saveDataLocked) {
+                // If locked, re-schedule after 200ms
+                _pendingSaveTimer = setTimeout(() => saveData(appData), 200);
+                return;
+            }
+            _saveDataLocked = true;
+            try {
+                updateSyncIndicator('syncing');
+                await ensureFirebaseAuth();
+
+                if (!lastSyncedAppData) {
+                    lastSyncedAppData = _ensureFields({});
+                }
+
+                const batch = _db.batch();
+                let batchCount = 0;
+                const MAX_BATCH = 490; // Firestore batch limit is 500
+
+                /**
+                 * Sync an array-based collection.
+                 * Only writes documents that are NEW or CHANGED since last sync.
+                 */
+                function syncArrayCol(colName, currentArray, lastSyncedArray, key = 'id') {
+                    currentArray = currentArray || [];
+                    lastSyncedArray = lastSyncedArray || [];
+
+                    const lastSyncedMap = new Map(
+                        lastSyncedArray.map(item => [item && item[key], item])
+                    );
+
+                    for (const item of currentArray) {
+                        if (!item || !item[key]) continue;
+                        if (batchCount >= MAX_BATCH) break;
+                        const lastItem = lastSyncedMap.get(item[key]);
+                        if (!lastItem || JSON.stringify(item) !== JSON.stringify(lastItem)) {
+                            const ref = _db.collection(colName).doc(item[key]);
+                            batch.set(ref, item);
+                            batchCount++;
+                        }
+                    }
+                }
+
+                /**
+                 * Sync an object-based collection.
+                 * Only writes documents that are NEW or CHANGED since last sync.
+                 */
+                function syncObjectCol(colName, currentObj, lastSyncedObj) {
+                    currentObj = currentObj || {};
+                    lastSyncedObj = lastSyncedObj || {};
+
+                    for (const id in currentObj) {
+                        if (!id || batchCount >= MAX_BATCH) continue;
+                        const item = currentObj[id];
+                        const lastItem = lastSyncedObj[id];
+                        if (!lastItem || JSON.stringify(item) !== JSON.stringify(lastItem)) {
+                            const ref = _db.collection(colName).doc(id);
+                            batch.set(ref, item);
+                            batchCount++;
+                        }
+                    }
+                }
+
+                /**
+                 * ATOMIC FINANCES SYNC using arrayUnion.
+                 *
+                 * Instead of overwriting the entire finances document (which causes race
+                 * conditions with salesHistory arrays), we:
+                 * 1. Write scalar fields (submitted, reportedDebt) with set({merge: true})
+                 * 2. Use arrayUnion to ATOMICALLY append only NEW sales/expense entries
+                 *
+                 * This means two devices can simultaneously add sales without either
+                 * overwriting the other.
+                 */
+                async function syncFinancesAtomic(currentFinances, lastSyncedFinances) {
+                    currentFinances = currentFinances || {};
+                    lastSyncedFinances = lastSyncedFinances || {};
+
+                    const atomicPromises = [];
+
+                    for (const shopId in currentFinances) {
+                        if (shopId === 'overall_stats_baseline') {
+                            // Baseline is a simple object, use regular set
+                            const ref = _db.collection('finances').doc(shopId);
+                            atomicPromises.push(
+                                ref.set(currentFinances[shopId]).catch(e =>
+                                    console.error(`[NGAE] finances/${shopId} sync error:`, e.message))
+                            );
+                            continue;
+                        }
+
+                        const current = currentFinances[shopId] || {};
+                        const lastSynced = lastSyncedFinances[shopId] || {};
+
+                        // Find NEW sales entries not previously synced
+                        const lastSyncedSaleIds = new Set(
+                            (lastSynced.salesHistory || []).map(s => s.id).filter(Boolean)
+                        );
+                        const newSales = (current.salesHistory || []).filter(
+                            s => s && s.id && !lastSyncedSaleIds.has(s.id)
+                        );
+
+                        // Find NEW expense entries not previously synced
+                        const lastSyncedExpIds = new Set(
+                            (lastSynced.personalExpenses || []).map(e => e.id).filter(Boolean)
+                        );
+                        const newExpenses = (current.personalExpenses || []).filter(
+                            e => e && e.id && !lastSyncedExpIds.has(e.id)
+                        );
+
+                        // Check if scalar fields changed
+                        const scalarChanged =
+                            current.submitted !== lastSynced.submitted ||
+                            current.reportedDebt !== lastSynced.reportedDebt;
+
+                        if (newSales.length > 0 || newExpenses.length > 0 || scalarChanged) {
+                            const ref = _db.collection('finances').doc(shopId);
+
+                            // Build update payload using arrayUnion for arrays
+                            const updatePayload = {
+                                submitted: current.submitted || 0,
+                                reportedDebt: current.reportedDebt || 0,
+                            };
+
+                            if (newSales.length > 0) {
+                                updatePayload.salesHistory = firebase.firestore.FieldValue.arrayUnion(...newSales);
+                            }
+                            if (newExpenses.length > 0) {
+                                updatePayload.personalExpenses = firebase.firestore.FieldValue.arrayUnion(...newExpenses);
+                            }
+
+                            atomicPromises.push(
+                                // set with merge:true creates doc if not exists, then merges
+                                ref.set(updatePayload, { merge: true }).catch(e =>
+                                    console.error(`[NGAE] finances/${shopId} atomic sync error:`, e.message))
+                            );
+                        }
+                    }
+
+                    if (atomicPromises.length > 0) {
+                        await Promise.all(atomicPromises);
+                    }
+                }
+
+                // Sync all regular collections (except finances)
+                syncObjectCol('staff', appData.staff, lastSyncedAppData.staff);
+                syncArrayCol('products', appData.products, lastSyncedAppData.products, 'id');
+                syncArrayCol('shops', appData.shops, lastSyncedAppData.shops, 'id');
+                syncArrayCol('raw_materials', appData.rawMaterials, lastSyncedAppData.rawMaterials, 'id');
+                syncArrayCol('dispatch_history', appData.dispatchHistory, lastSyncedAppData.dispatchHistory, 'id');
+                syncArrayCol('raw_materials_history', appData.rawMaterialsHistory, lastSyncedAppData.rawMaterialsHistory, 'id');
+                syncArrayCol('raw_materials_dispatch_history', appData.rawMaterialsDispatchHistory, lastSyncedAppData.rawMaterialsDispatchHistory, 'id');
+                syncArrayCol('production_log', appData.productionLog, lastSyncedAppData.productionLog, 'id');
+                syncArrayCol('customer_orders', appData.customerOrders, lastSyncedAppData.customerOrders, 'id');
+                syncArrayCol('suggestions', appData.suggestions, lastSyncedAppData.suggestions, 'id');
+                syncArrayCol('notifications', appData.notifications, lastSyncedAppData.notifications, 'id');
+                syncObjectCol('manufacturer_materials', appData.manufacturerMaterials, lastSyncedAppData.manufacturerMaterials);
+                syncArrayCol('admin_expenses', appData.adminExpenses, lastSyncedAppData.adminExpenses, 'id');
+                syncArrayCol('salary_list', appData.salaryList, lastSyncedAppData.salaryList, 'id');
+
+                // Cash flow transactions
+                const currentCFT = (appData.cashFlow && appData.cashFlow.transactions) ? appData.cashFlow.transactions : [];
+                const lastSyncedCFT = (lastSyncedAppData.cashFlow && lastSyncedAppData.cashFlow.transactions) ? lastSyncedAppData.cashFlow.transactions : [];
+                syncArrayCol('cash_flow_transactions', currentCFT, lastSyncedCFT, 'id');
+
+                // System resets
+                syncObjectCol('system_resets', appData.systemResets, lastSyncedAppData.systemResets);
+
+                // Commit the batch (all non-finances collections)
+                if (batchCount > 0) {
+                    await batch.commit();
+                    console.log(`[NGAE] ✅ Batch committed ${batchCount} docs to Firestore.`);
+                }
+
+                // Finances: use atomic arrayUnion writes (separate from batch)
+                await syncFinancesAtomic(appData.finances, lastSyncedAppData.finances);
+
+                lastSyncedAppData = deepClone(appData);
+                updateSyncIndicator('synced');
+            } catch (err) {
+                // Graceful failure — data is ALREADY in localStorage, never lost
+                console.error('[NGAE] Firestore sync error (data safe in localStorage):', err.message);
+                updateSyncIndicator('error', err.message);
+            } finally {
+                _saveDataLocked = false;
+            }
+        }, 150); // 150ms debounce to batch rapid sequential saves
     }
     return true;
 }
@@ -642,43 +764,67 @@ async function migrateOldDataIfNeeded() {
 
 function mergeArrayById(arr1, arr2, key = 'id') {
     const map = new Map();
+    // Load arr1 first (older/base), arr2 second (newer/remote) so arr2 wins on conflict
     (arr1 || []).forEach(item => { if (item && item[key]) map.set(item[key], item); });
     (arr2 || []).forEach(item => { if (item && item[key]) map.set(item[key], item); });
     return Array.from(map.values());
 }
 
 /**
- * Helpers to safely merge Firestore snapshots with local storage memory
- * Prevents empty Firestore snapshots from wiping out local user data.
+ * Merge two arrays by ID, using dateRaw to pick the newer item when IDs clash.
+ * Guarantees: union of all IDs — never shrinks the array.
+ */
+function mergeArrayByIdSafe(arr1, arr2, key = 'id') {
+    const map = new Map();
+    const getTime = item => {
+        if (!item) return 0;
+        const raw = item.dateRaw || item.timestamp || item.createdAt;
+        if (!raw) return 0;
+        const t = new Date(raw).getTime();
+        return isNaN(t) ? 0 : t;
+    };
+
+    const insertIfNewer = item => {
+        if (!item || !item[key]) return;
+        const existing = map.get(item[key]);
+        if (!existing || getTime(item) >= getTime(existing)) {
+            map.set(item[key], item);
+        }
+    };
+
+    (arr1 || []).forEach(insertIfNewer);
+    (arr2 || []).forEach(insertIfNewer);
+    return Array.from(map.values());
+}
+
+/**
+ * Merge a Firestore snapshot into an existing local array.
+ * NEVER shrinks: union of all IDs, newer item wins on conflict.
  */
 function mergeArraySnapshot(existingArr, snapshot, key = 'id') {
     existingArr = Array.isArray(existingArr) ? existingArr : [];
     if (snapshot.empty) {
-        return existingArr.length > 0 ? existingArr : [];
+        // Firestore collection is empty — keep local data, don't wipe it
+        return existingArr;
     }
-    const remoteMap = new Map();
+    const remoteItems = [];
     snapshot.forEach(doc => {
-        remoteMap.set(doc.id, { [key]: doc.id, ...doc.data() });
+        remoteItems.push({ [key]: doc.id, ...doc.data() });
     });
-
-    const resultMap = new Map();
-    existingArr.forEach(item => {
-        if (item && item[key]) {
-            resultMap.set(item[key], item);
-        }
-    });
-
-    remoteMap.forEach((item, id) => {
-        resultMap.set(id, item);
-    });
-
-    return Array.from(resultMap.values());
+    // Use safe merge: union of both, newer dateRaw wins
+    return mergeArrayByIdSafe(existingArr, remoteItems, key);
 }
 
+/**
+ * Merge a Firestore snapshot into an existing local object-map.
+ * NEVER deletes keys: union of all shopIds/staffIds.
+ * For salesHistory and personalExpenses: always takes the LONGER array.
+ */
 function mergeObjectSnapshot(existingObj, snapshot) {
     existingObj = (existingObj && typeof existingObj === 'object') ? existingObj : {};
     if (snapshot.empty) {
-        return Object.keys(existingObj).length > 0 ? existingObj : {};
+        // Firestore collection is empty — keep local data, don't wipe it
+        return existingObj;
     }
     const remoteObj = {};
     snapshot.forEach(doc => {
@@ -692,12 +838,25 @@ function mergeObjectSnapshot(existingObj, snapshot) {
         } else {
             const localItem = merged[id];
             const remoteItem = remoteObj[id];
+            // Merge scalar fields: remote wins (it's the authoritative server state)
             merged[id] = { ...localItem, ...remoteItem };
+
+            // For salesHistory: ALWAYS take the union — never allow remote to shrink local
             if (Array.isArray(localItem.salesHistory) || Array.isArray(remoteItem.salesHistory)) {
-                merged[id].salesHistory = mergeArrayById(localItem.salesHistory || [], remoteItem.salesHistory || [], 'id');
+                merged[id].salesHistory = mergeArrayByIdSafe(
+                    localItem.salesHistory || [],
+                    remoteItem.salesHistory || [],
+                    'id'
+                );
             }
+
+            // Same for personalExpenses
             if (Array.isArray(localItem.personalExpenses) || Array.isArray(remoteItem.personalExpenses)) {
-                merged[id].personalExpenses = mergeArrayById(localItem.personalExpenses || [], remoteItem.personalExpenses || [], 'id');
+                merged[id].personalExpenses = mergeArrayByIdSafe(
+                    localItem.personalExpenses || [],
+                    remoteItem.personalExpenses || [],
+                    'id'
+                );
             }
         }
     }

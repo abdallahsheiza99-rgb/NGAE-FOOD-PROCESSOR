@@ -2344,7 +2344,7 @@
             // Add raw material form submit (Admin Store)
             const addMatForm = document.getElementById('adminAddRawMaterialForm');
             if (addMatForm) {
-                addMatForm.addEventListener('submit', (e) => {
+                addMatForm.addEventListener('submit', async (e) => {
                     e.preventDefault();
                     const name = document.getElementById('adminMatName').value.trim();
                     const unit = document.getElementById('adminMatUnit').value;
@@ -2356,8 +2356,8 @@
                     }
 
                     if (window.appReceiveMaterial) {
-                        window.appReceiveMaterial(name, unit, stock, 0);
-                        alert(`Γ£à Malighafi "${name.toUpperCase()}" imesajiliwa kwenye Stoo! Stock: ${stock} ${unit}`);
+                        await window.appReceiveMaterial(name, unit, stock, 0);
+                        alert(`✅ Malighafi "${name.toUpperCase()}" imesajiliwa kwenye Stoo! Stock: ${stock} ${unit}`);
                         addMatForm.reset();
                         renderAdminStore();
                     }
@@ -2365,7 +2365,7 @@
             }
 
             // Add staff form submit
-            document.getElementById('addStaffForm').addEventListener('submit', (e) => {
+            document.getElementById('addStaffForm').addEventListener('submit', async (e) => {
                 e.preventDefault();
                 const name = document.getElementById('staffName').value.trim();
                 const roleSelect = document.getElementById('staffRole').value;
@@ -2393,9 +2393,9 @@
                 }
 
                 if (window.appAddStaff) {
-                    const newId = window.appAddStaff(name, role, customId, photoUrl || null);
+                    const newId = await window.appAddStaff(name, role, customId, photoUrl || null);
                     if (newId) {
-                        alert(`Γ£à Akaunti mpya imetengenezwa!\nJina: ${name}\nStaff ID: ${newId}\nJukumu: ${role}`);
+                        alert(`✅ Akaunti mpya imetengenezwa!\nJina: ${name}\nStaff ID: ${newId}\nJukumu: ${role}`);
                         document.getElementById('addStaffForm').reset();
 
                         // Ficha custom role input
@@ -2413,7 +2413,7 @@
             });
 
             // Edit product form submit
-            document.getElementById('editProductForm').addEventListener('submit', (e) => {
+            document.getElementById('editProductForm').addEventListener('submit', async (e) => {
                 e.preventDefault();
                 const id = document.getElementById('editProductId').value;
                 const name = document.getElementById('editProductName').value;
@@ -2421,7 +2421,7 @@
                 const stock = parseInt(document.getElementById('editProductStock').value);
 
                 if (window.appUpdateProduct) {
-                    const success = window.appUpdateProduct(id, name, price, stock);
+                    const success = await window.appUpdateProduct(id, name, price, stock);
                     if (success) {
                         closeProductModal();
                         renderProducts();
@@ -2434,7 +2434,13 @@
                         prod.name = name.toUpperCase().trim();
                         prod.price = price;
                         prod.stock = stock;
-                        localStorage.setItem('ngae_app_data', JSON.stringify(window.appData));
+                        prod.initialStock = stock;
+                        prod.baseStock = stock;
+                        if (typeof saveData === 'function') {
+                            await saveData(window.appData);
+                        } else {
+                            localStorage.setItem('ngae_app_data', JSON.stringify(window.appData));
+                        }
                     }
                     closeProductModal();
                     renderProducts();
@@ -2444,13 +2450,13 @@
             });
 
             // Cash Flow form submit - Inflow
-            document.getElementById('addCashForm').addEventListener('submit', (e) => {
+            document.getElementById('addCashForm').addEventListener('submit', async (e) => {
                 e.preventDefault();
                 const amt = parseFloat(document.getElementById('cashInAmount').value);
                 const desc = document.getElementById('cashInDesc').value;
 
                 if (window.appAddPersonalCash) {
-                    window.appAddPersonalCash(amt, desc);
+                    await window.appAddPersonalCash(amt, desc);
                     alert("Cash imeingizwa kikamilifu!");
                     document.getElementById('addCashForm').reset();
                     renderCashFlow();
@@ -2458,13 +2464,13 @@
             });
 
             // Cash Flow form submit - Outflow (Expense)
-            document.getElementById('addExpenseForm').addEventListener('submit', (e) => {
+            document.getElementById('addExpenseForm').addEventListener('submit', async (e) => {
                 e.preventDefault();
                 const amt = parseFloat(document.getElementById('cashOutAmount').value);
                 const desc = document.getElementById('cashOutDesc').value;
 
                 if (window.appAddPersonalExpense) {
-                    window.appAddPersonalExpense(amt, desc);
+                    await window.appAddPersonalExpense(amt, desc);
                     alert("Matumizi yamehifadhiwa!");
                     document.getElementById('addExpenseForm').reset();
                     renderCashFlow();
@@ -2472,20 +2478,20 @@
             });
 
             // Suggestions admin reply submit
-            document.getElementById('adminReplySuggestionForm').addEventListener('submit', (e) => {
+            document.getElementById('adminReplySuggestionForm').addEventListener('submit', async (e) => {
                 e.preventDefault();
                 const suggId = document.getElementById('activeSuggId').value;
                 const replyText = document.getElementById('adminReplyText').value;
 
                 if (window.appReplyToSuggestion) {
-                    window.appReplyToSuggestion(suggId, replyText);
+                    await window.appReplyToSuggestion(suggId, replyText);
                     document.getElementById('adminReplyText').value = '';
                     renderSuggestions();
                 }
             });
 
             // Register product form submit
-            document.getElementById('registerProductForm').addEventListener('submit', (e) => {
+            document.getElementById('registerProductForm').addEventListener('submit', async (e) => {
                 e.preventDefault();
                 const name = document.getElementById('newProductName').value.toUpperCase().trim();
                 const price = parseFloat(document.getElementById('newProductPrice').value);
@@ -2493,9 +2499,9 @@
                 const initialStock = stockInput ? parseInt(stockInput.value) || 0 : 0;
 
                 if (window.appAddProduct) {
-                    const res = window.appAddProduct(name, price, initialStock);
-                    if (!res.success) {
-                        alert(res.message);
+                    const res = await window.appAddProduct(name, price, initialStock);
+                    if (!res || !res.success) {
+                        alert(res?.message || 'Hitilafu ya kusajili bidhaa');
                         return;
                     }
                     alert(`Bidhaa "${name}" imesajiliwa kikamilifu na bei ya Tsh ${price.toLocaleString()} imeingizwa kwenye mfumo!`);
@@ -2514,10 +2520,16 @@
                         id: newId,
                         name: name,
                         price: price,
-                        stock: initialStock
+                        stock: initialStock,
+                        initialStock: initialStock,
+                        baseStock: initialStock
                     });
 
-                    localStorage.setItem('ngae_app_data', JSON.stringify(window.appData));
+                    if (typeof saveData === 'function') {
+                        await saveData(window.appData);
+                    } else {
+                        localStorage.setItem('ngae_app_data', JSON.stringify(window.appData));
+                    }
 
                     if (window.appAddNotification) {
                         window.appAddNotification('Bidhaa Mpya Imesajiliwa', `Bidhaa mpya "${name}" yenye bei ya Tsh ${price.toLocaleString()} imesajiliwa.`);
@@ -2532,13 +2544,13 @@
             });
 
             // Admin Custom Expense form submit
-            document.getElementById('adminAddExpenseForm').addEventListener('submit', (e) => {
+            document.getElementById('adminAddExpenseForm').addEventListener('submit', async (e) => {
                 e.preventDefault();
                 const desc = document.getElementById('adminExpDesc').value;
                 const amt = parseFloat(document.getElementById('adminExpAmount').value);
 
                 if (window.appAddAdminExpense) {
-                    window.appAddAdminExpense(desc, amt);
+                    await window.appAddAdminExpense(desc, amt);
                     alert("Matumizi yamehifadhiwa kikamilifu!");
                     document.getElementById('adminAddExpenseForm').reset();
                     renderExpenses();
@@ -2546,7 +2558,7 @@
             });
 
             // Register salary staff form submit
-            document.getElementById('registerSalaryForm').addEventListener('submit', (e) => {
+            document.getElementById('registerSalaryForm').addEventListener('submit', async (e) => {
                 e.preventDefault();
                 const staffId = document.getElementById('salStaffSelect').value;
                 const monthlySalary = parseFloat(document.getElementById('salMonthlyAmt').value);
@@ -2554,7 +2566,7 @@
                 const nida = document.getElementById('salNida').value;
 
                 if (window.appAddStaffSalary) {
-                    const success = window.appAddStaffSalary(staffId, monthlySalary, paymentMethod, nida);
+                    const success = await window.appAddStaffSalary(staffId, monthlySalary, paymentMethod, nida);
                     if (success) {
                         alert("Mfanyakazi amesajiliwa kwenye ledger ya mishahara kikamilifu!");
                         document.getElementById('registerSalaryForm').reset();
@@ -2567,7 +2579,7 @@
             });
 
             // Pay installment form submit
-            document.getElementById('payInstallmentForm').addEventListener('submit', (e) => {
+            document.getElementById('payInstallmentForm').addEventListener('submit', async (e) => {
                 e.preventDefault();
                 const staffId = document.getElementById('payStaffId').value;
                 const amount = parseFloat(document.getElementById('payAmount').value);
@@ -2575,7 +2587,7 @@
                 const notes = document.getElementById('payNotes').value;
 
                 if (window.appPaySalaryInstallment) {
-                    const success = window.appPaySalaryInstallment(staffId, amount, method, notes);
+                    const success = await window.appPaySalaryInstallment(staffId, amount, method, notes);
                     if (success) {
                         alert(`Malipo ya mshahara ya Tsh ${amount.toLocaleString()} yamefanyika!`);
                         document.getElementById('payAmount').value = '';
@@ -3195,7 +3207,7 @@ Saini ya Mwajiriwa (${emp.name}): ____________________      Tarehe: ____________
             }
         }
 
-        function openAdminEditMaterialModal(id, name, unit, stock) {
+        async function openAdminEditMaterialModal(id, name, unit, stock) {
             const newName = prompt("Badilisha Jina la Malighafi:", name);
             if (newName === null) return;
             const newUnit = prompt("Badilisha Pimio (Unit):", unit);
@@ -3210,23 +3222,23 @@ Saini ya Mwajiriwa (${emp.name}): ____________________      Tarehe: ____________
             }
 
             if (window.appAdminEditRawMaterial) {
-                window.appAdminEditRawMaterial(id, newName, newUnit, newStock);
+                await window.appAdminEditRawMaterial(id, newName, newUnit, newStock);
                 renderAdminStore();
                 alert("Malighafi imerekebishwa kikamilifu!");
             }
         }
 
-        function deleteAdminMaterial(id) {
+        async function deleteAdminMaterial(id) {
             if (confirm("Una uhakika unataka kufuta malighafi hii kutoka kwenye stoo?")) {
                 if (window.appAdminDeleteRawMaterial) {
-                    window.appAdminDeleteRawMaterial(id);
+                    await window.appAdminDeleteRawMaterial(id);
                     renderAdminStore();
                     alert("Malighafi imefutwa!");
                 }
             }
         }
 
-        function openAdminEditProdLogModal(id, currentQty, currentNotes) {
+        async function openAdminEditProdLogModal(id, currentQty, currentNotes) {
             const newQtyStr = prompt("Badilisha Idadi iliyozalishwa (Quantity):", currentQty);
             if (newQtyStr === null) return;
             const newQty = parseInt(newQtyStr);
@@ -3239,7 +3251,7 @@ Saini ya Mwajiriwa (${emp.name}): ____________________      Tarehe: ____________
             if (newNotes === null) return;
 
             if (window.appAdminEditProductionLog) {
-                window.appAdminEditProductionLog(id, newQty, newNotes);
+                await window.appAdminEditProductionLog(id, newQty, newNotes);
                 renderAdminStore();
                 renderOverview();
                 renderProducts();
@@ -3247,10 +3259,10 @@ Saini ya Mwajiriwa (${emp.name}): ____________________      Tarehe: ____________
             }
         }
 
-        function deleteAdminProdLog(id) {
+        async function deleteAdminProdLog(id) {
             if (confirm("Una uhakika unataka kufuta uzalishaji huu? Bakaa ya bidhaa stoo itapunguzwa kiotomatiki.")) {
                 if (window.appAdminDeleteProductionLog) {
-                    window.appAdminDeleteProductionLog(id);
+                    await window.appAdminDeleteProductionLog(id);
                     renderAdminStore();
                     renderOverview();
                     renderProducts();
@@ -3370,14 +3382,18 @@ Saini ya Mwajiriwa (${emp.name}): ____________________      Tarehe: ____________
             });
         }
 
-        function deleteProduct(prodId) {
+        async function deleteProduct(prodId) {
             if (!confirm("Je, una uhakika unataka kufuta kabisa bidhaa hii kwenye mfumo?")) return;
 
             if (window.appDeleteProduct) {
-                window.appDeleteProduct(prodId);
+                await window.appDeleteProduct(prodId);
             } else if (window.appData && window.appData.products) {
                 window.appData.products = window.appData.products.filter(p => p.id !== prodId);
-                localStorage.setItem('ngae_app_data', JSON.stringify(window.appData));
+                if (typeof saveData === 'function') {
+                    await saveData(window.appData);
+                } else {
+                    localStorage.setItem('ngae_app_data', JSON.stringify(window.appData));
+                }
             }
 
             alert("Bidhaa imefutwa kikamilifu kwenye mfumo.");

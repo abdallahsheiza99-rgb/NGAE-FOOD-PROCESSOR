@@ -114,33 +114,34 @@ function updateSyncIndicator(status, message) {
 let _authPromise = null;
 
 /**
- * Hakikisha Firebase Auth Session (Anonymous Auth) ipo tayari kabla ya kusoma/kuandika Firestore
+ * Hakikisha Firebase Auth Session ipo tayari (Anonymous Auth kama imewezeshwa, au unauthenticated)
  */
 function ensureFirebaseAuth() {
     if (_authPromise) return _authPromise;
 
     _authPromise = new Promise((resolve) => {
-        if (typeof firebase !== 'undefined' && firebase.auth) {
-            const auth = firebase.auth();
-            const unsubscribe = auth.onAuthStateChanged((user) => {
-                if (unsubscribe) unsubscribe();
-                if (user) {
-                    console.log('[NGAE] 🔐 Firebase Auth session tayari. User UID:', user.uid);
-                    window._firebaseUser = user;
-                    resolve(user);
-                } else {
-                    auth.signInAnonymously()
-                        .then(cred => {
-                            console.log('[NGAE] 🔐 Firebase Auth Session imeundwa kwa mafanikio. User UID:', cred.user.uid);
-                            window._firebaseUser = cred.user;
-                            resolve(cred.user);
-                        })
-                        .catch(authErr => {
-                            console.warn('[NGAE] Firebase Auth Notice:', authErr.message);
-                            resolve(null);
-                        });
+        if (typeof firebase !== 'undefined' && typeof firebase.auth === 'function') {
+            try {
+                const auth = firebase.auth();
+                if (auth.currentUser) {
+                    window._firebaseUser = auth.currentUser;
+                    resolve(auth.currentUser);
+                    return;
                 }
-            });
+                auth.signInAnonymously()
+                    .then(cred => {
+                        console.log('[NGAE] 🔐 Firebase Auth Session imeundwa kwa mafanikio. User UID:', cred.user.uid);
+                        window._firebaseUser = cred.user;
+                        resolve(cred.user);
+                    })
+                    .catch(authErr => {
+                        console.warn('[NGAE] Firebase Auth Notice (Anonymous auth si lazima, inaendelea):', authErr.message);
+                        resolve(null);
+                    });
+            } catch (err) {
+                console.warn('[NGAE] Firebase Auth notice:', err.message);
+                resolve(null);
+            }
         } else {
             resolve(null);
         }
@@ -1597,10 +1598,6 @@ window.appReceiveMaterial = async function(materialName, unit, qty, pricePerUnit
         appData.rawMaterials.push(mat);
     }
 
-    // Update base stock to keep reconciliation correct
-    mat.initialStock = (Number(mat.initialStock) || 0) + numQty;
-    mat.baseStock = (Number(mat.baseStock) || 0) + numQty;
-    mat.stock = (Number(mat.stock) || 0) + numQty;
     mat.unit = unit || mat.unit; // update unit if provided
 
     appData.rawMaterialsHistory.push({
@@ -1614,6 +1611,7 @@ window.appReceiveMaterial = async function(materialName, unit, qty, pricePerUnit
         pricePerUnit: numPrice
     });
 
+    _recalculateAllStocks(appData);
     await saveData(appData);
     window.appData = appData;
 
